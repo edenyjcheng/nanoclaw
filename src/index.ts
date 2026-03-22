@@ -465,10 +465,7 @@ async function startMessageLoop(): Promise<void> {
             channel
               .sendMessage(chatJid, 'Working on it...')
               .catch((err) =>
-                logger.warn(
-                  { chatJid, err },
-                  'Failed to send acknowledgment',
-                ),
+                logger.warn({ chatJid, err }, 'Failed to send acknowledgment'),
               );
             queue.enqueueMessageCheck(chatJid);
           }
@@ -511,9 +508,7 @@ function ensureContainerSystemRunning(): void {
  * The agent also notifies the user that it's back online.
  */
 function startupWarmup(): void {
-  const mainEntry = Object.entries(registeredGroups).find(
-    ([, g]) => g.isMain,
-  );
+  const mainEntry = Object.entries(registeredGroups).find(([, g]) => g.isMain);
   if (!mainEntry) return;
 
   const [chatJid] = mainEntry;
