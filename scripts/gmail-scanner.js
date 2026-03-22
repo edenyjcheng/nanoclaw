@@ -22,8 +22,8 @@ import { google } from 'googleapis';
 import os from 'os';
 import Anthropic from '@anthropic-ai/sdk';
 
-const OLLAMA_URL = 'http://localhost:11434';
-const OLLAMA_MODEL = 'gemma3:4b';
+const OLLAMA_URL_DEFAULT = process.env.OLLAMA_HOST || 'http://host.docker.internal:11434';
+const OLLAMA_MODEL_DEFAULT = 'gemma3:4b';
 
 function loadClaudeApiKey() {
   try {
@@ -106,11 +106,19 @@ function loadGuide() {
     ? guideMatch[1].trim()
     : '';
 
+  // Parse key: value settings (active lines only, not commented with #)
+  function parseSetting(key) {
+    const match = text.match(new RegExp(`^${key}:\\s*(.+)$`, 'm'));
+    return match ? match[1].trim() : null;
+  }
+
   return {
-    skipFrom: parseList('Skip From').map(e => e.toLowerCase()),
+    skipFrom: parseList('Skip Sender').map(e => e.toLowerCase()),
     skipSubjectPatterns: parseList('Skip Subject Patterns').map(p => new RegExp(p, 'i')),
-    onlyFrom: parseList('Only From').map(e => e.toLowerCase()),
+    onlyFrom: parseList('Only Sender').map(e => e.toLowerCase()),
     extractionGuidelines,
+    ollamaUrl: parseSetting('ollama_url') || OLLAMA_URL_DEFAULT,
+    ollamaModel: parseSetting('ollama_model') || OLLAMA_MODEL_DEFAULT,
   };
 }
 
@@ -199,12 +207,12 @@ function parseJsonResponse(text) {
 }
 
 // --- Ollama extraction ---
-async function extractWithOllama(prompt) {
-  const res = await fetch(`${OLLAMA_URL}/api/chat`, {
+async function extractWithOllama(prompt, ollamaUrl, ollamaModel) {
+  const res = await fetch(`${ollamaUrl}/api/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: OLLAMA_MODEL,
+      model: ollamaModel,
       messages: [{ role: 'user', content: prompt }],
       stream: false,
       options: { temperature: 0.1 },
@@ -218,8 +226,8 @@ async function extractWithOllama(prompt) {
 
 // --- Claude fallback extraction ---
 async function extractWithClaude(prompt) {
-  const apiKey = loadClaudeApiKey();
-  if (!apiKey) throw new Error('No Claude API key found in ~/.claude/config.json');
+  const apiKey = process.env.ANTHROPIC_API_KEY || loadClaudeApiKey();
+  if (!apiKey) throw new Error('No Claude API key found in ANTHROPIC_API_KEY or ~/.claude/config.json');
   const anthropic = new Anthropic({ apiKey });
   const response = await anthropic.messages.create({
     model: 'claude-haiku-4-5-20251001',
@@ -230,10 +238,10 @@ async function extractWithClaude(prompt) {
 }
 
 // --- Event extraction with Ollama-first, Claude fallback ---
-async function extractEvents(emailSubject, emailBody, emailFrom, guideLines) {
-  const prompt = buildExtractionPrompt(emailSubject, emailBody, emailFrom, guideLines);
+async function extractEvents(emailSubject, emailBody, emailFrom, guide) {
+  const prompt = buildExtractionPrompt(emailSubject, emailBody, emailFrom, guide.extractionGuidelines);
   try {
-    const result = await extractWithOllama(prompt);
+    const result = await extractWithOllama(prompt, guide.ollamaUrl, guide.ollamaModel);
     return result;
   } catch (ollamaErr) {
     logLine(`FALLBACK | reason=ollama_failed | error=${ollamaErr.message} | using=claude-haiku`);
@@ -352,7 +360,7 @@ async function scanAccount(account, key, scannedIds, dryRun, guide) {
 
     logLine(`MSG | account=${account.name} | msg_id=${msgId} | subject=${subject.slice(0, 60)} | action=processing`);
 
-    const events = await extractEvents(subject, body, from, guide.extractionGuidelines);
+    const events = await extractEvents(subject, body, from, guide);
 
     if (events.length > 0) {
       extracted++;
@@ -416,7 +424,7 @@ async function main() {
   }
 
   const guide = loadGuide();
-  logLine(`GUIDE_LOADED | skipFrom=${guide.skipFrom.length} | skipPatterns=${guide.skipSubjectPatterns.length} | onlyFrom=${guide.onlyFrom.length}`);
+  logLine(`GUIDE_LOADED | skipFrom=${guide.skipFrom.length} | skipPatterns=${guide.skipSubjectPatterns.length} | onlyFrom=${guide.onlyFrom.length} | ollama=${guide.ollamaUrl} | model=${guide.ollamaModel}`);
 
   if (dryRun) console.log('[DRY RUN] No files will be written.\n');
 
