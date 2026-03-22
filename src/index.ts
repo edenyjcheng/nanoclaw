@@ -74,6 +74,9 @@ let registeredGroups: Record<string, RegisteredGroup> = {};
 let lastAgentTimestamp: Record<string, string> = {};
 let messageLoopRunning = false;
 
+// Groups pending a startup warmup run (chatJid -> startup prompt)
+const startupWarmupPending = new Map<string, string>();
+
 const channels: Channel[] = [];
 const queue = new GroupQueue();
 
@@ -236,7 +239,29 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
     MAX_MESSAGES_PER_PROMPT,
   );
 
-  if (missedMessages.length === 0) return true;
+  // No real messages — check for a pending startup warmup
+  if (missedMessages.length === 0) {
+    const startupPrompt = startupWarmupPending.get(chatJid);
+    if (startupPrompt) {
+      startupWarmupPending.delete(chatJid);
+      logger.info({ group: group.name }, 'Running startup warmup');
+      await channel.setTyping?.(chatJid, true);
+      await runAgent(group, startupPrompt, chatJid, async (result) => {
+        if (result.result) {
+          const raw =
+            typeof result.result === 'string'
+              ? result.result
+              : JSON.stringify(result.result);
+          const text = raw
+            .replace(/<internal>[\s\S]*?<\/internal>/g, '')
+            .trim();
+          if (text) await channel.sendMessage(chatJid, text);
+        }
+      });
+      await channel.setTyping?.(chatJid, false);
+    }
+    return true;
+  }
 
   // For non-main groups, check if trigger is required and present
   if (!isMainGroup && group.requiresTrigger !== false) {
@@ -528,7 +553,16 @@ async function startMessageLoop(): Promise<void> {
                 logger.warn({ chatJid, err }, 'Failed to set typing indicator'),
               );
           } else {
-            // No active container — enqueue for a new one
+            // No active container — acknowledge immediately (covers cold-start latency)
+            // then enqueue so the user isn't left waiting in silence
+            channel
+              .sendMessage(chatJid, 'Working on it...')
+              .catch((err) =>
+                logger.warn(
+                  { chatJid, err },
+                  'Failed to send acknowledgment',
+                ),
+              );
             queue.enqueueMessageCheck(chatJid);
           }
         }
@@ -565,6 +599,27 @@ function recoverPendingMessages(): void {
 function ensureContainerSystemRunning(): void {
   ensureContainerRuntimeRunning();
   cleanupOrphans();
+}
+
+/**
+ * Queue a startup warmup for the main group.
+ * Starts the container immediately so the first real user message
+ * gets piped to an already-warm container instead of cold-starting.
+ * The agent also notifies the user that it's back online.
+ */
+function startupWarmup(): void {
+  const mainEntry = Object.entries(registeredGroups).find(
+    ([, g]) => g.isMain,
+  );
+  if (!mainEntry) return;
+
+  const [chatJid] = mainEntry;
+  startupWarmupPending.set(
+    chatJid,
+    '[STARTUP] NanoClaw has just restarted. Send the user a short message letting them know you are back online and ready.',
+  );
+  queue.enqueueMessageCheck(chatJid);
+  logger.info({ chatJid }, 'Startup warmup enqueued');
 }
 
 async function main(): Promise<void> {
@@ -748,6 +803,7 @@ async function main(): Promise<void> {
   });
   queue.setProcessMessagesFn(processGroupMessages);
   recoverPendingMessages();
+  startupWarmup();
   startMessageLoop().catch((err) => {
     logger.fatal({ err }, 'Message loop crashed unexpectedly');
     process.exit(1);

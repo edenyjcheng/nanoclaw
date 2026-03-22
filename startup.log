@@ -1,0 +1,1747 @@
+[18:22:55.873] [32mINFO[39m (37044): [36mDatabase initialized[39m
+[18:22:55.875] [32mINFO[39m (37044): [36mState loaded[39m
+    [35mgroupCount[39m: 1
+[18:22:55.891] [32mINFO[39m (37044): [36mCredential proxy started[39m
+    [35mport[39m: 3001
+    [35mhost[39m: "0.0.0.0"
+    [35mauthMode[39m: "oauth"
+    [35mhasApiFallback[39m: true
+
+  Telegram bot: @yj74_openclaw_bot
+  Send /chatid to the bot to get a chat's registration ID
+
+[18:22:56.488] [32mINFO[39m (37044): [36mTelegram bot connected[39m
+    [35musername[39m: "yj74_openclaw_bot"
+    [35mid[39m: 8224806497
+[18:22:56.491] [32mINFO[39m (37044): [36mScheduler loop started[39m
+[18:22:56.493] [32mINFO[39m (37044): [36mIPC watcher started (per-group namespaces)[39m
+[18:22:56.495] [32mINFO[39m (37044): [36mRunning startup warmup via Ollama[39m
+    [35mgroup[39m: "Yung Cheng"
+[18:22:56.496] [32mINFO[39m (37044): [36mStartup warmup enqueued[39m
+    [35mchatJid[39m: "tg:7620573381"
+[18:22:56.496] [32mINFO[39m (37044): [36mNanoClaw running (trigger: @Cortana)[39m
+[18:23:01.435] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 40
+[18:41:09.853] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[18:41:10.653] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[18:41:10.686] [32mINFO[39m (37044): [36mProcessing messages[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mmessageCount[39m: 1
+[18:41:11.468] [32mINFO[39m (37044): [36mSpawning container agent[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mcontainerName[39m: "nanoclaw-telegram-main-1775256071467"
+    [35mmountCount[39m: 7
+    [35misMain[39m: true
+[18:41:11.608] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 16
+[18:41:23.536] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 35
+[18:41:23.536] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[18:41:29.600] [32mINFO[39m (37044): [36mTask created via IPC[39m
+    [35mtaskId[39m: "task-1775256089493-imojf2"
+    [35msourceGroup[39m: "telegram_main"
+    [35mtargetFolder[39m: "telegram_main"
+    [35mcontextMode[39m: "isolated"
+[18:41:32.956] [32mINFO[39m (37044): [36mAgent output: 53 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[18:41:33.588] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 53
+[18:42:55.248] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[18:42:57.189] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[18:43:42.258] [32mINFO[39m (37044): [36mAgent output: 402 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[18:43:42.916] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 402
+[18:43:56.661] [32mINFO[39m (37044): [36mFound due tasks[39m
+    [35mcount[39m: 1
+[18:43:57.552] [32mINFO[39m (37044): [36mContainer completed (streaming mode)[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mduration[39m: 166122
+    [35mnewSessionId[39m: "274d7d54-eca4-4f4d-b84f-949fd8ad0f30"
+[18:43:57.556] [32mINFO[39m (37044): [36mRunning scheduled task[39m
+    [35mtaskId[39m: "task-1775256089493-imojf2"
+    [35mgroup[39m: "telegram_main"
+[18:43:57.576] [32mINFO[39m (37044): [36mSpawning container agent[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mcontainerName[39m: "nanoclaw-telegram-main-1775256237576"
+    [35mmountCount[39m: 7
+    [35misMain[39m: true
+[18:44:14.198] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 792
+[18:44:14.198] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[18:44:16.972] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 206
+[18:44:27.920] [32mINFO[39m (37044): [36mContainer completed (streaming mode)[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mduration[39m: 30360
+    [35mnewSessionId[39m: "56da828c-e012-4dc0-9b85-e2c9293e5099"
+[18:44:27.920] [32mINFO[39m (37044): [36mTask completed[39m
+    [35mtaskId[39m: "task-1775256089493-imojf2"
+    [35mdurationMs[39m: 30364
+[18:46:50.478] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[18:46:52.164] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[18:46:52.198] [32mINFO[39m (37044): [36mProcessing messages[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mmessageCount[39m: 1
+[18:46:52.701] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 16
+[18:46:52.864] [32mINFO[39m (37044): [36mSpawning container agent[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mcontainerName[39m: "nanoclaw-telegram-main-1775256412864"
+    [35mmountCount[39m: 7
+    [35misMain[39m: true
+[18:47:09.866] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 196
+[18:47:09.866] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[18:47:24.606] [32mINFO[39m (37044): [36mAgent output: 198 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[18:47:25.117] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 198
+[18:54:31.030] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[18:54:31.907] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[18:54:36.742] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 30
+[18:54:36.742] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[18:54:43.832] [32mINFO[39m (37044): [36mTask created via IPC[39m
+    [35mtaskId[39m: "task-1775256883239-acm8e8"
+    [35msourceGroup[39m: "telegram_main"
+    [35mtargetFolder[39m: "telegram_main"
+    [35mcontextMode[39m: "isolated"
+[18:54:49.504] [32mINFO[39m (37044): [36mAgent output: 47 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[18:54:49.984] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 47
+[18:56:56.753] [32mINFO[39m (37044): [36mFound due tasks[39m
+    [35mcount[39m: 1
+[18:56:57.809] [32mINFO[39m (37044): [36mContainer completed (streaming mode)[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mduration[39m: 604961
+    [35mnewSessionId[39m: "274d7d54-eca4-4f4d-b84f-949fd8ad0f30"
+[18:56:57.813] [32mINFO[39m (37044): [36mRunning scheduled task[39m
+    [35mtaskId[39m: "task-1775256883239-acm8e8"
+    [35mgroup[39m: "telegram_main"
+[18:56:57.828] [32mINFO[39m (37044): [36mSpawning container agent[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mcontainerName[39m: "nanoclaw-telegram-main-1775257017828"
+    [35mmountCount[39m: 7
+    [35misMain[39m: true
+[18:57:17.130] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 554
+[18:57:17.130] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[18:57:21.098] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 244
+[18:57:31.929] [32mINFO[39m (37044): [36mContainer completed (streaming mode)[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mduration[39m: 34113
+    [35mnewSessionId[39m: "564fbedb-8374-4259-9c22-7b46a2e10cda"
+[18:57:31.929] [32mINFO[39m (37044): [36mTask completed[39m
+    [35mtaskId[39m: "task-1775256883239-acm8e8"
+    [35mdurationMs[39m: 34116
+[18:58:01.010] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[18:58:02.853] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[18:58:02.882] [32mINFO[39m (37044): [36mProcessing messages[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mmessageCount[39m: 1
+[18:58:03.382] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 16
+[18:58:03.556] [32mINFO[39m (37044): [36mSpawning container agent[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mcontainerName[39m: "nanoclaw-telegram-main-1775257083556"
+    [35mmountCount[39m: 7
+    [35misMain[39m: true
+[18:58:31.500] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 336
+[18:58:31.500] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[18:58:45.854] [32mINFO[39m (37044): [36mAgent output: 333 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[18:58:46.336] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 333
+[19:00:03.132] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[19:00:03.285] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[19:00:32.235] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 479
+[19:00:32.236] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[19:00:49.242] [32mINFO[39m (37044): [36mAgent output: 205 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[19:00:49.728] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 205
+[19:09:45.891] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[19:09:47.579] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[19:09:54.400] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 46
+[19:09:54.400] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[19:10:30.754] [32mINFO[39m (37044): [36mTask created via IPC[39m
+    [35mtaskId[39m: "task-1775257830398-vcjyua"
+    [35msourceGroup[39m: "telegram_main"
+    [35mtargetFolder[39m: "telegram_main"
+    [35mcontextMode[39m: "isolated"
+[19:10:34.781] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[19:10:35.137] [32mINFO[39m (37044): [36mAgent output: 289 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[19:10:35.644] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 289
+[19:10:35.758] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[19:10:43.643] [32mINFO[39m (37044): [36mAgent output: 61 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[19:10:47.505] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 61
+[19:11:56.856] [32mINFO[39m (37044): [36mFound due tasks[39m
+    [35mcount[39m: 1
+[19:11:57.894] [32mINFO[39m (37044): [36mContainer completed (streaming mode)[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mduration[39m: 834373
+    [35mnewSessionId[39m: "274d7d54-eca4-4f4d-b84f-949fd8ad0f30"
+[19:11:57.899] [32mINFO[39m (37044): [36mRunning scheduled task[39m
+    [35mtaskId[39m: "task-1775257830398-vcjyua"
+    [35mgroup[39m: "telegram_main"
+[19:11:57.917] [32mINFO[39m (37044): [36mSpawning container agent[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mcontainerName[39m: "nanoclaw-telegram-main-1775257917917"
+    [35mmountCount[39m: 7
+    [35misMain[39m: true
+[19:12:16.283] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 196
+[19:12:16.283] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[19:12:18.461] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 113
+[19:12:29.486] [32mINFO[39m (37044): [36mContainer completed (streaming mode)[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mduration[39m: 31584
+    [35mnewSessionId[39m: "0cbbaa45-c86f-4e16-9a2d-68a8806fc721"
+[19:12:29.487] [32mINFO[39m (37044): [36mTask completed[39m
+    [35mtaskId[39m: "task-1775257830398-vcjyua"
+    [35mdurationMs[39m: 31589
+[19:16:39.938] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[19:16:41.398] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[19:16:41.425] [32mINFO[39m (37044): [36mProcessing messages[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mmessageCount[39m: 1
+[19:16:41.918] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 16
+[19:16:42.127] [32mINFO[39m (37044): [36mSpawning container agent[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mcontainerName[39m: "nanoclaw-telegram-main-1775258202127"
+    [35mmountCount[39m: 7
+    [35misMain[39m: true
+[19:16:59.918] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 105
+[19:16:59.918] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[19:17:29.647] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[19:17:29.648] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[19:17:56.902] [32mINFO[39m (37044): [36mFound due tasks[39m
+    [35mcount[39m: 1
+[19:18:01.393] [32mINFO[39m (37044): [36mAgent output: 858 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[19:18:01.897] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 858
+[19:18:02.679] [32mINFO[39m (37044): [36mContainer completed (streaming mode)[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mduration[39m: 80584
+    [35mnewSessionId[39m: "274d7d54-eca4-4f4d-b84f-949fd8ad0f30"
+[19:18:02.683] [32mINFO[39m (37044): [36mRunning scheduled task[39m
+    [35mtaskId[39m: "task-1774379001518-asfssa"
+    [35mgroup[39m: "telegram_main"
+[19:18:02.699] [32mINFO[39m (37044): [36mSpawning container agent[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mcontainerName[39m: "nanoclaw-telegram-main-1775258282699"
+    [35mmountCount[39m: 7
+    [35misMain[39m: true
+[19:18:49.467] [32mINFO[39m (37044): [36mContainer completed (streaming mode)[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mduration[39m: 46781
+    [35mnewSessionId[39m: "49fbb36c-32ca-4b78-a9fc-50d36504053f"
+[19:18:49.467] [32mINFO[39m (37044): [36mTask completed[39m
+    [35mtaskId[39m: "task-1774379001518-asfssa"
+    [35mdurationMs[39m: 46785
+[19:18:52.733] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[19:18:54.000] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[19:18:54.018] [32mINFO[39m (37044): [36mProcessing messages[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mmessageCount[39m: 1
+[19:18:54.501] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 16
+[19:18:54.538] [32mINFO[39m (37044): [36mSpawning container agent[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mcontainerName[39m: "nanoclaw-telegram-main-1775258334537"
+    [35mmountCount[39m: 7
+    [35misMain[39m: true
+[19:19:04.980] [32mINFO[39m (37044): [36mAgent output: 187 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[19:19:05.463] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 52
+[19:45:49.007] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[19:45:50.886] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[19:46:02.739] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 90
+[19:46:02.739] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[19:46:32.028] [32mINFO[39m (37044): [36mTask created via IPC[39m
+    [35mtaskId[39m: "task-1775259991253-o1m8pf"
+    [35msourceGroup[39m: "telegram_main"
+    [35mtargetFolder[39m: "telegram_main"
+    [35mcontextMode[39m: "isolated"
+[19:46:56.142] [32mINFO[39m (37044): [36mAgent output: 802 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[19:46:56.870] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 802
+[19:48:57.178] [32mINFO[39m (37044): [36mFound due tasks[39m
+    [35mcount[39m: 1
+[19:48:57.935] [32mINFO[39m (37044): [36mContainer completed (streaming mode)[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mduration[39m: 1803421
+    [35mnewSessionId[39m: "274d7d54-eca4-4f4d-b84f-949fd8ad0f30"
+[19:48:57.939] [32mINFO[39m (37044): [36mRunning scheduled task[39m
+    [35mtaskId[39m: "task-1775259991253-o1m8pf"
+    [35mgroup[39m: "telegram_main"
+[19:48:57.956] [32mINFO[39m (37044): [36mSpawning container agent[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mcontainerName[39m: "nanoclaw-telegram-main-1775260137956"
+    [35mmountCount[39m: 7
+    [35misMain[39m: true
+[19:49:16.237] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 324
+[19:49:16.237] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[19:49:20.413] [31mERROR[39m (37044): [36mFailed to send Telegram message[39m
+    [35mjid[39m: "tg:7620573381"
+    err: {
+      "type": "GrammyError",
+      "message": "Call to 'sendMessage' failed! (429: Too Many Requests: retry after 5)",
+      "stack":
+          GrammyError: Call to 'sendMessage' failed! (429: Too Many Requests: retry after 5)
+              at toGrammyError (C:\workspace\claude\nanoclaw\node_modules\grammy\out\core\error.js:47:12)
+              at ApiClient.callApi (C:\workspace\claude\nanoclaw\node_modules\grammy\out\core\client.js:100:48)
+              at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+              at async sendTelegramMessage (file:///C:/workspace/claude/nanoclaw/dist/channels/telegram.js:22:9)
+              at async TelegramChannel.sendMessage (file:///C:/workspace/claude/nanoclaw/dist/channels/telegram.js:179:17)
+              at async Object.sendMessage (file:///C:/workspace/claude/nanoclaw/dist/index.js:1038:17)
+              at async file:///C:/workspace/claude/nanoclaw/dist/task-scheduler.js:122:17
+      "method": "sendMessage",
+      "payload": {
+        "chat_id": "7620573381",
+        "text": "Verification complete. Here's the summary:\n\n- *Gmail MCP* ✅ — 3 inbox messages returned, Tasks 1+2 plumbing is good.\n- *Notion DB* ❌ — 404 error. The Task List DB isn't shared with the `my-nanoclaw` integration. Fix: go to Notion → open the DB → Share → invite \"my-nanoclaw\" integration.\n- *GCal* ✅ — 3 upcoming events returned (Kendo practice), Task 3 GCal plumbing is solid.\n\nOne fix needed on Notion before Phase 3 is fully green."
+      },
+      "ok": false,
+      "name": "GrammyError",
+      "error_code": 429,
+      "description": "Too Many Requests: retry after 5",
+      "parameters": {
+        "retry_after": 5
+      }
+    }
+[19:49:31.515] [32mINFO[39m (37044): [36mContainer completed (streaming mode)[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mduration[39m: 33573
+    [35mnewSessionId[39m: "e342a285-9258-499d-9f77-bafa99167ab1"
+[19:49:31.515] [32mINFO[39m (37044): [36mTask completed[39m
+    [35mtaskId[39m: "task-1775259991253-o1m8pf"
+    [35mdurationMs[39m: 33576
+[19:57:18.041] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[19:57:19.736] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[19:57:19.770] [32mINFO[39m (37044): [36mProcessing messages[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mmessageCount[39m: 1
+[19:57:20.308] [32mINFO[39m (37044): [36mSpawning container agent[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mcontainerName[39m: "nanoclaw-telegram-main-1775260640308"
+    [35mmountCount[39m: 7
+    [35misMain[39m: true
+[19:57:20.456] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 16
+[19:57:52.226] [32mINFO[39m (37044): [36mAgent output: 613 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[19:57:52.711] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 613
+[20:00:57.285] [32mINFO[39m (37044): [36mFound due tasks[39m
+    [35mcount[39m: 1
+[20:00:58.310] [32mINFO[39m (37044): [36mContainer completed (streaming mode)[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mduration[39m: 218036
+    [35mnewSessionId[39m: "274d7d54-eca4-4f4d-b84f-949fd8ad0f30"
+[20:00:58.314] [32mINFO[39m (37044): [36mRunning scheduled task[39m
+    [35mtaskId[39m: "task-1774317651498-tf3uqs"
+    [35mgroup[39m: "telegram_main"
+[20:00:58.330] [32mINFO[39m (37044): [36mSpawning container agent[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mcontainerName[39m: "nanoclaw-telegram-main-1775260858329"
+    [35mmountCount[39m: 7
+    [35misMain[39m: true
+[20:01:57.286] [32mINFO[39m (37044): [36mFound due tasks[39m
+    [35mcount[39m: 1
+[20:02:23.323] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[20:02:25.045] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[20:02:25.567] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 16
+[20:02:44.450] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 556
+[20:02:55.333] [32mINFO[39m (37044): [36mContainer completed (streaming mode)[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mduration[39m: 117016
+    [35mnewSessionId[39m: "42af7033-89ad-4e9d-9dd7-0dbc265c2fac"
+[20:02:55.333] [32mINFO[39m (37044): [36mTask completed[39m
+    [35mtaskId[39m: "task-1774317651498-tf3uqs"
+    [35mdurationMs[39m: 117019
+[20:02:55.351] [32mINFO[39m (37044): [36mProcessing messages[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mmessageCount[39m: 1
+[20:02:56.076] [32mINFO[39m (37044): [36mSpawning container agent[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mcontainerName[39m: "nanoclaw-telegram-main-1775260976075"
+    [35mmountCount[39m: 7
+    [35misMain[39m: true
+[20:03:19.519] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[20:03:21.281] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[20:03:41.846] [32mINFO[39m (37044): [36mAgent output: 362 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[20:03:42.366] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 362
+[20:04:05.118] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[20:04:05.452] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[20:04:19.438] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 152
+[20:04:19.438] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[20:04:24.688] [32mINFO[39m (37044): [36mAgent output: 125 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[20:04:25.182] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 125
+[20:07:52.570] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[20:07:54.458] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[20:08:06.183] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 52
+[20:08:06.183] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[20:09:16.436] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 460
+[20:09:16.436] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[20:09:19.954] [32mINFO[39m (37044): [36mAgent output: 131 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[20:14:20.601] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[20:14:22.258] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[20:15:11.824] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[20:15:12.481] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[20:16:12.883] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[20:16:14.753] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[20:16:38.945] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 84
+[20:16:38.945] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[20:19:38.625] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 996
+[20:19:38.625] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[20:19:41.971] [32mINFO[39m (37044): [36mAgent output: 220 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[20:19:42.218] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 220
+[20:26:27.350] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[20:26:27.362] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[20:27:05.242] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 1352
+[20:27:05.242] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[20:27:08.588] [32mINFO[39m (37044): [36mAgent output: 228 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[20:27:08.828] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 228
+[20:30:28.480] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[20:30:30.442] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[20:30:42.394] [32mINFO[39m (37044): [36mAgent output: 534 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[20:30:42.890] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 534
+[20:40:04.528] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[20:40:05.174] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[20:40:17.197] [32mINFO[39m (37044): [36mAgent output: 1105 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[20:40:17.682] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 1105
+[20:45:57.642] [32mINFO[39m (37044): [36mFound due tasks[39m
+    [35mcount[39m: 1
+[20:45:58.288] [32mINFO[39m (37044): [36mContainer completed (streaming mode)[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mduration[39m: 2582231
+    [35mnewSessionId[39m: "274d7d54-eca4-4f4d-b84f-949fd8ad0f30"
+[20:45:58.292] [32mINFO[39m (37044): [36mRunning scheduled task[39m
+    [35mtaskId[39m: "task-1774365495441-bkjitq"
+    [35mgroup[39m: "telegram_main"
+[20:45:58.308] [32mINFO[39m (37044): [36mSpawning container agent[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mcontainerName[39m: "nanoclaw-telegram-main-1775263558307"
+    [35mmountCount[39m: 7
+    [35misMain[39m: true
+[20:46:57.654] [32mINFO[39m (37044): [36mFound due tasks[39m
+    [35mcount[39m: 1
+[20:47:56.361] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[20:47:57.323] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[20:47:57.668] [32mINFO[39m (37044): [36mFound due tasks[39m
+    [35mcount[39m: 1
+[20:47:57.805] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 16
+[20:48:36.977] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 424
+[20:48:36.977] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[20:48:57.682] [32mINFO[39m (37044): [36mFound due tasks[39m
+    [35mcount[39m: 1
+[20:48:58.385] [32mINFO[39m (37044): [36mContainer completed (streaming mode)[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mduration[39m: 180090
+    [35mnewSessionId[39m: "fd460201-1349-4231-b3ad-64d281fe3d0d"
+[20:48:58.385] [32mINFO[39m (37044): [36mTask completed[39m
+    [35mtaskId[39m: "task-1774365495441-bkjitq"
+    [35mdurationMs[39m: 180094
+[20:48:58.401] [32mINFO[39m (37044): [36mProcessing messages[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mmessageCount[39m: 1
+[20:48:59.071] [32mINFO[39m (37044): [36mSpawning container agent[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mcontainerName[39m: "nanoclaw-telegram-main-1775263739071"
+    [35mmountCount[39m: 7
+    [35misMain[39m: true
+[20:49:22.951] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 58
+[20:49:22.951] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[20:50:33.208] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 482
+[20:50:33.208] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[20:50:46.028] [32mINFO[39m (37044): [36mAgent output: 371 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[21:04:37.326] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[21:04:37.970] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[21:05:14.413] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 31
+[21:05:14.413] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[21:06:14.653] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 497
+[21:06:14.653] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[21:20:26.904] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[21:20:28.235] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[21:21:27.974] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 377
+[21:21:27.974] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[21:21:31.583] [32mINFO[39m (37044): [36mContainer completed (streaming mode)[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mduration[39m: 1952549
+    [35mnewSessionId[39m: "274d7d54-eca4-4f4d-b84f-949fd8ad0f30"
+[22:00:58.281] [32mINFO[39m (37044): [36mFound due tasks[39m
+    [35mcount[39m: 1
+[22:00:58.282] [32mINFO[39m (37044): [36mRunning scheduled task[39m
+    [35mtaskId[39m: "task-1774226620914-4ll2ho"
+    [35mgroup[39m: "telegram_main"
+[22:00:58.325] [32mINFO[39m (37044): [36mSpawning container agent[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mcontainerName[39m: "nanoclaw-telegram-main-1775268058325"
+    [35mmountCount[39m: 7
+    [35misMain[39m: true
+[22:01:44.957] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 630
+[22:01:44.957] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[22:01:58.486] [32mINFO[39m (37044): [36mFound due tasks[39m
+    [35mcount[39m: 1
+[22:02:09.590] [32mINFO[39m (37044): [36mContainer completed (streaming mode)[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mduration[39m: 71301
+    [35mnewSessionId[39m: "b51e64ba-b25a-4966-b396-b729af61644d"
+[22:02:09.590] [32mINFO[39m (37044): [36mTask completed[39m
+    [35mtaskId[39m: "task-1774226620914-4ll2ho"
+    [35mdurationMs[39m: 71308
+[22:04:34.852] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[22:04:36.389] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[22:04:36.419] [32mINFO[39m (37044): [36mProcessing messages[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mmessageCount[39m: 1
+[22:04:37.093] [32mINFO[39m (37044): [36mSpawning container agent[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mcontainerName[39m: "nanoclaw-telegram-main-1775268277092"
+    [35mmountCount[39m: 7
+    [35misMain[39m: true
+[22:04:37.225] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 16
+[22:04:54.563] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 71
+[22:04:54.563] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[22:06:07.870] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 614
+[22:06:07.870] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[22:06:17.468] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 938
+[22:06:17.468] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[22:06:24.020] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 633
+[22:06:24.021] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[22:06:41.255] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[22:06:42.952] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[22:07:05.919] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 795
+[22:07:05.919] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[22:07:23.615] [32mINFO[39m (37044): [36mAgent output: 157 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[22:15:14.488] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[22:15:15.331] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[22:15:35.135] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 856
+[22:15:35.135] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[22:15:40.778] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 399
+[22:15:40.778] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[22:15:58.610] [32mINFO[39m (37044): [36mFound due tasks[39m
+    [35mcount[39m: 1
+[22:15:59.268] [32mINFO[39m (37044): [36mContainer completed (streaming mode)[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mduration[39m: 682201
+    [35mnewSessionId[39m: "274d7d54-eca4-4f4d-b84f-949fd8ad0f30"
+[22:15:59.272] [32mINFO[39m (37044): [36mRunning scheduled task[39m
+    [35mtaskId[39m: "task-1774384242593-ceslzh"
+    [35mgroup[39m: "telegram_main"
+[22:15:59.291] [32mINFO[39m (37044): [36mSpawning container agent[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mcontainerName[39m: "nanoclaw-telegram-main-1775268959290"
+    [35mmountCount[39m: 7
+    [35misMain[39m: true
+[22:16:58.623] [32mINFO[39m (37044): [36mFound due tasks[39m
+    [35mcount[39m: 1
+[22:17:52.412] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[22:17:53.996] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[22:17:54.526] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 16
+[22:17:58.637] [32mINFO[39m (37044): [36mFound due tasks[39m
+    [35mcount[39m: 2
+[22:18:58.653] [32mINFO[39m (37044): [36mFound due tasks[39m
+    [35mcount[39m: 2
+[22:18:59.311] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 303
+[22:18:59.311] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[22:19:16.495] [32mINFO[39m (37044): [36mContainer completed (streaming mode)[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mduration[39m: 197220
+    [35mnewSessionId[39m: "8c7ebc10-2c71-4349-973e-86ff0eee4a0b"
+[22:19:16.495] [32mINFO[39m (37044): [36mTask completed[39m
+    [35mtaskId[39m: "task-1774384242593-ceslzh"
+    [35mdurationMs[39m: 197223
+[22:19:16.504] [32mINFO[39m (37044): [36mRunning scheduled task[39m
+    [35mtaskId[39m: "task-1774379001518-asfssa"
+    [35mgroup[39m: "telegram_main"
+[22:19:16.522] [32mINFO[39m (37044): [36mSpawning container agent[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mcontainerName[39m: "nanoclaw-telegram-main-1775269156522"
+    [35mmountCount[39m: 7
+    [35misMain[39m: true
+[22:19:58.667] [32mINFO[39m (37044): [36mFound due tasks[39m
+    [35mcount[39m: 1
+[22:20:58.677] [32mINFO[39m (37044): [36mFound due tasks[39m
+    [35mcount[39m: 1
+[22:21:58.692] [32mINFO[39m (37044): [36mFound due tasks[39m
+    [35mcount[39m: 1
+[22:22:31.694] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[22:22:32.423] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 240
+[22:22:33.137] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[22:22:33.409] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 16
+[22:22:42.965] [32mINFO[39m (37044): [36mContainer completed (streaming mode)[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mduration[39m: 206458
+    [35mnewSessionId[39m: "a2f44cf5-4901-41aa-ac57-c029f246fb45"
+[22:22:42.966] [32mINFO[39m (37044): [36mTask completed[39m
+    [35mtaskId[39m: "task-1774379001518-asfssa"
+    [35mdurationMs[39m: 206462
+[22:22:42.980] [32mINFO[39m (37044): [36mProcessing messages[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mmessageCount[39m: 2
+[22:22:43.498] [32mINFO[39m (37044): [36mSpawning container agent[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mcontainerName[39m: "nanoclaw-telegram-main-1775269363498"
+    [35mmountCount[39m: 7
+    [35misMain[39m: true
+[22:23:04.455] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 52
+[22:23:04.455] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[22:23:31.245] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 1182
+[22:23:31.246] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[22:54:02.802] [31mERROR[39m (37044): [36mContainer timeout, stopping gracefully[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mcontainerName[39m: "nanoclaw-telegram-main-1775269363498"
+[22:54:04.525] [32mINFO[39m (37044): [36mContainer timed out after output (idle cleanup)[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mcontainerName[39m: "nanoclaw-telegram-main-1775269363498"
+    [35mduration[39m: 1881060
+    [35mcode[39m: 137
+[23:00:58.978] [32mINFO[39m (37044): [36mFound due tasks[39m
+    [35mcount[39m: 1
+[23:00:58.979] [32mINFO[39m (37044): [36mRunning scheduled task[39m
+    [35mtaskId[39m: "task-1774464347080-uol06p"
+    [35mgroup[39m: "telegram_main"
+[23:00:59.024] [32mINFO[39m (37044): [36mSpawning container agent[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mcontainerName[39m: "nanoclaw-telegram-main-1775271659023"
+    [35mmountCount[39m: 7
+    [35misMain[39m: true
+[23:01:59.175] [32mINFO[39m (37044): [36mFound due tasks[39m
+    [35mcount[39m: 1
+[23:02:59.186] [32mINFO[39m (37044): [36mFound due tasks[39m
+    [35mcount[39m: 1
+[23:03:59.188] [32mINFO[39m (37044): [36mFound due tasks[39m
+    [35mcount[39m: 1
+[23:04:59.198] [32mINFO[39m (37044): [36mFound due tasks[39m
+    [35mcount[39m: 1
+[23:05:13.807] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 156
+[23:05:13.807] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[23:05:26.858] [32mINFO[39m (37044): [36mContainer completed (streaming mode)[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mduration[39m: 267872
+    [35mnewSessionId[39m: "59626819-d0c7-42ca-a06f-7a2787e60ca6"
+[23:05:26.858] [32mINFO[39m (37044): [36mTask completed[39m
+    [35mtaskId[39m: "task-1774464347080-uol06p"
+    [35mdurationMs[39m: 267880
+[23:06:52.168] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[23:06:53.098] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[23:06:53.126] [32mINFO[39m (37044): [36mProcessing messages[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mmessageCount[39m: 1
+[23:06:53.640] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 16
+[23:06:53.914] [32mINFO[39m (37044): [36mSpawning container agent[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mcontainerName[39m: "nanoclaw-telegram-main-1775272013914"
+    [35mmountCount[39m: 7
+    [35misMain[39m: true
+[23:07:25.485] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 959
+[23:07:25.485] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[23:29:56.680] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[23:29:57.439] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[23:30:16.817] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 1003
+[23:30:16.817] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[23:35:02.097] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[23:35:02.818] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[23:35:27.624] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 1052
+[23:35:27.624] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[23:38:36.088] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[23:38:37.748] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[23:38:51.414] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 765
+[23:38:51.414] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[23:42:12.345] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[23:42:12.800] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[23:42:20.173] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 60
+[23:42:20.173] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[23:42:39.925] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 832
+[23:42:39.925] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[23:42:53.913] [32mINFO[39m (37044): [36mAgent output: 182 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[23:45:17.292] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[23:45:17.695] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[23:45:26.192] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 52
+[23:45:26.192] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[23:46:16.210] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 1026
+[23:46:16.210] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[23:50:48.269] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[23:50:49.189] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[23:50:59.823] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 66
+[23:50:59.823] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[23:53:22.212] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[23:53:23.933] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[23:55:41.426] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 102
+[23:55:41.426] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[23:57:23.021] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 2157
+[23:57:23.021] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[23:57:28.490] [32mINFO[39m (37044): [36mAgent output: 647 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[23:57:28.996] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 647
+[23:57:32.946] [32mINFO[39m (37044): [36mAgent output: 394 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[23:59:59.626] [32mINFO[39m (37044): [36mFound due tasks[39m
+    [35mcount[39m: 1
+[00:00:00.423] [32mINFO[39m (37044): [36mContainer completed (streaming mode)[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mduration[39m: 3186545
+    [35mnewSessionId[39m: "274d7d54-eca4-4f4d-b84f-949fd8ad0f30"
+[00:00:00.428] [32mINFO[39m (37044): [36mRunning scheduled task[39m
+    [35mtaskId[39m: "task-1774306881015-v6mdte"
+    [35mgroup[39m: "telegram_main"
+[00:00:00.448] [32mINFO[39m (37044): [36mSpawning container agent[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mcontainerName[39m: "nanoclaw-telegram-main-1775275200447"
+    [35mmountCount[39m: 7
+    [35misMain[39m: true
+[00:00:33.473] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 316
+[00:00:33.473] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[00:00:45.572] [32mINFO[39m (37044): [36mContainer completed (streaming mode)[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mduration[39m: 45141
+    [35mnewSessionId[39m: "246d5f55-3af2-4567-9a8f-e1e76f32be54"
+[00:00:45.572] [32mINFO[39m (37044): [36mTask completed[39m
+    [35mtaskId[39m: "task-1774306881015-v6mdte"
+    [35mdurationMs[39m: 45145
+[00:34:01.267] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[00:34:03.049] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[00:34:03.081] [32mINFO[39m (37044): [36mProcessing messages[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mmessageCount[39m: 1
+[00:34:03.580] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 16
+[00:34:03.758] [32mINFO[39m (37044): [36mSpawning container agent[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mcontainerName[39m: "nanoclaw-telegram-main-1775277243758"
+    [35mmountCount[39m: 7
+    [35misMain[39m: true
+[00:34:19.947] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 47
+[00:34:19.947] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[00:36:29.334] [32mINFO[39m (37044): [36mTask updated via IPC[39m
+    [35mtaskId[39m: "task-1774306881015-v6mdte"
+    [35msourceGroup[39m: "telegram_main"
+    [35mupdates[39m: {
+      "schedule_type": "cron",
+      "schedule_value": "50 23 * * *",
+      "next_run": "2026-04-05T03:50:00.000Z"
+    }
+[00:36:43.443] [32mINFO[39m (37044): [36mAgent output: 481 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[00:36:43.945] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 481
+[00:40:34.190] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[00:40:34.770] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[00:40:42.804] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 40
+[00:40:42.804] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[00:41:55.371] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[00:41:57.126] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[00:42:16.877] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[00:42:17.238] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[00:44:18.482] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 1236
+[00:44:18.482] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[00:44:25.490] [32mINFO[39m (37044): [36mAgent output: 397 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[00:44:26.137] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 397
+[00:46:38.893] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[00:46:40.238] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[00:46:52.099] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 62
+[00:46:52.100] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[00:49:34.288] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 983
+[00:49:34.288] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[00:49:37.757] [32mINFO[39m (37044): [36mAgent output: 263 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[00:49:38.009] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 263
+[00:50:35.675] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[00:50:37.279] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[00:51:08.077] [32mINFO[39m (37044): [36mAgent output: 135 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[00:51:08.694] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 135
+[00:53:43.314] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[00:53:44.194] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[00:53:50.704] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 41
+[00:53:50.705] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[00:55:43.621] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[00:55:44.665] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[00:56:11.529] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 330
+[00:56:11.529] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[00:56:59.680] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 299
+[00:56:59.680] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[00:57:04.349] [32mINFO[39m (37044): [36mAgent output: 125 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[00:57:04.589] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 125
+[00:57:07.018] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[00:57:07.020] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[00:57:29.942] [32mINFO[39m (37044): [36mAgent output: 1224 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[00:57:30.752] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 1224
+[00:58:11.423] [31mERROR[39m (37044): [36mContainer exited with error[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mcode[39m: 137
+    [35mduration[39m: 1447682
+    [35mstderr[39m: "[agent-runner] Received input for group: telegram_main\n[agent-runner] Starting query (session: 274d7d54-eca4-4f4d-b84f-949fd8ad0f30, resumeAt: latest)...\n[agent-runner] [msg #1] type=system/init\n[agent-runner] Session initialized: 274d7d54-eca4-4f4d-b84f-949fd8ad0f30\n[agent-runner] [msg #2] type=assistant\n[agent-runner] [msg #3] type=assistant\n[agent-runner] [msg #4] type=assistant\n[agent-runner] [msg #5] type=user\n[agent-runner] [msg #6] type=user\n[agent-runner] [msg #7] type=rate_limit_event\n[agent-runner] [msg #8] type=assistant\n[agent-runner] [msg #9] type=assistant\n[agent-runner] [msg #10] type=user\n[agent-runner] [msg #11] type=assistant\n[agent-runner] [msg #12] type=assistant\n[agent-runner] [msg #13] type=user\n[agent-runner] [msg #14] type=assistant\n[agent-runner] [msg #15] type=user\n[agent-runner] [msg #16] type=assistant\n[agent-runner] [msg #17] type=assistant\n[agent-runner] [msg #18] type=assistant\n[agent-runner] [msg #19] type=user\n[agent-runner] [msg #20] type=assistant\n[agent-runner] [msg #21] type=user\n[agent-runner] [msg #22] type=assistant\n[agent-runner] [msg #23] type=user\n[agent-runner] [msg #24] type=assistant\n[agent-runner] [msg #25] type=user\n[agent-runner] [msg #26] type=assistant\n[agent-runner] [msg #27] type=user\n[agent-runner] [msg #28] type=assistant\n[agent-runner] [msg #29] type=user\n[agent-runner] [msg #30] type=assistant\n[agent-runner] [msg #31] type=user\n[agent-runner] [msg #32] type=assistant\n[agent-runner] [msg #33] type=user\n[agent-runner] [msg #34] type=assistant\n[agent-runner] [msg #35] type=user\n[agent-runner] [msg #36] type=assistant\n[agent-runner] [msg #37] type=assistant\n[agent-runner] [msg #38] type=user\n[agent-runner] [msg #39] type=assistant\n[agent-runner] [msg #40] type=user\n[agent-runner] [msg #41] type=assistant\n[agent-runner] [msg #42] type=user\n[agent-runner] [msg #43] type=assistant\n[agent-runner] [msg #44] type=assistant\n[agent-runner] [msg #45] type=assistant\n[agent-runner] [msg #46] type=user\n[agent-runner] [msg #47] type=assistant\n[agent-runner] [msg #48] type=assistant\n[agent-runner] [msg #49] type=user\n[agent-runner] [msg #50] type=assistant\n[agent-runner] [msg #51] type=assistant\n[agent-runner] [msg #52] type=assistant\n[agent-runner] [msg #53] type=user\n[agent-runner] [msg #54] type=assistant\n[agent-runner] [msg #55] type=user\n[agent-runner] [msg #56] type=assistant\n[agent-runner] [msg #57] type=user\n[agent-runner] [msg #58] type=assistant\n[agent-runner] [msg #59] type=result\n[agent-runner] Result #1: subtype=success text=Done. Changes made:\n\n• *Schedule moved*: 11:59 PM → 11:50 PM — 10 min buffer before midnight so `currentDate` stays on the right day\n\n• *Ollama tokens = 0* — that one needs a Claude Code fix. The `log\n[agent-runner] Piping IPC message into active query (257 chars)\n[agent-runner] [msg #60] type=system/init\n[agent-runner] Session initialized: 274d7d54-eca4-4f4d-b84f-949fd8ad0f30\n[agent-runner] [msg #61] type=assistant\n[agent-runner] [msg #62] type=assistant\n[agent-runner] [msg #63] type=user\n[agent-runner] [msg #64] type=assistant\n[agent-runner] [msg #65] type=user\n[agent-runner] [msg #66] type=assistant\n[agent-runner] [msg #67] type=assistant\n[agent-runner] [msg #68] type=user\n[agent-runner] [msg #69] type=user\n[agent-runner] [msg #70] type=assistant\n[agent-runner] [msg #71] type=assistant\n[agent-runner] [msg #72] type=user\n[agent-runner] [msg #73] type=assistant\n[agent-runner] [msg #74] type=assistant\n[agent-runner] [msg #75] type=assistant\n[agent-runner] [msg #76] type=user\n[agent-runner] [msg #77] type=assistant\n[agent-runner] [msg #78] type=user\n[agent-runner] [msg #79] type=assistant\n[agent-runner] [msg #80] type=user\n[agent-runner] [msg #81] type=assistant\n[agent-runner] [msg #82] type=user\n[agent-runner] [msg #83] type=assistant\n[agent-runner] [msg #84] type=user\n[agent-runner] [msg #85] type=assistant\n[agent-runner] [msg #86] type=assistant\n[agent-runner] Piping IPC message into active query (190 chars)\n[agent-runner] Piping IPC message into active query (174 chars)\n[agent-runner] [msg #87] type=assistant\n[agent-runner] [msg #88] type=user\n[agent-runner] [msg #89] type=assistant\n[agent-runner] [msg #90] type=assistant\n[agent-runner] [msg #91] type=assistant\n[agent-runner] [msg #92] type=user\n[agent-runner] [msg #93] type=assistant\n[agent-runner] [msg #94] type=user\n[agent-runner] [msg #95] type=assistant\n[agent-runner] [msg #96] type=user\n[agent-runner] [msg #97] type=assistant\n[agent-runner] [msg #98] type=result\n[agent-runner] Result #2: subtype=success text=All done. 26 WOs written, grouped cleanly, with a suggested batch order so we can implement and test together without stepping on each other.\n\nThe IPC for Claude Code is queued at `requests/20260404-0\n[agent-runner] Piping IPC message into active query (496 chars)\n[agent-runner] [msg #99] type=system/init\n[agent-runner] Session initialized: 274d7d54-eca4-4f4d-b84f-949fd8ad0f30\n[agent-runner] [msg #100] type=assistant\n[agent-runner] [msg #101] type=assistant\n[agent-runner] [msg #102] type=user\n[agent-runner] [msg #103] type=assistant\n[agent-runner] [msg #104] type=user\n[agent-runner] [msg #105] type=assistant\n[agent-runner] [msg #106] type=user\n[agent-runner] [msg #107] type=assistant\n[agent-runner] [msg #108] type=user\n[agent-runner] [msg #109] type=assistant\n[agent-runner] [msg #110] type=assistant\n[agent-runner] [msg #111] type=user\n[agent-runner] [msg #112] type=assistant\n[agent-runner] [msg #113] type=user\n[agent-runner] [msg #114] type=assistant\n[agent-runner] [msg #115] type=assistant\n[agent-runner] [msg #116] type=user\n[agent-runner] [msg #117] type=assistant\n[agent-runner] [msg #118] type=user\n[agent-runner] [msg #119] type=assistant\n[agent-runner] [msg #120] type=user\n[agent-runner] [msg #121] type=assistant\n[agent-runner] [msg #122] type=user\n[agent-runner] [msg #123] type=assistant\n[agent-runner] [msg #124] type=user\n[agent-runner] [msg #125] type=assistant\n[agent-runner] [msg #126] type=user\n[agent-runner] [msg #127] type=assistant\n[agent-runner] [msg #128] type=assistant\n[agent-runner] [msg #129] type=user\n[agent-runner] [msg #130] type=assistant\n[agent-runner] [msg #131] type=assistant\n[agent-runner] [msg #132] type=user\n[agent-runner] [msg #133] type=assistant\n[agent-runner] [msg #134] type=assistant\n[agent-runner] [msg #135] type=user\n[agent-runner] [msg #136] type=assistant\n[agent-runner] [msg #137] type=assistant\n[agent-runner] [msg #138] type=assistant\n[agent-runner] [msg #139] type=user\n[agent-runner] [msg #140] type=assistant\n[agent-runner] [msg #141] type=user\n[agent-runner] [msg #142] type=assistant\n[agent-runner] [msg #143] type=user\n[agent-runner] [msg #144] type=assistant\n[agent-runner] [msg #145] type=result\n[agent-runner] Result #3: subtype=success text=The previous WO was pointing at the wrong file — Claude correctly said it wasn't in scope because he was looking at `index.ts`. The real gap is one level deeper in the agent-runner container. The new \n[agent-runner] Piping IPC message into active query (216 chars)\n[agent-runner] [msg #146] type=system/init\n[agent-runner] Session initialized: 274d7d54-eca4-4f4d-b84f-949fd8ad0f30\n[agent-runner] [msg #147] type=assistant\n[agent-runner] [msg #148] type=assistant\n[agent-runner] [msg #149] type=assistant\n[agent-runner] [msg #150] type=user\n[agent-runner] [msg #151] type=assistant\n[agent-runner] [msg #152] type=user\n[agent-runner] [msg #153] type=assistant\n[agent-runner] [msg #154] type=user\n[agent-runner] [msg #155] type=assistant\n[agent-runner] [msg #156] type=user\n[agent-runner] [msg #157] type=assistant\n[agent-runner] [msg #158] type=result\n[agent-runner] Result #4: subtype=success text=Done. Moved to `responses/` and marked SUPERSEDED so Claude won't pick it up. Only `20260404-0050` is now in the active requests queue.\n[agent-runner] Piping IPC message into active query (334 chars)\n[agent-runner] [msg #159] type=system/init\n[agent-runner] Session initialized: 274d7d54-eca4-4f4d-b84f-949fd8ad0f30\n[agent-runner] [msg #160] type=assistant\n[agent-runner] [msg #161] type=assistant\n[agent-runner] [msg #162] type=user\n[agent-runner] [msg #163] type=assistant\n[agent-runner] [msg #164] type=user\n[agent-runner] [msg #165] type=assistant\n[agent-runner] [msg #166] type=user\n[agent-runner] [msg #167] type=assistant\n[agent-runner] [msg #168] type=user\n[agent-runner] [msg #169] type=assistant\n[agent-runner] [msg #170] type=assistant\n[agent-runner] [msg #171] type=user\n[agent-runner] [msg #172] type=assistant\n[agent-runner] [msg #173] type=user\n[agent-runner] [msg #174] type=system/status\n[agent-runner] Sessions index not found at /home/node/.claude/projects/-workspace-group/sessions-index.json\n[agent-runner] Archived conversation to /workspace/group/conversations/2026-04-04-conversation-0054.md\n[agent-runner] Piping IPC message into active query (223 chars)\n[agent-runner] [msg #175] type=system/status\n[agent-runner] [msg #176] type=system/compact_boundary\n[agent-runner] [msg #177] type=user\n[agent-runner] [msg #178] type=assistant\n[agent-runner] [msg #179] type=assistant\n[agent-runner] [msg #180] type=user\n[agent-runner] [msg #181] type=assistant\n[agent-runner] [msg #182] type=assistant\n[agent-runner] [msg #183] type=user\n[agent-runner] [msg #184] type=assistant\n[agent-runner] [msg #185] type=user\n[agent-runner] [msg #186] type=assistant\n[agent-runner] [msg #187] type=assistant\n[agent-runner] [msg #188] type=user\n[agent-runner] [msg #189] type=assistant\n[agent-runner] [msg #190] type=assistant\n[agent-runner] [msg #191] type=user\n[agent-runner] [msg #192] type=assistant\n[agent-runner] [msg #193] type=assistant\n[agent-runner] [msg #194] type=user\n[agent-runner] [msg #195] type=assistant\n[agent-runner] [msg #196] type=assistant\n[agent-runner] [msg #197] type=assistant\n[agent-runner] [msg #198] type=user\n[agent-runner] [msg #199] type=assistant\n[agent-runner] [msg #200] type=assistant\n[agent-runner] [msg #201] type=user\n[agent-runner] [msg #202] type=assistant\n[agent-runner] [msg #203] type=assistant\n[agent-runner] [msg #204] type=result\n[agent-runner] Result #5: subtype=success text=Requests folder is clean. Only the ON HOLD classifier skill stays there — everything else is properly archived in responses/.\n[agent-runner] Piping IPC message into active query (175 chars)\n[agent-runner] [msg #205] type=system/init\n[agent-runner] Session initialized: 274d7d54-eca4-4f4d-b84f-949fd8ad0f30\n[agent-runner] [msg #206] type=assistant\n[agent-runner] [msg #207] type=assistant\n[agent-runner] [msg #208] type=result\n[agent-runner] Result #6: subtype=success text=Most of these I can handle directly — only the code change needs Claude Code:\n\n*Claude Code only:*\n• WO-25 — ollama-mcp-stdio.ts token fix (already sent as IPC, Claude working on it)\n\n*Cortana can do \n"
+    [35mstdout[39m: "npm notice\nnpm notice New major version of npm available! 10.9.7 -> 11.12.1\nnpm notice Changelog: https://github.com/npm/cli/releases/tag/v11.12.1\nnpm notice To update run: npm install -g npm@11.12.1\nnpm notice\n---NANOCLAW_OUTPUT_START---\n{\"status\":\"success\",\"result\":\"Done. Changes made:\n\n• *Schedule moved*: 11:59 PM → 11:50 PM — 10 min buffer before midnight so `currentDate` stays on the right day\n\n• *Ollama tokens = 0* — that one needs a Claude Code fix. The `logTokenUsage()` helper is there, but Ollama jobs hardcode `0` because the task agent can't read the raw API response. The WO for the `index.ts` intercept (IPC 20260330-0100) is already written but still pending. Want me to add it to the active work orders queue so it gets picked up?\",\"newSessionId\":\"274d7d54-eca4-4f4d-b84f-949fd8ad0f30\"}\n---NANOCLAW_OUTPUT_END---\n---NANOCLAW_OUTPUT_START---\n{\"status\":\"success\",\"result\":\"All done. 26 WOs written, grouped cleanly, with a suggested batch order so we can implement and test together without stepping on each other.\n\nThe IPC for Claude Code is queued at `requests/20260404-0042-ollama-token-tracking.md` — whenever Claude picks it up, he'll have the full root cause and exact fix to apply to `index.ts`. Let me know when you're ready to start running through the batches.\",\"newSessionId\":\"274d7d54-eca4-4f4d-b84f-949fd8ad0f30\"}\n---NANOCLAW_OUTPUT_END---\n---NANOCLAW_OUTPUT_START---\n{\"status\":\"success\",\"result\":\"The previous WO was pointing at the wrong file — Claude correctly said it wasn't in scope because he was looking at `index.ts`. The real gap is one level deeper in the agent-runner container. The new IPC gives him the exact file, exact line, and exact fix needed.\",\"newSessionId\":\"274d7d54-eca4-4f4d-b84f-949fd8ad0f30\"}\n---NANOCLAW_OUTPUT_END---\n---NANOCLAW_OUTPUT_START---\n{\"status\":\"success\",\"result\":\"Done. Moved to `responses/` and marked SUPERSEDED so Claude won't pick it up. Only `20260404-0050` is now in the active requests queue.\",\"newSessionId\":\"274d7d54-eca4-4f4d-b84f-949fd8ad0f30\"}\n---NANOCLAW_OUTPUT_END---\n---NANOCLAW_OUTPUT_START---\n{\"status\":\"success\",\"result\":\"Requests folder is clean. Only the ON HOLD classifier skill stays there — everything else is properly archived in responses/.\",\"newSessionId\":\"274d7d54-eca4-4f4d-b84f-949fd8ad0f30\"}\n---NANOCLAW_OUTPUT_END---\n---NANOCLAW_OUTPUT_START---\n{\"status\":\"success\",\"result\":\"Most of these I can handle directly — only the code change needs Claude Code:\n\n*Claude Code only:*\n• WO-25 — ollama-mcp-stdio.ts token fix (already sent as IPC, Claude working on it)\n\n*Cortana can do these now:*\n• WO-09 — rename Phase C task (NanoClaw update_task)\n• WO-12 — add reminders to Phase C task prompt\n• WO-13 — registration title suffix in Phase C\n• WO-14 Part A — add Type=Rule option to Notion DB\n• WO-19 — clean up Learning Agent prompt (remove dead script refs)\n• WO-22 — Learning Agent write rules to Notion\n• WO-23 — Monthly Trim add Archived row cleanup\n• WO-24 — Monthly Log add token-usage file cleanup\n• WO-10, 11, 15, 16, 17 — Phase C prompt additions (conflict check, GCal ID writeback, routing)\n• WO-20, 21 — Learning Agent set Learned=true + archive\n\n*Skill file edits (Cortana + your review):*\n• WO-01, 02, 03, 04, 05, 06, 07, 08, 26 — gmail-scan skill changes\n• These touch the core scan logic so worth you checking before I commit them\n\nSo the split is: Claude Code handles the TypeScript fix, I handle all the prompt/task/Notion updates, and we review the skill changes together.\n\nWant me to start on the Cortana ones now? I'd do Batch A first (WO-01, 02, 06, 26) since those are data integrity.\",\"newSessionId\":\"274d7d54-eca4-4f4d-b84f-949fd8ad0f30\"}\n---NANOCLAW_OUTPUT_END---\n"
+    [35mlogFile[39m: "C:\workspace\claude\nanoclaw\groups\telegram_main\logs\container-2026-04-04T04-58-11-422Z.log"
+[00:58:11.424] [31mERROR[39m (37044): [36mContainer agent error[39m
+    [35mgroup[39m: "Yung Cheng"
+    error: "Container exited with code 137: ost of these I can handle directly — only the code change needs Claude Code:\n\n*Claude Code only:*\n• WO-25 — ollama-mcp-stdio.ts token fix (already sent as IPC, Claude working on it)\n\n*Cortana can do \n"
+[00:58:11.424] [33mWARN[39m (37044): [36mAgent error after output was sent, skipping cursor rollback to prevent duplicates[39m
+    [35mgroup[39m: "Yung Cheng"
+[00:58:53.181] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[00:58:53.423] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[00:58:53.453] [32mINFO[39m (37044): [36mProcessing messages[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mmessageCount[39m: 1
+[00:58:53.981] [32mINFO[39m (37044): [36mSpawning container agent[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mcontainerName[39m: "nanoclaw-telegram-main-1775278733980"
+    [35mmountCount[39m: 7
+    [35misMain[39m: true
+[00:58:54.120] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 16
+[00:59:07.492] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 28
+[00:59:07.492] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[01:00:17.141] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[01:00:17.774] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[01:01:35.081] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[01:01:36.082] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[01:01:58.795] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 156
+[01:01:58.795] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[01:02:36.662] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 1001
+[01:02:36.662] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[01:02:39.096] [32mINFO[39m (37044): [36mAgent output: 168 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[01:02:39.337] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 168
+[01:02:42.179] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[01:02:42.371] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[01:02:50.273] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 51
+[01:02:50.273] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[01:03:09.490] [32mINFO[39m (37044): [36mTask created via IPC[39m
+    [35mtaskId[39m: "task-1775278989261-rixhai"
+    [35msourceGroup[39m: "telegram_main"
+    [35mtargetFolder[39m: "telegram_main"
+    [35mcontextMode[39m: "isolated"
+[01:03:14.974] [32mINFO[39m (37044): [36mAgent output: 229 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[01:03:15.453] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 229
+[01:04:00.147] [32mINFO[39m (37044): [36mFound due tasks[39m
+    [35mcount[39m: 1
+[01:04:01.143] [32mINFO[39m (37044): [36mContainer completed (streaming mode)[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mduration[39m: 307200
+    [35mnewSessionId[39m: "274d7d54-eca4-4f4d-b84f-949fd8ad0f30"
+[01:04:01.147] [32mINFO[39m (37044): [36mRunning scheduled task[39m
+    [35mtaskId[39m: "task-1775278989261-rixhai"
+    [35mgroup[39m: "telegram_main"
+[01:04:01.164] [32mINFO[39m (37044): [36mSpawning container agent[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mcontainerName[39m: "nanoclaw-telegram-main-1775279041164"
+    [35mmountCount[39m: 7
+    [35misMain[39m: true
+[01:04:23.029] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 63
+[01:04:23.029] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[01:04:25.657] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 178
+[01:04:36.623] [32mINFO[39m (37044): [36mContainer completed (streaming mode)[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mduration[39m: 35472
+    [35mnewSessionId[39m: "63e1d61f-9412-4249-8208-0f8472e1ad23"
+[01:04:36.623] [32mINFO[39m (37044): [36mTask completed[39m
+    [35mtaskId[39m: "task-1775278989261-rixhai"
+    [35mdurationMs[39m: 35476
+[01:05:21.495] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[01:05:23.113] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[01:05:23.140] [32mINFO[39m (37044): [36mProcessing messages[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mmessageCount[39m: 1
+[01:05:23.642] [32mINFO[39m (37044): [36mSpawning container agent[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mcontainerName[39m: "nanoclaw-telegram-main-1775279123641"
+    [35mmountCount[39m: 7
+    [35misMain[39m: true
+[01:05:23.808] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 16
+[01:05:37.520] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 28
+[01:05:37.521] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[01:10:31.200] [32mINFO[39m (37044): [36mTask updated via IPC[39m
+    [35mtaskId[39m: "task-1774364980425-2ez3de"
+    [35msourceGroup[39m: "telegram_main"
+    [35mupdates[39m: {
+      "prompt": "IMPORTANT: Wrap ALL your reasoning and text output in <internal></internal> tags. The ONLY output that reaches the user is what you explicitly send via mcp__nanoclaw__send_message. Do NOT produce any untagged text output.\n\n<internal>\nYou are Cortana's Gmail Scan Agent (1pm). Run ALL steps silently. Send ONE message only if new events found.\n\nTIMEZONE RULE: Always use America/New_York for timestamps.\n\nSTEP 1 — Register job\nAdd \"gmail_scan_1pm\" to active_jobs in /workspace/group/memory/docs/job-tracker.json with started_at = now ISO, expected_duration_min = 5, task_id = \"task-1774364980425-2ez3de\".\n\nSTEP 2 — Search Gmail via MCP\nUse mcp__GoogleWorkspace__search_gmail_messages with:\n  user_google_email: \"edencheng@gmail.com\"\n  query: \"(invite OR invitation OR RSVP OR event OR webinar OR conference OR registration OR \"join us\" OR deadline OR \"due date\" OR meeting OR appointment OR seminar) -category:promotions -category:social newer_than:1d\"\n  page_size: 50\n\nSTEP 3 — Filter results\nFor each email, apply filters in this EXACT ORDER:\n\n⚠️ CHECK KENDO FIRST (overrides all other filters — do this before anything else):\n  Read email subject and body. If subject OR body contains ANY of:\n    kendo, dojo, shiai, iaido, bokken, mwkf, go ryu ki, martial arts, tournament, sensei\n  → IMMEDIATELY mark as INCLUDE. Skip all skip rules below. Proceed directly to STEP 4.\n\nIf NOT a kendo email, apply these skip rules:\n\nSkip Sender (skip if FROM address matches any):\n  - edencheng@gmail.com\n  - e.principal.com\n  - notifications.acorns.com\n  - acorns.com\n  - calendar-notification@google.com\n\nSkip Subject patterns (case-insensitive regex):\n  - [Billing] Fwd:\n  - ^Fwd:\n\nSTEP 4 — Extract events using Ollama\nFor each non-skipped email, read full content via mcp__GoogleWorkspace__get_gmail_message_content if needed.\nTruncate email body to 3000 characters before sending to Ollama.\nThen call Ollama gemma3:4b at http://host.docker.internal:11434 to extract events:\n\nPOST http://host.docker.internal:11434/api/generate\n{\"model\": \"gemma3:4b\", \"stream\": false, \"prompt\": \"Extract calendar events from this email. Return JSON array. Each item: {title, date (YYYY-MM-DD), end_date (null if single-day), time (string or null), location (string or null), type ('Event' or 'Task'), registration_required (bool), notes (rich: description, pricing, organizer, special instructions), alert_category (null or 'Kendo' or 'Billing' or 'Doctor / Dental')}. Kendo emails: ONE event per email (main event only, agenda goes in notes). If no events found, return []. Email: <email content>\"}\n\nIf Ollama returns empty or unparseable, fallback to Claude (just process inline — no separate API call needed since you ARE Claude).\n\nSTEP 5 — Dedup check (two-layer)\na) Local index check: Read /workspace/group/memory/tools/inbox-pipeline/notion-index.json.\n   Skip any event whose msg_id + normalized title already exists in the index.\n\nb) Notion backup check: For any event NOT found in local index, query Notion as backup:\n   Call mcp__notion__API-query-data-source with:\n     data_source_id: \"32b7c3af-c311-813f-8dae-f8516b39294f\"\n     filter: { \"property\": \"Gmail Msg ID\", \"rich_text\": { \"equals\": \"<email msg_id>\" } }\n   If any results returned, skip this event (already in Notion). Also add it to local index to sync.\n\nSTEP 6 — Push new events to Notion\nFor each new event, call mcp__notion__API-post-page with:\n  parent: { \"database_id\": \"32b7c3af-c311-813f-8dae-f8516b39294f\" }\n  properties:\n    Name: { \"title\": [{ \"type\": \"text\", \"text\": { \"content\": event.title } }] }\n    Type: { \"select\": { \"name\": event.type } }\n    Status: { \"select\": { \"name\": \"Pending\" } }\n    Calendar: { \"select\": { \"name\": \"Family\" if from chengfam514@gmail.com else \"Eden's Schedule\" } }\n    Event Date: { \"date\": { \"start\": event.date, \"end\": event.end_date or null } }\n    Location: { \"rich_text\": [{ \"type\": \"text\", \"text\": { \"content\": event.location } }] } (if present)\n    Registration Required: { \"checkbox\": event.registration_required }\n    From: { \"rich_text\": [{ \"type\": \"text\", \"text\": { \"content\": sender_email } }] }\n    Gmail Msg ID: { \"rich_text\": [{ \"type\": \"text\", \"text\": { \"content\": msg_id } }] }\n    Notes: { \"rich_text\": [{ \"type\": \"text\", \"text\": { \"content\": event.notes } }] } (if present)\n\nAfter pushing each event, update /workspace/group/memory/tools/inbox-pipeline/notion-index.json:\n  Add entry \"<msg_id>:<normalized-title>\": { \"page_id\": <returned id>, \"title\": event.title, \"msg_id\": msg_id, \"pushed_at\": <now ISO> }\n\nSTEP 7 — Send alerts if any\nIf any extracted events have alert_category set, send via mcp__nanoclaw__send_message:\n\"🔔 Heads Up — N alert(s) from your inbox:\n🥋 Kendo — [1-sentence summary]\n💳 Billing — [1-sentence summary]\n🏥 Doctor/Dental — [1-sentence summary]\"\n(Only include categories that were found)\n\nSTEP 8 — Send summary if new events found\nIf new_count > 0, use mcp__nanoclaw__send_message:\n\"*📬 Gmail Scan (1pm)*\n• [N] new event(s) found and pushed to Notion inbox\n• [brief list of what was found]\n[timestamp in ET]\"\n\nIf no new events — do NOT send any message.\n\nSTEP 9 — Update job status\nWrite to /workspace/group/memory/docs/job-status.json:\nUpdate \"gmail_scan_1pm\" key with:\n  last_run: now ISO\n  last_status: \"ok\" or \"error\"\n  last_model: \"gemma3:4b\"\n  last_tokens: 0\n\nSTEP 10 — Deregister\nRemove \"gmail_scan_1pm\" from active_jobs in /workspace/group/memory/docs/job-tracker.json.\n</internal>"
+    }
+[01:10:43.316] [32mINFO[39m (37044): [36mTask updated via IPC[39m
+    [35mtaskId[39m: "task-1774364987262-yy64gn"
+    [35msourceGroup[39m: "telegram_main"
+    [35mupdates[39m: {
+      "prompt": "IMPORTANT: Wrap ALL your reasoning and text output in <internal></internal> tags. The ONLY output that reaches the user is what you explicitly send via mcp__nanoclaw__send_message. Do NOT produce any untagged text output.\n\n<internal>\nYou are Cortana's Gmail Scan Agent (5:30pm). Run ALL steps silently. Send ONE message only if new events found.\n\nTIMEZONE RULE: Always use America/New_York for timestamps.\n\nSTEP 1 — Register job\nAdd \"gmail_scan_530\" to active_jobs in /workspace/group/memory/docs/job-tracker.json with started_at = now ISO, expected_duration_min = 5, task_id = \"task-1774364987262-yy64gn\".\n\nSTEP 2 — Search Gmail via MCP\nUse mcp__GoogleWorkspace__search_gmail_messages with:\n  user_google_email: \"edencheng@gmail.com\"\n  query: \"(invite OR invitation OR RSVP OR event OR webinar OR conference OR registration OR \"join us\" OR deadline OR \"due date\" OR meeting OR appointment OR seminar) -category:promotions -category:social newer_than:1d\"\n  page_size: 50\n\nSTEP 3 — Filter results\nFor each email, apply filters in this EXACT ORDER:\n\n⚠️ CHECK KENDO FIRST (overrides all other filters — do this before anything else):\n  Read email subject and body. If subject OR body contains ANY of:\n    kendo, dojo, shiai, iaido, bokken, mwkf, go ryu ki, martial arts, tournament, sensei\n  → IMMEDIATELY mark as INCLUDE. Skip all skip rules below. Proceed directly to STEP 4.\n\nIf NOT a kendo email, apply these skip rules:\n\nSkip Sender (skip if FROM address matches any):\n  - edencheng@gmail.com\n  - e.principal.com\n  - notifications.acorns.com\n  - acorns.com\n  - calendar-notification@google.com\n\nSkip Subject patterns (case-insensitive regex):\n  - [Billing] Fwd:\n  - ^Fwd:\n\nSTEP 4 — Extract events using Ollama\nFor each non-skipped email, read full content via mcp__GoogleWorkspace__get_gmail_message_content if needed.\nTruncate email body to 3000 characters before sending to Ollama.\nThen call Ollama gemma3:4b at http://host.docker.internal:11434 to extract events:\n\nPOST http://host.docker.internal:11434/api/generate\n{\"model\": \"gemma3:4b\", \"stream\": false, \"prompt\": \"Extract calendar events from this email. Return JSON array. Each item: {title, date (YYYY-MM-DD), end_date (null if single-day), time (string or null), location (string or null), type ('Event' or 'Task'), registration_required (bool), notes (rich: description, pricing, organizer, special instructions), alert_category (null or 'Kendo' or 'Billing' or 'Doctor / Dental')}. Kendo emails: ONE event per email (main event only, agenda goes in notes). If no events found, return []. Email: <email content>\"}\n\nIf Ollama returns empty or unparseable, fallback to Claude (just process inline — no separate API call needed since you ARE Claude).\n\nSTEP 5 — Dedup check (two-layer)\na) Local index check: Read /workspace/group/memory/tools/inbox-pipeline/notion-index.json.\n   Skip any event whose msg_id + normalized title already exists in the index.\n\nb) Notion backup check: For any event NOT found in local index, query Notion as backup:\n   Call mcp__notion__API-query-data-source with:\n     data_source_id: \"32b7c3af-c311-813f-8dae-f8516b39294f\"\n     filter: { \"property\": \"Gmail Msg ID\", \"rich_text\": { \"equals\": \"<email msg_id>\" } }\n   If any results returned, skip this event (already in Notion). Also add it to local index to sync.\n\nSTEP 6 — Push new events to Notion\nFor each new event, call mcp__notion__API-post-page with:\n  parent: { \"database_id\": \"32b7c3af-c311-813f-8dae-f8516b39294f\" }\n  properties:\n    Name: { \"title\": [{ \"type\": \"text\", \"text\": { \"content\": event.title } }] }\n    Type: { \"select\": { \"name\": event.type } }\n    Status: { \"select\": { \"name\": \"Pending\" } }\n    Calendar: { \"select\": { \"name\": \"Family\" if from chengfam514@gmail.com else \"Eden's Schedule\" } }\n    Event Date: { \"date\": { \"start\": event.date, \"end\": event.end_date or null } }\n    Location: { \"rich_text\": [{ \"type\": \"text\", \"text\": { \"content\": event.location } }] } (if present)\n    Registration Required: { \"checkbox\": event.registration_required }\n    From: { \"rich_text\": [{ \"type\": \"text\", \"text\": { \"content\": sender_email } }] }\n    Gmail Msg ID: { \"rich_text\": [{ \"type\": \"text\", \"text\": { \"content\": msg_id } }] }\n    Notes: { \"rich_text\": [{ \"type\": \"text\", \"text\": { \"content\": event.notes } }] } (if present)\n\nAfter pushing each event, update /workspace/group/memory/tools/inbox-pipeline/notion-index.json:\n  Add entry \"<msg_id>:<normalized-title>\": { \"page_id\": <returned id>, \"title\": event.title, \"msg_id\": msg_id, \"pushed_at\": <now ISO> }\n\nSTEP 7 — Send alerts if any\nIf any extracted events have alert_category set, send via mcp__nanoclaw__send_message:\n\"🔔 Heads Up — N alert(s) from your inbox:\n🥋 Kendo — [1-sentence summary]\n💳 Billing — [1-sentence summary]\n🏥 Doctor/Dental — [1-sentence summary]\"\n(Only include categories that were found)\n\nSTEP 8 — Send summary if new events found\nIf new_count > 0, use mcp__nanoclaw__send_message:\n\"*📬 Gmail Scan (5:30pm)*\n• [N] new event(s) found and pushed to Notion inbox\n• [brief list of what was found]\n[timestamp in ET]\"\n\nIf no new events — do NOT send any message.\n\nSTEP 9 — Update job status\nWrite to /workspace/group/memory/docs/job-status.json:\nUpdate \"gmail_scan_530\" key with:\n  last_run: now ISO\n  last_status: \"ok\" or \"error\"\n  last_model: \"gemma3:4b\"\n  last_tokens: 0\n\nSTEP 10 — Deregister\nRemove \"gmail_scan_530\" from active_jobs in /workspace/group/memory/docs/job-tracker.json.\n</internal>"
+    }
+[01:13:32.424] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 930
+[01:13:32.424] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[01:15:20.082] [32mINFO[39m (37044): [36mAgent output: 270 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[01:27:01.995] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[01:27:03.966] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[01:27:11.726] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 29
+[01:27:11.726] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[01:30:27.561] [32mINFO[39m (37044): [36mTask updated via IPC[39m
+    [35mtaskId[39m: "task-1774317651498-tf3uqs"
+    [35msourceGroup[39m: "telegram_main"
+    [35mupdates[39m: {
+      "prompt": "You are Cortana's Phase C auto-check agent. Your job is to process approved Gmail events into Google Calendar, and patch registered event titles.\n\nSETUP:\n- Report file: /workspace/group/memory/docs/reports/phase_c.json\n- job-status file: /workspace/group/memory/docs/job-status.json\n- Notion Gmail Events DB: 32b7c3af-c311-813f-8dae-f8516b39294f\n- Notion block ID for status patch: 32d7c3af-c311-8187-bc53-d99dc5e6d94e\n- Google account: edencheng@gmail.com\n\nDefault behavior: silent — write report only, do NOT send Telegram message.\nEXCEPTION: If events were actually added to Google Calendar in Part A, send a Telegram message (that is important news).\n\nModel routing: Use Ollama deepseek-r1:8b at http://host.docker.internal:11434 for conflict detection reasoning. Claude for everything else.\n\n---\n\nPART A — NEW APPROVED EVENTS\n\nStep A1 — Query Notion for approved events:\n  Use mcp__notion__API-query-data-source with:\n    data_source_id: \"32b7c3af-c311-813f-8dae-f8516b39294f\"\n    filter: { \"property\": \"Status\", \"select\": { \"equals\": \"Approved\" } }\n  If no approved events → skip to Part B, note \"no approved events\" in report.\n\nStep A2 — For each approved event, check for calendar conflicts:\n  Use mcp__GoogleWorkspace__get_events with:\n    user_google_email: \"edencheng@gmail.com\"\n    time_min: event start ISO\n    time_max: event end ISO (or start + 2 hours if no end time)\n\n  If events returned overlap the proposed time, use Ollama deepseek-r1:8b to reason about the conflict:\n  POST http://host.docker.internal:11434/api/generate\n  {\"model\": \"deepseek-r1:8b\", \"stream\": false, \"prompt\": \"Calendar conflict analysis: Existing event: [existing]. Proposed event: [proposed]. Is this a real conflict? Should the new event be added anyway? Respond with JSON: {conflict: bool, recommendation: 'add'|'skip'|'reschedule', reason: string}\"}\n\nStep A3 — If no conflict (or recommendation = 'add'), create calendar event:\n  Use mcp__GoogleWorkspace__manage_event with:\n    action: \"create\"\n    user_google_email: \"edencheng@gmail.com\"\n    summary: event title\n    start_time: event start ISO\n    end_time: event end ISO (or start + 1 hour if unknown)\n    location: event location if available\n    description: event notes\n    calendar_id: \"Family\" if from chengfam514@gmail.com, else \"primary\"\n\nStep A4 — Mark processed pages in Notion:\n  For each event successfully written to Google Calendar:\n  a. Set Status = \"Added to Calendar\" via mcp__notion__API-patch-page:\n     page_id: event's Notion page ID\n     properties: { \"Status\": { \"select\": { \"name\": \"Added to Calendar\" } } }\n  b. Immediately set Status = \"Archived\" via mcp__notion__API-patch-page (same page_id):\n     properties: { \"Status\": { \"select\": { \"name\": \"Archived\" } } }\n  Terminal state: Approved → Added to Calendar → Archived (both set in same run).\n\nTrack how many events were added to calendar (call this N_ADDED).\n\n---\n\nPART B — REGISTERED TITLE PATCHES\n\nStep B1 — Query Notion for registered updates:\n  Use mcp__notion__API-query-data-source with:\n    data_source_id: \"32b7c3af-c311-813f-8dae-f8516b39294f\"\n    filter: { \"property\": \"Status\", \"select\": { \"equals\": \"Registered\" } }\n  Look for events that have a gcal_event_id property and a title that differs from the calendar event.\n\nStep B2 — For each update:\n  Use mcp__GoogleWorkspace__manage_event with:\n    action: \"update\"\n    user_google_email: \"edencheng@gmail.com\"\n    event_id: the gcal event ID\n    summary: updated title\n  Silent if no updates needed.\n\n---\n\nSTEP C — WRITE REPORT FILE\nWrite /workspace/group/memory/docs/reports/phase_c.json with:\n  {job: \"phase_c\", job_label: \"Phase C Auto-Check\", status: \"ok\", message: \"<BRIEF_SUMMARY>\", timestamp: now ISO, sent: false}\n\n---\n\nSTEP D — SEND TELEGRAM (only if N_ADDED > 0)\nIf events were actually added to Google Calendar, send via mcp__nanoclaw__send_message with sender=\"Cortana\":\n  \"Phase C: Added N events to calendar — [list titles]. Check your calendar!\"\n\nDo NOT send a message if nothing was added. Do NOT send for registered title patches only.\n\n---\n\nSTEP E — UPDATE job-status.json\nUpdate \"phase_c\" in /workspace/group/memory/docs/job-status.json:\n  { \"last_run\": \"<ISO timestamp>\", \"last_status\": \"ok\" }\n\n---\n\nSTEP F — PATCH NOTION STATUS BLOCK\nUse mcp__notion__API-update-a-block to patch block 32d7c3af-c311-8187-bc53-d99dc5e6d94e with status text \"ok\".\nFallback node script if MCP tool unavailable:\n  node -e \"const crypto=require('crypto'),https=require('https');const enc='fca70b8bd3befa09b7d742d2aa601c312f12a9f37c1e93e31cf4ad35f918c8dbe0dbe2fdb8f73309481e701492d9b48245f8335b4ab3c74b1a8fa7bedec59048';const key=Buffer.from('244a01af524e664e08f7fbdaacd6363f032b5366c5d4cb53d6bef7077a1dd62b','hex');const iv=Buffer.from('03af8acf53e5ca6975cf13140a14cae0','hex');const d=crypto.createDecipheriv('aes-256-cbc',key,iv);let t=d.update(enc,'hex','utf8')+d.final('utf8');const b=JSON.stringify({rich_text:[{type:'text',text:{content:'ok'}}]});const r=https.request({hostname:'api.notion.com',path:'/v1/blocks/32d7c3af-c311-8187-bc53-d99dc5e6d94e',method:'PATCH',headers:{Authorization:'Bearer '+t,'Content-Type':'application/json','Notion-Version':'2022-06-28','Content-Length':Buffer.byteLength(b)}},s=>{let d='';s.on('data',c=>d+=c);s.on('end',()=>console.log('PATCH:',s.statusCode));});r.write(b);r.end();\""
+    }
+[01:30:33.647] [32mINFO[39m (37044): [36mTask updated via IPC[39m
+    [35mtaskId[39m: "task-1774226620914-4ll2ho"
+    [35msourceGroup[39m: "telegram_main"
+    [35mupdates[39m: {
+      "prompt": "IMPORTANT: Wrap ALL your reasoning and text output in <internal> tags. The ONLY message sent to the user is via the explicit mcp__nanoclaw__send_message call at the end of this prompt. Do not produce any visible text output outside of <internal> tags.\n\nYou are the Gmail Scanner Learning Agent for Cortana. Your job is to improve the Gmail scanning rules over time by analyzing patterns in the Notion Gmail Events database.\n\nSTEP 1 — Read context files:\n  Read /workspace/group/memory/tools/inbox-pipeline/digest.md\n  Read /workspace/group/memory/tools/inbox-pipeline/learning-log.md\n\nSTEP 2 — Query Notion for Ignored rows:\n  Use mcp__notion__API-query-data-source with:\n    data_source_id: \"32b7c3af-c311-813f-8dae-f8516b39294f\"\n    filter: { \"property\": \"Status\", \"select\": { \"equals\": \"Ignored\" } }\n  If no Ignored rows, skip to STEP 4.\n\nSTEP 3 — Process each Ignored row:\n  For each row returned in STEP 2:\n  a. Extract: Event Title, From (sender email), Notes, Event Date from the row properties.\n  b. Analyze why this item was ignored — what makes it NOT worth calendaring?\n     Consider: sender domain, subject keywords, email type, event category.\n  c. Identify any new patterns worth adding as scanner skip rules.\n  d. Append findings to /workspace/group/memory/tools/inbox-pipeline/learning-log.md.\n  e. Set Learned = true on the Notion row via mcp__notion__API-patch-page:\n     page_id: <row's Notion page ID>\n     properties: { \"Learned\": { \"checkbox\": true } }\n  f. Set Status = \"Archived\" on the Notion row via mcp__notion__API-patch-page:\n     page_id: <row's Notion page ID>\n     properties: { \"Status\": { \"select\": { \"name\": \"Archived\" } } }\n  (Terminal state: Ignored → Learned=true → Archived)\n\nSTEP 4 — Analyze recent scan results from digest.md:\n  Identify patterns in emails that were missed, misclassified, or incorrectly flagged.\n  Update /workspace/group/memory/tools/inbox-pipeline/learning-log.md with additional findings.\n\nSTEP 5 — Send a brief summary via mcp__nanoclaw__send_message (sender: \"Cortana\"):\n  Report: number of Ignored rows processed, patterns identified, any rule suggestions.\n  Use WhatsApp formatting only (*bold*, _italic_, • bullets).\n  If nothing to report, send: \"Learning Agent: no new patterns to report.\"\n\nSTEP 6 — Update job status:\n  node -e \"try{const fs=require('fs');const p='/workspace/group/memory/docs/job-status.json';let d={};try{d=JSON.parse(fs.readFileSync(p,'utf8'));}catch{}d.learning_agent={last_run:new Date().toISOString(),last_status:'ok',last_model:'claude',last_tokens:0};fs.writeFileSync(p,JSON.stringify(d,null,2));}catch(e){}\"\n\nSTEP 7 — Log token usage (legacy):\n  node -e \"try{const h=require('/workspace/group/memory/docs/token-usage-helper.js');h.logTokenUsage('learning_agent','claude',0);}catch(e){}\""
+    }
+[01:31:14.810] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 696
+[01:31:14.810] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[01:31:20.784] [32mINFO[39m (37044): [36mAgent output: 706 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[01:31:21.389] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 706
+[01:32:23.717] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[01:32:25.329] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[01:32:35.290] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 36
+[01:32:35.290] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[01:33:09.253] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[01:33:09.556] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[01:34:12.152] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 370
+[01:34:12.152] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[01:34:59.653] [32mINFO[39m (37044): [36mTask updated via IPC[39m
+    [35mtaskId[39m: "task-1774317651498-tf3uqs"
+    [35msourceGroup[39m: "telegram_main"
+    [35mupdates[39m: {
+      "prompt": "You are Cortana's Approval Queue Runner. Your job is to process approved Gmail events into Google Calendar, and patch registered event titles.\n\nSETUP:\n- Report file: /workspace/group/memory/docs/reports/phase_c.json\n- job-status file: /workspace/group/memory/docs/job-status.json\n- Notion Gmail Events DB: 32b7c3af-c311-813f-8dae-f8516b39294f\n- Notion block ID for status patch: 32d7c3af-c311-8187-bc53-d99dc5e6d94e\n- Google account: edencheng@gmail.com\n\nDefault behavior: silent — write report only, do NOT send Telegram message.\nEXCEPTION: If events were actually added to Google Calendar in Part A, send a Telegram message (that is important news).\n\nModel routing: Use Ollama deepseek-r1:8b at http://host.docker.internal:11434 for conflict detection reasoning. Claude for everything else.\n\n---\n\nPART A — NEW APPROVED EVENTS\n\nStep A1 — Query Notion for approved events:\n  Use mcp__notion__API-query-data-source with:\n    data_source_id: \"32b7c3af-c311-813f-8dae-f8516b39294f\"\n    filter: { \"property\": \"Status\", \"select\": { \"equals\": \"Approved\" } }\n  If no approved events → skip to Part B, note \"no approved events\" in report.\n\nStep A2 — For each approved event, check for calendar conflicts:\n  Use mcp__GoogleWorkspace__get_events with:\n    user_google_email: \"edencheng@gmail.com\"\n    time_min: event start ISO\n    time_max: event end ISO (or start + 2 hours if no end time)\n\n  If events returned overlap the proposed time, use Ollama deepseek-r1:8b to reason about the conflict:\n  POST http://host.docker.internal:11434/api/generate\n  {\"model\": \"deepseek-r1:8b\", \"stream\": false, \"prompt\": \"Calendar conflict analysis: Existing event: [existing]. Proposed event: [proposed]. Is this a real conflict? Should the new event be added anyway? Respond with JSON: {conflict: bool, recommendation: 'add'|'skip'|'reschedule', reason: string}\"}\n\nStep A3a — Apply registration title suffix:\n  Read the Notion row's \"Registered\" and \"Registration Required\" properties:\n  - If \"Registered\" checkbox = true → append \" (Registered)\" to the event title\n  - Else if \"Registration Required\" = true → append \" (Register!)\" to the event title\n  - Else → no suffix\n  Use the final titled (with suffix if any) for the calendar event.\n\nStep A3b — If no conflict (or recommendation = 'add'), create calendar event:\n  Use mcp__GoogleWorkspace__manage_event with:\n    action: \"create\"\n    user_google_email: \"edencheng@gmail.com\"\n    summary: final event title (from A3a)\n    start_time: event start ISO\n    end_time: event end ISO (or start + 1 hour if unknown)\n    location: event location if available\n    description: event notes\n    calendar_id: \"Family\" if from chengfam514@gmail.com, else \"primary\"\n    reminders: [{\"method\": \"popup\", \"minutes\": 30}, {\"method\": \"email\", \"minutes\": 1440}]\n  Save the returned event_id as gcal_event_id.\n\nStep A4 — Mark processed pages in Notion:\n  For each event successfully written to Google Calendar:\n  a. Write GCal Event ID back to Notion via mcp__notion__API-patch-page:\n     page_id: event's Notion page ID\n     properties: { \"GCal Event ID\": { \"rich_text\": [{ \"type\": \"text\", \"text\": { \"content\": \"<gcal_event_id>\" } }] } }\n  b. Set Status = \"Added to Calendar\" via mcp__notion__API-patch-page (same page_id):\n     properties: { \"Status\": { \"select\": { \"name\": \"Added to Calendar\" } } }\n  c. Set Status = \"Archived\" via mcp__notion__API-patch-page (same page_id):\n     properties: { \"Status\": { \"select\": { \"name\": \"Archived\" } } }\n  Terminal state: Approved → Added to Calendar → Archived (all in same run).\n\nTrack how many events were added to calendar (call this N_ADDED).\n\n---\n\nPART B — REGISTERED TITLE PATCHES\n\nStep B1 — Query Notion for registered updates:\n  Use mcp__notion__API-query-data-source with:\n    data_source_id: \"32b7c3af-c311-813f-8dae-f8516b39294f\"\n    filter: { \"property\": \"Status\", \"select\": { \"equals\": \"Registered\" } }\n  Look for events that have a GCal Event ID property and a title that differs from the calendar event.\n\nStep B2 — For each update:\n  Use mcp__GoogleWorkspace__manage_event with:\n    action: \"update\"\n    user_google_email: \"edencheng@gmail.com\"\n    event_id: the GCal Event ID from the Notion row\n    summary: updated title\n  Silent if no updates needed.\n\n---\n\nSTEP C — WRITE REPORT FILE\nWrite /workspace/group/memory/docs/reports/phase_c.json with:\n  {job: \"phase_c\", job_label: \"Approval Queue Runner\", status: \"ok\", message: \"<BRIEF_SUMMARY>\", timestamp: now ISO, sent: false}\n\n---\n\nSTEP D — SEND TELEGRAM (only if N_ADDED > 0)\nIf events were actually added to Google Calendar, send via mcp__nanoclaw__send_message with sender=\"Cortana\":\n  \"Approval Queue Runner: Added N event(s) to calendar — [list titles]. Check your calendar!\"\n\nDo NOT send a message if nothing was added. Do NOT send for registered title patches only.\n\n---\n\nSTEP E — UPDATE job-status.json\nUpdate \"phase_c\" in /workspace/group/memory/docs/job-status.json:\n  { \"last_run\": \"<ISO timestamp>\", \"last_status\": \"ok\" }\n\n---\n\nSTEP F — PATCH NOTION STATUS BLOCK\nUse mcp__notion__API-update-a-block to patch block 32d7c3af-c311-8187-bc53-d99dc5e6d94e with status text \"ok\".\nFallback node script if MCP tool unavailable:\n  node -e \"const crypto=require('crypto'),https=require('https');const enc='fca70b8bd3befa09b7d742d2aa601c312f12a9f37c1e93e31cf4ad35f918c8dbe0dbe2fdb8f73309481e701492d9b48245f8335b4ab3c74b1a8fa7bedec59048';const key=Buffer.from('244a01af524e664e08f7fbdaacd6363f032b5366c5d4cb53d6bef7077a1dd62b','hex');const iv=Buffer.from('03af8acf53e5ca6975cf13140a14cae0','hex');const d=crypto.createDecipheriv('aes-256-cbc',key,iv);let t=d.update(enc,'hex','utf8')+d.final('utf8');const b=JSON.stringify({rich_text:[{type:'text',text:{content:'ok'}}]});const r=https.request({hostname:'api.notion.com',path:'/v1/blocks/32d7c3af-c311-8187-bc53-d99dc5e6d94e',method:'PATCH',headers:{Authorization:'Bearer '+t,'Content-Type':'application/json','Notion-Version':'2022-06-28','Content-Length':Buffer.byteLength(b)}},s=>{let d='';s.on('data',c=>d+=c);s.on('end',()=>console.log('PATCH:',s.statusCode));});r.write(b);r.end();\""
+    }
+[01:35:43.816] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 672
+[01:35:43.816] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[01:35:48.922] [32mINFO[39m (37044): [36mAgent output: 685 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[01:35:49.442] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 685
+[01:41:04.566] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[01:41:05.686] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[01:41:24.130] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 29
+[01:41:24.130] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[01:49:43.758] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[01:49:43.837] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[01:50:05.522] [32mINFO[39m (37044): [36mTask updated via IPC[39m
+    [35mtaskId[39m: "task-1774364980425-2ez3de"
+    [35msourceGroup[39m: "telegram_main"
+    [35mupdates[39m: {
+      "prompt": "IMPORTANT: Wrap ALL your reasoning and text output in <internal></internal> tags. The ONLY output that reaches the user is what you explicitly send via mcp__nanoclaw__send_message. Do NOT produce any untagged text output.\n\n<internal>\nYou are Cortana's Gmail Scan Agent (1pm). Run ALL steps silently. Send ONE message only if new events found.\n\nTIMEZONE RULE: Always use America/New_York for timestamps.\n\nSTEP 1 — Register job\nAdd \"gmail_scan_1pm\" to active_jobs in /workspace/group/memory/docs/job-tracker.json with started_at = now ISO, expected_duration_min = 5, task_id = \"task-1774364980425-2ez3de\".\n\nSTEP 2 — Search Gmail via MCP\nUse mcp__GoogleWorkspace__search_gmail_messages with:\n  user_google_email: \"edencheng@gmail.com\"\n  query: \"(invite OR invitation OR RSVP OR event OR webinar OR conference OR registration OR \"join us\" OR deadline OR \"due date\" OR meeting OR appointment OR seminar) -category:promotions -category:social newer_than:1d\"\n  page_size: 50\n\nSTEP 3 — Filter results\nFor each email, apply filters in this EXACT ORDER:\n\n⚠️ CHECK KENDO FIRST (overrides all other filters — do this before anything else):\n  Read email subject and body. If subject OR body contains ANY of:\n    kendo, dojo, shiai, iaido, bokken, mwkf, go ryu ki, martial arts, tournament, sensei\n  → IMMEDIATELY mark as INCLUDE. Skip all skip rules below. Proceed directly to STEP 4.\n\nIf NOT a kendo email, apply these skip rules:\n\nSkip Sender (skip if FROM address matches any):\n  - edencheng@gmail.com\n  - e.principal.com\n  - notifications.acorns.com\n  - acorns.com\n  - calendar-notification@google.com\n\nSkip Subject patterns (case-insensitive regex):\n  - [Billing] Fwd:\n  - ^Fwd:\n\nSTEP 4 — Extract events using Ollama\nFor each non-skipped email, read full content via mcp__GoogleWorkspace__get_gmail_message_content if needed.\nTruncate email body to 3000 characters before sending to Ollama.\nThen call Ollama gemma3:4b at http://host.docker.internal:11434 to extract events:\n\nPOST http://host.docker.internal:11434/api/generate\n{\"model\": \"gemma3:4b\", \"stream\": false, \"prompt\": \"Extract calendar events from this email. Return JSON array. Each item: {title, date (YYYY-MM-DD), end_date (null if single-day), time (string or null), location (string or null), type ('Event' or 'Task'), registration_required (bool), notes (rich: description, pricing, organizer, special instructions), alert_category (null or 'Kendo' or 'Billing' or 'Doctor / Dental')}. Kendo emails: ONE event per email (main event only, agenda goes in notes). If no events found, return []. Email: <email content>\"}\n\nIf Ollama returns empty or unparseable, fallback to Claude (just process inline — no separate API call needed since you ARE Claude).\n\nSTEP 5 — Dedup check (two-layer)\na) Local index check: Read /workspace/group/memory/tools/inbox-pipeline/notion-index.json.\n   Skip any event whose msg_id + normalized title already exists in the index.\n\nb) Notion backup check: For any event NOT found in local index, query Notion as backup:\n   Call mcp__notion__API-query-data-source with:\n     data_source_id: \"32b7c3af-c311-81d9-b5c2-000b9620cf94\"\n     filter: { \"property\": \"Gmail Msg ID\", \"rich_text\": { \"equals\": \"<email msg_id>\" } }\n   If any results returned, skip this event (already in Notion). Also add it to local index to sync.\n\nSTEP 6 — Push new events to Notion\nFor each new event, call mcp__notion__API-post-page with:\n  parent: { \"database_id\": \"32b7c3af-c311-813f-8dae-f8516b39294f\" }\n  properties:\n    Name: { \"title\": [{ \"type\": \"text\", \"text\": { \"content\": event.title } }] }\n    Type: { \"select\": { \"name\": event.type } }\n    Status: { \"select\": { \"name\": \"Pending\" } }\n    Calendar: { \"select\": { \"name\": \"Family\" if from chengfam514@gmail.com else \"Eden's Schedule\" } }\n    Event Date: { \"date\": { \"start\": event.date, \"end\": event.end_date or null } }\n    Location: { \"rich_text\": [{ \"type\": \"text\", \"text\": { \"content\": event.location } }] } (if present)\n    Registration Required: { \"checkbox\": event.registration_required }\n    From: { \"rich_text\": [{ \"type\": \"text\", \"text\": { \"content\": sender_email } }] }\n    Gmail Msg ID: { \"rich_text\": [{ \"type\": \"text\", \"text\": { \"content\": msg_id } }] }\n    Notes: { \"rich_text\": [{ \"type\": \"text\", \"text\": { \"content\": event.notes } }] } (if present)\n\nAfter pushing each event, update /workspace/group/memory/tools/inbox-pipeline/notion-index.json:\n  Add entry \"<msg_id>:<normalized-title>\": { \"page_id\": <returned id>, \"title\": event.title, \"msg_id\": msg_id, \"pushed_at\": <now ISO> }\n\nSTEP 7 — Send alerts if any\nIf any extracted events have alert_category set, send via mcp__nanoclaw__send_message:\n\"🔔 Heads Up — N alert(s) from your inbox:\n🥋 Kendo — [1-sentence summary]\n💳 Billing — [1-sentence summary]\n🏥 Doctor/Dental — [1-sentence summary]\"\n(Only include categories that were found)\n\nSTEP 8 — Send summary if new events found\nIf new_count > 0, use mcp__nanoclaw__send_message:\n\"*📬 Gmail Scan (1pm)*\n• [N] new event(s) found and pushed to Notion inbox\n• [brief list of what was found]\n[timestamp in ET]\"\n\nIf no new events — do NOT send any message.\n\nSTEP 9 — Update job status\nWrite to /workspace/group/memory/docs/job-status.json:\nUpdate \"gmail_scan_1pm\" key with:\n  last_run: now ISO\n  last_status: \"ok\" or \"error\"\n  last_model: \"gemma3:4b\"\n  last_tokens: 0\n\nSTEP 10 — Deregister\nRemove \"gmail_scan_1pm\" from active_jobs in /workspace/group/memory/docs/job-tracker.json.\n</internal>"
+    }
+[01:50:16.639] [32mINFO[39m (37044): [36mTask updated via IPC[39m
+    [35mtaskId[39m: "task-1774364987262-yy64gn"
+    [35msourceGroup[39m: "telegram_main"
+    [35mupdates[39m: {
+      "prompt": "IMPORTANT: Wrap ALL your reasoning and text output in <internal></internal> tags. The ONLY output that reaches the user is what you explicitly send via mcp__nanoclaw__send_message. Do NOT produce any untagged text output.\n\n<internal>\nYou are Cortana's Gmail Scan Agent (5:30pm). Run ALL steps silently. Send ONE message only if new events found.\n\nTIMEZONE RULE: Always use America/New_York for timestamps.\n\nSTEP 1 — Register job\nAdd \"gmail_scan_530\" to active_jobs in /workspace/group/memory/docs/job-tracker.json with started_at = now ISO, expected_duration_min = 5, task_id = \"task-1774364987262-yy64gn\".\n\nSTEP 2 — Search Gmail via MCP\nUse mcp__GoogleWorkspace__search_gmail_messages with:\n  user_google_email: \"edencheng@gmail.com\"\n  query: \"(invite OR invitation OR RSVP OR event OR webinar OR conference OR registration OR \"join us\" OR deadline OR \"due date\" OR meeting OR appointment OR seminar) -category:promotions -category:social newer_than:1d\"\n  page_size: 50\n\nSTEP 3 — Filter results\nFor each email, apply filters in this EXACT ORDER:\n\n⚠️ CHECK KENDO FIRST (overrides all other filters — do this before anything else):\n  Read email subject and body. If subject OR body contains ANY of:\n    kendo, dojo, shiai, iaido, bokken, mwkf, go ryu ki, martial arts, tournament, sensei\n  → IMMEDIATELY mark as INCLUDE. Skip all skip rules below. Proceed directly to STEP 4.\n\nIf NOT a kendo email, apply these skip rules:\n\nSkip Sender (skip if FROM address matches any):\n  - edencheng@gmail.com\n  - e.principal.com\n  - notifications.acorns.com\n  - acorns.com\n  - calendar-notification@google.com\n\nSkip Subject patterns (case-insensitive regex):\n  - [Billing] Fwd:\n  - ^Fwd:\n\nSTEP 4 — Extract events using Ollama\nFor each non-skipped email, read full content via mcp__GoogleWorkspace__get_gmail_message_content if needed.\nTruncate email body to 3000 characters before sending to Ollama.\nThen call Ollama gemma3:4b at http://host.docker.internal:11434 to extract events:\n\nPOST http://host.docker.internal:11434/api/generate\n{\"model\": \"gemma3:4b\", \"stream\": false, \"prompt\": \"Extract calendar events from this email. Return JSON array. Each item: {title, date (YYYY-MM-DD), end_date (null if single-day), time (string or null), location (string or null), type ('Event' or 'Task'), registration_required (bool), notes (rich: description, pricing, organizer, special instructions), alert_category (null or 'Kendo' or 'Billing' or 'Doctor / Dental')}. Kendo emails: ONE event per email (main event only, agenda goes in notes). If no events found, return []. Email: <email content>\"}\n\nIf Ollama returns empty or unparseable, fallback to Claude (just process inline — no separate API call needed since you ARE Claude).\n\nSTEP 5 — Dedup check (two-layer)\na) Local index check: Read /workspace/group/memory/tools/inbox-pipeline/notion-index.json.\n   Skip any event whose msg_id + normalized title already exists in the index.\n\nb) Notion backup check: For any event NOT found in local index, query Notion as backup:\n   Call mcp__notion__API-query-data-source with:\n     data_source_id: \"32b7c3af-c311-81d9-b5c2-000b9620cf94\"\n     filter: { \"property\": \"Gmail Msg ID\", \"rich_text\": { \"equals\": \"<email msg_id>\" } }\n   If any results returned, skip this event (already in Notion). Also add it to local index to sync.\n\nSTEP 6 — Push new events to Notion\nFor each new event, call mcp__notion__API-post-page with:\n  parent: { \"database_id\": \"32b7c3af-c311-813f-8dae-f8516b39294f\" }\n  properties:\n    Name: { \"title\": [{ \"type\": \"text\", \"text\": { \"content\": event.title } }] }\n    Type: { \"select\": { \"name\": event.type } }\n    Status: { \"select\": { \"name\": \"Pending\" } }\n    Calendar: { \"select\": { \"name\": \"Family\" if from chengfam514@gmail.com else \"Eden's Schedule\" } }\n    Event Date: { \"date\": { \"start\": event.date, \"end\": event.end_date or null } }\n    Location: { \"rich_text\": [{ \"type\": \"text\", \"text\": { \"content\": event.location } }] } (if present)\n    Registration Required: { \"checkbox\": event.registration_required }\n    From: { \"rich_text\": [{ \"type\": \"text\", \"text\": { \"content\": sender_email } }] }\n    Gmail Msg ID: { \"rich_text\": [{ \"type\": \"text\", \"text\": { \"content\": msg_id } }] }\n    Notes: { \"rich_text\": [{ \"type\": \"text\", \"text\": { \"content\": event.notes } }] } (if present)\n\nAfter pushing each event, update /workspace/group/memory/tools/inbox-pipeline/notion-index.json:\n  Add entry \"<msg_id>:<normalized-title>\": { \"page_id\": <returned id>, \"title\": event.title, \"msg_id\": msg_id, \"pushed_at\": <now ISO> }\n\nSTEP 7 — Send alerts if any\nIf any extracted events have alert_category set, send via mcp__nanoclaw__send_message:\n\"🔔 Heads Up — N alert(s) from your inbox:\n🥋 Kendo — [1-sentence summary]\n💳 Billing — [1-sentence summary]\n🏥 Doctor/Dental — [1-sentence summary]\"\n(Only include categories that were found)\n\nSTEP 8 — Send summary if new events found\nIf new_count > 0, use mcp__nanoclaw__send_message:\n\"*📬 Gmail Scan (5:30pm)*\n• [N] new event(s) found and pushed to Notion inbox\n• [brief list of what was found]\n[timestamp in ET]\"\n\nIf no new events — do NOT send any message.\n\nSTEP 9 — Update job status\nWrite to /workspace/group/memory/docs/job-status.json:\nUpdate \"gmail_scan_530\" key with:\n  last_run: now ISO\n  last_status: \"ok\" or \"error\"\n  last_model: \"gemma3:4b\"\n  last_tokens: 0\n\nSTEP 10 — Deregister\nRemove \"gmail_scan_530\" from active_jobs in /workspace/group/memory/docs/job-tracker.json.\n</internal>"
+    }
+[01:53:27.651] [32mINFO[39m (37044): [36mTask updated via IPC[39m
+    [35mtaskId[39m: "task-1774317651498-tf3uqs"
+    [35msourceGroup[39m: "telegram_main"
+    [35mupdates[39m: {
+      "prompt": "You are Cortana's Approval Queue Runner. Your job is to process approved Gmail events into Google Calendar, patch registered event titles, and apply approved scanner rules.\n\nSETUP:\n- Report file: /workspace/group/memory/docs/reports/phase_c.json\n- job-status file: /workspace/group/memory/docs/job-status.json\n- Notion Gmail Events DB: 32b7c3af-c311-813f-8dae-f8516b39294f\n- Notion block ID for status patch: 32d7c3af-c311-8187-bc53-d99dc5e6d94e\n- Google account: edencheng@gmail.com\n\nDefault behavior: silent — write report only, do NOT send Telegram message.\nEXCEPTION: If events were actually added to Google Calendar in Part A, send a Telegram message (that is important news).\n\nModel routing: Use Ollama deepseek-r1:8b at http://host.docker.internal:11434 for conflict detection reasoning. Claude for everything else.\n\n---\n\nPART A — NEW APPROVED EVENTS\n\nStep A1 — Query Notion for approved events:\n  Use mcp__notion__API-query-data-source with:\n    data_source_id: \"32b7c3af-c311-81d9-b5c2-000b9620cf94\"\n    filter: { \"property\": \"Status\", \"select\": { \"equals\": \"Approved\" } }\n  If no approved events → skip to Part B, note \"no approved events\" in report.\n\nStep A2 — For each approved event, check for calendar conflicts:\n  Use mcp__GoogleWorkspace__get_events with:\n    user_google_email: \"edencheng@gmail.com\"\n    time_min: event start ISO\n    time_max: event end ISO (or start + 2 hours if no end time)\n\n  If events returned overlap the proposed time, use Ollama deepseek-r1:8b to reason about the conflict:\n  POST http://host.docker.internal:11434/api/generate\n  {\"model\": \"deepseek-r1:8b\", \"stream\": false, \"prompt\": \"Calendar conflict analysis: Existing event: [existing]. Proposed event: [proposed]. Is this a real conflict? Should the new event be added anyway? Respond with JSON: {conflict: bool, recommendation: 'add'|'skip'|'reschedule', reason: string}\"}\n\nStep A3a — Apply registration title suffix:\n  Read the Notion row's \"Registered\" and \"Registration Required\" properties:\n  - If \"Registered\" checkbox = true → append \" (Registered)\" to the event title\n  - Else if \"Registration Required\" = true → append \" (Register!)\" to the event title\n  - Else → no suffix\n  Use the final titled (with suffix if any) for the calendar event.\n\nStep A3b — If no conflict (or recommendation = 'add'), create calendar event:\n  Use mcp__GoogleWorkspace__manage_event with:\n    action: \"create\"\n    user_google_email: \"edencheng@gmail.com\"\n    summary: final event title (from A3a)\n    start_time: event start ISO\n    end_time: event end ISO (or start + 1 hour if unknown)\n    location: event location if available\n    description: event notes\n    calendar_id: \"Family\" if from chengfam514@gmail.com, else \"primary\"\n    reminders: [{\"method\": \"popup\", \"minutes\": 30}, {\"method\": \"email\", \"minutes\": 1440}]\n  Save the returned event_id as gcal_event_id.\n\nStep A4 — Mark processed pages in Notion:\n  For each event successfully written to Google Calendar:\n  a. Write GCal Event ID back to Notion via mcp__notion__API-patch-page:\n     page_id: event's Notion page ID\n     properties: { \"GCal Event ID\": { \"rich_text\": [{ \"type\": \"text\", \"text\": { \"content\": \"<gcal_event_id>\" } }] } }\n  b. Set Status = \"Added to Calendar\" via mcp__notion__API-patch-page (same page_id):\n     properties: { \"Status\": { \"select\": { \"name\": \"Added to Calendar\" } } }\n  c. Set Status = \"Archived\" via mcp__notion__API-patch-page (same page_id):\n     properties: { \"Status\": { \"select\": { \"name\": \"Archived\" } } }\n  Terminal state: Approved → Added to Calendar → Archived (all in same run).\n\nTrack how many events were added to calendar (call this N_ADDED).\n\n---\n\nPART B — REGISTERED TITLE PATCHES\n\nStep B1 — Query Notion for registered updates:\n  Use mcp__notion__API-query-data-source with:\n    data_source_id: \"32b7c3af-c311-81d9-b5c2-000b9620cf94\"\n    filter: { \"property\": \"Status\", \"select\": { \"equals\": \"Registered\" } }\n  Look for events that have a GCal Event ID property and a title that differs from the calendar event.\n\nStep B2 — For each update:\n  Use mcp__GoogleWorkspace__manage_event with:\n    action: \"update\"\n    user_google_email: \"edencheng@gmail.com\"\n    event_id: the GCal Event ID from the Notion row\n    summary: updated title\n  Silent if no updates needed.\n\n---\n\nPART C — APPROVED RULE ROWS\n\nStep C1 — Query Notion for approved rules:\n  Use mcp__notion__API-query-data-source with:\n    data_source_id: \"32b7c3af-c311-81d9-b5c2-000b9620cf94\"\n    filter: {\n      \"and\": [\n        { \"property\": \"Status\", \"select\": { \"equals\": \"Approved\" } },\n        { \"property\": \"Type\", \"select\": { \"equals\": \"Rule\" } }\n      ]\n    }\n  If no approved rules → skip to STEP C.\n\nStep C2 — For each approved rule:\n  a. Extract Event Title (rule description) and Notes (reasoning) from the Notion row properties.\n  b. Read /workspace/group/memory/tools/inbox-pipeline/scanner-guide.md.\n     Find or create a \"## Learned Rules\" section at the end of the file.\n     Append: \"- [rule description] (approved [YYYY-MM-DD])\"\n     Write the updated content back.\n  c. Set Status = \"Archived\" via mcp__notion__API-patch-page:\n     page_id: rule's Notion page ID\n     properties: { \"Status\": { \"select\": { \"name\": \"Archived\" } } }\n  Track how many rules were applied (call this N_RULES).\n\n---\n\nSTEP C — WRITE REPORT FILE\nWrite /workspace/group/memory/docs/reports/phase_c.json with:\n  {job: \"phase_c\", job_label: \"Approval Queue Runner\", status: \"ok\", message: \"<BRIEF_SUMMARY>\", timestamp: now ISO, sent: false}\n\n---\n\nSTEP D — SEND TELEGRAM (only if N_ADDED > 0)\nIf events were actually added to Google Calendar, send via mcp__nanoclaw__send_message with sender=\"Cortana\":\n  \"Approval Queue Runner: Added N event(s) to calendar — [list titles]. Check your calendar!\"\n\nDo NOT send a message if nothing was added. Do NOT send for registered title patches only.\n\n---\n\nSTEP E — UPDATE job-status.json\nUpdate \"phase_c\" in /workspace/group/memory/docs/job-status.json:\n  { \"last_run\": \"<ISO timestamp>\", \"last_status\": \"ok\" }\n\n---\n\nSTEP F — PATCH NOTION STATUS BLOCK\nUse mcp__notion__API-update-a-block to patch block 32d7c3af-c311-8187-bc53-d99dc5e6d94e with status text \"ok\".\nFallback node script if MCP tool unavailable:\n  node -e \"const crypto=require('crypto'),https=require('https');const enc='fca70b8bd3befa09b7d742d2aa601c312f12a9f37c1e93e31cf4ad35f918c8dbe0dbe2fdb8f73309481e701492d9b48245f8335b4ab3c74b1a8fa7bedec59048';const key=Buffer.from('244a01af524e664e08f7fbdaacd6363f032b5366c5d4cb53d6bef7077a1dd62b','hex');const iv=Buffer.from('03af8acf53e5ca6975cf13140a14cae0','hex');const d=crypto.createDecipheriv('aes-256-cbc',key,iv);let t=d.update(enc,'hex','utf8')+d.final('utf8');const b=JSON.stringify({rich_text:[{type:'text',text:{content:'ok'}}]});const r=https.request({hostname:'api.notion.com',path:'/v1/blocks/32d7c3af-c311-8187-bc53-d99dc5e6d94e',method:'PATCH',headers:{Authorization:'Bearer '+t,'Content-Type':'application/json','Notion-Version':'2022-06-28','Content-Length':Buffer.byteLength(b)}},s=>{let d='';s.on('data',c=>d+=c);s.on('end',()=>console.log('PATCH:',s.statusCode));});r.write(b);r.end();\""
+    }
+[01:53:40.788] [32mINFO[39m (37044): [36mTask updated via IPC[39m
+    [35mtaskId[39m: "task-1774226620914-4ll2ho"
+    [35msourceGroup[39m: "telegram_main"
+    [35mupdates[39m: {
+      "prompt": "IMPORTANT: Wrap ALL your reasoning and text output in <internal> tags. The ONLY message sent to the user is via the explicit mcp__nanoclaw__send_message call at the end of this prompt. Do not produce any visible text output outside of <internal> tags.\n\nYou are the Gmail Scanner Learning Agent for Cortana. Your job is to improve the Gmail scanning rules over time by analyzing patterns in the Notion Gmail Events database.\n\nSTEP 1 — Read context files:\n  Read /workspace/group/memory/tools/inbox-pipeline/digest.md\n  Read /workspace/group/memory/tools/inbox-pipeline/learning-log.md\n\nSTEP 2 — Query Notion for Ignored rows:\n  Use mcp__notion__API-query-data-source with:\n    data_source_id: \"32b7c3af-c311-81d9-b5c2-000b9620cf94\"\n    filter: { \"property\": \"Status\", \"select\": { \"equals\": \"Ignored\" } }\n  If no Ignored rows, skip to STEP 4.\n\nSTEP 3 — Process each Ignored row:\n  For each row returned in STEP 2:\n  a. Extract: Event Title, From (sender email), Notes, Event Date from the row properties.\n  b. Analyze why this item was ignored — what makes it NOT worth calendaring?\n     Consider: sender domain, subject keywords, email type, event category.\n  c. Identify any new patterns worth adding as scanner skip rules.\n  d. Append findings to /workspace/group/memory/tools/inbox-pipeline/learning-log.md.\n  e. Set Learned = true on the Notion row via mcp__notion__API-patch-page:\n     page_id: <row's Notion page ID>\n     properties: { \"Learned\": { \"checkbox\": true } }\n  f. Set Status = \"Archived\" on the Notion row via mcp__notion__API-patch-page:\n     page_id: <row's Notion page ID>\n     properties: { \"Status\": { \"select\": { \"name\": \"Archived\" } } }\n  (Terminal state: Ignored → Learned=true → Archived)\n\nSTEP 4 — Analyze recent scan results from digest.md:\n  Identify patterns in emails that were missed, misclassified, or incorrectly flagged.\n  Update /workspace/group/memory/tools/inbox-pipeline/learning-log.md with additional findings.\n\n  For each actionable new skip rule or pattern identified (only if high confidence — clear repeated pattern, not a one-off):\n    Create a Notion row to queue it for Yung's approval:\n    Call mcp__notion__API-post-page with:\n      parent: { \"database_id\": \"32b7c3af-c311-813f-8dae-f8516b39294f\" }\n      properties: {\n        \"Event Title\": { \"title\": [{ \"type\": \"text\", \"text\": { \"content\": \"<rule description>\" } }] },\n        \"Type\": { \"select\": { \"name\": \"Rule\" } },\n        \"Status\": { \"select\": { \"name\": \"Pending\" } },\n        \"Notes\": { \"rich_text\": [{ \"type\": \"text\", \"text\": { \"content\": \"<reasoning and evidence>\" } }] }\n      }\n    Do NOT send a separate Telegram message per rule — rules appear in Notion for Yung to review.\n\n  If no new rules worth proposing: skip Notion row creation.\n\nSTEP 5 — Send a brief summary via mcp__nanoclaw__send_message (sender: \"Cortana\"):\n  Report: number of Ignored rows processed, patterns identified, any rule proposals pushed to Notion.\n  Use WhatsApp formatting only (*bold*, _italic_, • bullets).\n  If nothing to report, send: \"Learning Agent: no new patterns to report.\"\n\nSTEP 6 — Update job status:\n  node -e \"try{const fs=require('fs');const p='/workspace/group/memory/docs/job-status.json';let d={};try{d=JSON.parse(fs.readFileSync(p,'utf8'));}catch{}d.learning_agent={last_run:new Date().toISOString(),last_status:'ok',last_model:'claude',last_tokens:0};fs.writeFileSync(p,JSON.stringify(d,null,2));}catch(e){}\""
+    }
+[01:55:26.894] [32mINFO[39m (37044): [36mTask updated via IPC[39m
+    [35mtaskId[39m: "task-1774116095590-balthl"
+    [35msourceGroup[39m: "telegram_main"
+    [35mupdates[39m: {
+      "prompt": "Trim preserved memory backups to keep only the last 3 copies. Run silently — only notify if something goes wrong.\n\nSTEP 1 — Find backup files:\nList all files in /workspace/group/memory/backups/ (or wherever preserve-memory stores backups).\nSort by modification time, oldest first.\n\nSTEP 2 — Keep the 3 most recent, delete the rest:\nIf there are more than 3 backup files, delete the oldest ones.\nLog each deleted file to /workspace/group/logs/trim-backups.log with timestamp.\n\nSTEP 3 — Clean old Archived rows from Notion Gmail Events DB:\n  Query for old Archived rows:\n  Use mcp__notion__API-query-data-source with:\n    data_source_id: \"32b7c3af-c311-81d9-b5c2-000b9620cf94\"\n    filter: { \"property\": \"Status\", \"select\": { \"equals\": \"Archived\" } }\n\n  For each row returned:\n    Check last_edited_time — skip if edited within the last 30 days.\n    For rows older than 30 days: call mcp__notion__API-patch-page with:\n      page_id: <row id>\n      in_trash: true\n\n  Log count of deleted rows to /workspace/group/logs/trim-backups.log.\n  Silent if nothing to clean or if no Archived rows found.\n\nSTEP 4 — If any errors occur, notify via mcp__nanoclaw__send_message:\n\"⚠️ Trim Backups error: [error details]\"\nIf successful and nothing notable, run silently.\n\nSTEP 5 — Write completion status and patch Notion dashboard:\nRun this exact node command:\nnode -e \"const fs=require('fs'),crypto=require('crypto'),https=require('https');const sf='/workspace/group/memory/docs/job-status.json';const s=JSON.parse(fs.readFileSync(sf,'utf8'));s['trim_backups']={last_run:new Date().toISOString(),last_status:'ok'};fs.writeFileSync(sf,JSON.stringify(s,null,2));const kf=fs.readFileSync('/workspace/group/memory/.address-key.md','utf8');const ns=kf.match(/# Notion API Token[\s\S]*?(?=\n#|$)/i)[0];const key=Buffer.from(ns.match(/KEY:\s*([a-f0-9]{64})/)[1],'hex');const iv=Buffer.from(ns.match(/IV:\s*([a-f0-9]{32})/)[1],'hex');const enc=ns.match(/ENCRYPTED:\s*([a-f0-9]+)/)[1];const d=crypto.createDecipheriv('aes-256-cbc',key,iv);const tok=d.update(enc,'hex','utf8')+d.final('utf8');const dt=new Date().toLocaleString('en-US',{timeZone:'Asia/Hong_Kong',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});const body=JSON.stringify({bulleted_list_item:{rich_text:[{type:'text',text:{content:'✅ Trim Backups (1st of month 3am) — last run: '+dt}}]}});const req=https.request({hostname:'api.notion.com',path:'/v1/blocks/32d7c3af-c311-8188-8299-c2f0548ed634',method:'PATCH',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json','Notion-Version':'2022-06-28','Content-Length':Buffer.byteLength(body)}},(res)=>{let data='';res.on('data',d=>data+=d);res.on('end',()=>console.log('Dashboard updated'));});req.write(body);req.end();\""
+    }
+[01:58:10.181] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 1101
+[01:58:10.181] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[01:58:18.006] [32mINFO[39m (37044): [36mAgent output: 1212 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[01:58:18.754] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 1212
+[02:11:34.520] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[02:11:35.472] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[02:12:10.899] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 60
+[02:12:10.899] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[02:12:46.584] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[02:12:47.804] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[02:13:22.380] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 416
+[02:13:22.380] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[02:16:28.195] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[02:16:28.579] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[02:16:53.014] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 640
+[02:16:53.014] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[02:17:28.227] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[02:17:28.831] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[02:17:46.027] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 69
+[02:17:46.028] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[02:19:37.668] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 476
+[02:19:37.668] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[02:19:45.239] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 357
+[02:19:45.239] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[02:24:28.196] [32mINFO[39m (37044): [36mTask updated via IPC[39m
+    [35mtaskId[39m: "task-1774364980425-2ez3de"
+    [35msourceGroup[39m: "telegram_main"
+    [35mupdates[39m: {
+      "prompt": "IMPORTANT: Wrap ALL your reasoning and text output in <internal></internal> tags. The ONLY output that reaches the user is what you explicitly send via mcp__nanoclaw__send_message. Do NOT produce any untagged text output.\n\n<internal>\nYou are Cortana's Gmail Scan Agent (1pm). Run ALL steps silently. Send ONE message only if new events found.\n\nTIMEZONE RULE: Always use America/New_York for timestamps.\n\nSTEP 1 — Register job\nAdd \"gmail_scan_1pm\" to active_jobs in /workspace/group/memory/docs/job-tracker.json with started_at = now ISO, expected_duration_min = 5, task_id = \"task-1774364980425-2ez3de\".\n\nSTEP 2 — Search Gmail via MCP\nUse mcp__GoogleWorkspace__search_gmail_messages with:\n  user_google_email: \"edencheng@gmail.com\"\n  query: \"(invite OR invitation OR RSVP OR event OR webinar OR conference OR registration OR \"join us\" OR deadline OR \"due date\" OR meeting OR appointment OR seminar) -category:promotions -category:social newer_than:1d\"\n  page_size: 50\n\nSTEP 3 — Filter results\nFor each email, apply filters in this EXACT ORDER:\n\n⚠️ CHECK KENDO FIRST (overrides all other filters — do this before anything else):\n  Read email subject and body. If subject OR body contains ANY of:\n    kendo, dojo, shiai, iaido, bokken, mwkf, go ryu ki, martial arts, tournament, sensei\n  → IMMEDIATELY mark as INCLUDE. Skip all skip rules below. Proceed directly to STEP 4.\n\nIf NOT a kendo email, apply these skip rules:\n\nSkip Sender (skip if FROM address matches any):\n  - edencheng@gmail.com\n  - e.principal.com\n  - notifications.acorns.com\n  - acorns.com\n  - calendar-notification@google.com\n\nSkip Subject patterns (case-insensitive regex):\n  - [Billing] Fwd:\n  - ^Fwd:\n\nSTEP 4 — Extract events using Ollama\nFor each non-skipped email, read full content via mcp__GoogleWorkspace__get_gmail_message_content if needed.\nTruncate email body to 3000 characters before sending to Ollama.\nFor each email, call mcp__ollama__ollama_generate with:\n  model: \"gemma3:4b\"\n  prompt: \"Extract calendar events from this email. Return JSON array ONLY — no explanation, no markdown. Each item: {title, date (YYYY-MM-DD), end_date (null if single-day), time (string or null), location (string or null), type ('Event' or 'Task'), registration_required (bool), notes (rich: description, pricing, organizer, special instructions), alert_category (null or 'Kendo' or 'Billing' or 'Doctor / Dental')}. Kendo emails: ONE event per email (main event only, agenda goes in notes). If no events found, return []. Email: [paste truncated email body here]\"\nDo NOT use Claude for extraction. If Ollama tool call fails, log the error and skip that email.\n\nSTEP 5 — Dedup check (two-layer)\na) Local index check: Read /workspace/group/memory/tools/inbox-pipeline/notion-index.json.\n   Skip any event whose msg_id + normalized title already exists in the index.\n\nb) Notion backup check: For any event NOT found in local index, query Notion as backup:\n   Call mcp__notion__API-query-data-source with:\n     data_source_id: \"32b7c3af-c311-81d9-b5c2-000b9620cf94\"\n     filter: { \"property\": \"Gmail Msg ID\", \"rich_text\": { \"equals\": \"<email msg_id>\" } }\n   If any results returned, skip this event (already in Notion). Also add it to local index to sync.\n\nSTEP 6 — Push new events to Notion\nFor each new event, call mcp__notion__API-post-page with:\n  parent: { \"database_id\": \"32b7c3af-c311-813f-8dae-f8516b39294f\" }\n  properties:\n    Name: { \"title\": [{ \"type\": \"text\", \"text\": { \"content\": event.title } }] }\n    Type: { \"select\": { \"name\": event.type } }\n    Status: { \"select\": { \"name\": \"Pending\" } }\n    Calendar: { \"select\": { \"name\": \"Family\" if from chengfam514@gmail.com else \"Eden's Schedule\" } }\n    Event Date: { \"date\": { \"start\": event.date, \"end\": event.end_date or null } }\n    Location: { \"rich_text\": [{ \"type\": \"text\", \"text\": { \"content\": event.location } }] } (if present)\n    Registration Required: { \"checkbox\": event.registration_required }\n    From: { \"rich_text\": [{ \"type\": \"text\", \"text\": { \"content\": sender_email } }] }\n    Gmail Msg ID: { \"rich_text\": [{ \"type\": \"text\", \"text\": { \"content\": msg_id } }] }\n    Notes: { \"rich_text\": [{ \"type\": \"text\", \"text\": { \"content\": event.notes } }] } (if present)\n\nAfter pushing each event, update /workspace/group/memory/tools/inbox-pipeline/notion-index.json:\n  Add entry \"<msg_id>:<normalized-title>\": { \"page_id\": <returned id>, \"title\": event.title, \"msg_id\": msg_id, \"pushed_at\": <now ISO> }\n\nSTEP 7 — Send alerts if any\nIf any extracted events have alert_category set, send via mcp__nanoclaw__send_message:\n\"🔔 Heads Up — N alert(s) from your inbox:\n🥋 Kendo — [1-sentence summary]\n💳 Billing — [1-sentence summary]\n🏥 Doctor/Dental — [1-sentence summary]\"\n(Only include categories that were found)\n\nSTEP 8 — Send summary if new events found\nIf new_count > 0, use mcp__nanoclaw__send_message:\n\"*📬 Gmail Scan (1pm)*\n• [N] new event(s) found and pushed to Notion inbox\n• [brief list of what was found]\n[timestamp in ET]\"\n\nIf no new events — do NOT send any message.\n\nSTEP 9 — Update job status\nWrite to /workspace/group/memory/docs/job-status.json:\nUpdate \"gmail_scan_1pm\" key with:\n  last_run: now ISO\n  last_status: \"ok\" or \"error\"\n  last_model: \"gemma3:4b\"\n  last_tokens: 0\n\nSTEP 10 — Deregister\nRemove \"gmail_scan_1pm\" from active_jobs in /workspace/group/memory/docs/job-tracker.json.\n</internal>"
+    }
+[02:24:39.340] [32mINFO[39m (37044): [36mTask updated via IPC[39m
+    [35mtaskId[39m: "task-1774364987262-yy64gn"
+    [35msourceGroup[39m: "telegram_main"
+    [35mupdates[39m: {
+      "prompt": "IMPORTANT: Wrap ALL your reasoning and text output in <internal></internal> tags. The ONLY output that reaches the user is what you explicitly send via mcp__nanoclaw__send_message. Do NOT produce any untagged text output.\n\n<internal>\nYou are Cortana's Gmail Scan Agent (5:30pm). Run ALL steps silently. Send ONE message only if new events found.\n\nTIMEZONE RULE: Always use America/New_York for timestamps.\n\nSTEP 1 — Register job\nAdd \"gmail_scan_530\" to active_jobs in /workspace/group/memory/docs/job-tracker.json with started_at = now ISO, expected_duration_min = 5, task_id = \"task-1774364987262-yy64gn\".\n\nSTEP 2 — Search Gmail via MCP\nUse mcp__GoogleWorkspace__search_gmail_messages with:\n  user_google_email: \"edencheng@gmail.com\"\n  query: \"(invite OR invitation OR RSVP OR event OR webinar OR conference OR registration OR \"join us\" OR deadline OR \"due date\" OR meeting OR appointment OR seminar) -category:promotions -category:social newer_than:1d\"\n  page_size: 50\n\nSTEP 3 — Filter results\nFor each email, apply filters in this EXACT ORDER:\n\n⚠️ CHECK KENDO FIRST (overrides all other filters — do this before anything else):\n  Read email subject and body. If subject OR body contains ANY of:\n    kendo, dojo, shiai, iaido, bokken, mwkf, go ryu ki, martial arts, tournament, sensei\n  → IMMEDIATELY mark as INCLUDE. Skip all skip rules below. Proceed directly to STEP 4.\n\nIf NOT a kendo email, apply these skip rules:\n\nSkip Sender (skip if FROM address matches any):\n  - edencheng@gmail.com\n  - e.principal.com\n  - notifications.acorns.com\n  - acorns.com\n  - calendar-notification@google.com\n\nSkip Subject patterns (case-insensitive regex):\n  - [Billing] Fwd:\n  - ^Fwd:\n\nSTEP 4 — Extract events using Ollama\nFor each non-skipped email, read full content via mcp__GoogleWorkspace__get_gmail_message_content if needed.\nTruncate email body to 3000 characters before sending to Ollama.\nFor each email, call mcp__ollama__ollama_generate with:\n  model: \"gemma3:4b\"\n  prompt: \"Extract calendar events from this email. Return JSON array ONLY — no explanation, no markdown. Each item: {title, date (YYYY-MM-DD), end_date (null if single-day), time (string or null), location (string or null), type ('Event' or 'Task'), registration_required (bool), notes (rich: description, pricing, organizer, special instructions), alert_category (null or 'Kendo' or 'Billing' or 'Doctor / Dental')}. Kendo emails: ONE event per email (main event only, agenda goes in notes). If no events found, return []. Email: [paste truncated email body here]\"\nDo NOT use Claude for extraction. If Ollama tool call fails, log the error and skip that email.\n\nSTEP 5 — Dedup check (two-layer)\na) Local index check: Read /workspace/group/memory/tools/inbox-pipeline/notion-index.json.\n   Skip any event whose msg_id + normalized title already exists in the index.\n\nb) Notion backup check: For any event NOT found in local index, query Notion as backup:\n   Call mcp__notion__API-query-data-source with:\n     data_source_id: \"32b7c3af-c311-81d9-b5c2-000b9620cf94\"\n     filter: { \"property\": \"Gmail Msg ID\", \"rich_text\": { \"equals\": \"<email msg_id>\" } }\n   If any results returned, skip this event (already in Notion). Also add it to local index to sync.\n\nSTEP 6 — Push new events to Notion\nFor each new event, call mcp__notion__API-post-page with:\n  parent: { \"database_id\": \"32b7c3af-c311-813f-8dae-f8516b39294f\" }\n  properties:\n    Name: { \"title\": [{ \"type\": \"text\", \"text\": { \"content\": event.title } }] }\n    Type: { \"select\": { \"name\": event.type } }\n    Status: { \"select\": { \"name\": \"Pending\" } }\n    Calendar: { \"select\": { \"name\": \"Family\" if from chengfam514@gmail.com else \"Eden's Schedule\" } }\n    Event Date: { \"date\": { \"start\": event.date, \"end\": event.end_date or null } }\n    Location: { \"rich_text\": [{ \"type\": \"text\", \"text\": { \"content\": event.location } }] } (if present)\n    Registration Required: { \"checkbox\": event.registration_required }\n    From: { \"rich_text\": [{ \"type\": \"text\", \"text\": { \"content\": sender_email } }] }\n    Gmail Msg ID: { \"rich_text\": [{ \"type\": \"text\", \"text\": { \"content\": msg_id } }] }\n    Notes: { \"rich_text\": [{ \"type\": \"text\", \"text\": { \"content\": event.notes } }] } (if present)\n\nAfter pushing each event, update /workspace/group/memory/tools/inbox-pipeline/notion-index.json:\n  Add entry \"<msg_id>:<normalized-title>\": { \"page_id\": <returned id>, \"title\": event.title, \"msg_id\": msg_id, \"pushed_at\": <now ISO> }\n\nSTEP 7 — Send alerts if any\nIf any extracted events have alert_category set, send via mcp__nanoclaw__send_message:\n\"🔔 Heads Up — N alert(s) from your inbox:\n🥋 Kendo — [1-sentence summary]\n💳 Billing — [1-sentence summary]\n🏥 Doctor/Dental — [1-sentence summary]\"\n(Only include categories that were found)\n\nSTEP 8 — Send summary if new events found\nIf new_count > 0, use mcp__nanoclaw__send_message:\n\"*📬 Gmail Scan (5:30pm)*\n• [N] new event(s) found and pushed to Notion inbox\n• [brief list of what was found]\n[timestamp in ET]\"\n\nIf no new events — do NOT send any message.\n\nSTEP 9 — Update job status\nWrite to /workspace/group/memory/docs/job-status.json:\nUpdate \"gmail_scan_530\" key with:\n  last_run: now ISO\n  last_status: \"ok\" or \"error\"\n  last_model: \"gemma3:4b\"\n  last_tokens: 0\n\nSTEP 10 — Deregister\nRemove \"gmail_scan_530\" from active_jobs in /workspace/group/memory/docs/job-tracker.json.\n</internal>"
+    }
+[02:27:13.942] [32mINFO[39m (37044): [36mTask updated via IPC[39m
+    [35mtaskId[39m: "task-1774365495441-bkjitq"
+    [35msourceGroup[39m: "telegram_main"
+    [35mupdates[39m: {
+      "prompt": "IMPORTANT: Wrap ALL your reasoning and text output in <internal></internal> tags. The ONLY output that reaches the user is what you explicitly send via mcp__nanoclaw__send_message. Do NOT produce any untagged text output.\n\nIMPORTANT: Use Ollama gemma3:4b via mcp__ollama__ollama_generate for synthesis. Do NOT use Claude API for analysis.\n\n<internal>\nYou are Cortana's Evening Preview Agent. Run ALL steps silently. Send ONE message at end.\n\nTIMEZONE RULE: Always use America/New_York for ALL timestamps.\n\nSTEP 1 — Register job\nAdd \"tomorrow_preview\" to active_jobs in /workspace/group/memory/docs/job-tracker.json with started_at = now ISO, expected_duration_min = 3, task_id = \"task-1774365495441-bkjitq\".\n\nSTEP 2 — Read context\n- Read /workspace/group/memory/yung-profile.md\n- Read /workspace/group/memory/todo-list.md\n- Read /workspace/group/memory/Work/work-todo-list.md\n\nSTEP 3 — Check tomorrow's calendar\nRun: cd /workspace/project && MEMORY_PATH=/workspace/group/memory node -e \"\nconst fs=require('fs'),path=require('path'),crypto=require('crypto'),{google}=require('googleapis');\nconst MEMORY_DIR=process.env.MEMORY_PATH;\nconst GMAIL_DIR=path.join(MEMORY_DIR,'tools','inbox-pipeline');\nconst KEY_FILE=path.join(MEMORY_DIR,'.address-key.md');\nconst content=fs.readFileSync(KEY_FILE,'utf8');\nconst match=content.match(/^- KEY:\s*([a-f0-9]{64})/m);\nconst encKey=Buffer.from(match[1],'hex');\nfunction decrypt(c){const o=JSON.parse(c.trim());const iv=Buffer.from(o.iv,'hex');const d=crypto.createDecipheriv('aes-256-cbc',encKey,iv);return Buffer.concat([d.update(Buffer.from(o.data,'hex')),d.final()]).toString('utf8');}\nconst gcalConfig=JSON.parse(fs.readFileSync(path.join(GMAIL_DIR,'gcal-config.json'),'utf8'));\nconst gmailConfig=JSON.parse(fs.readFileSync(path.join(GMAIL_DIR,'config.json'),'utf8'));\nconst account=gcalConfig.accounts.find(a=>a.enabled);\nconst gmailAccount=gmailConfig.accounts.find(a=>a.enabled);\nconst tokens=JSON.parse(decrypt(fs.readFileSync(path.join(GMAIL_DIR,account.token_file),'utf8')));\nconst creds=JSON.parse(decrypt(fs.readFileSync(path.join(GMAIL_DIR,gmailAccount.credentials_file),'utf8')));\nconst{client_id,client_secret}=creds.installed||creds.web||creds;\nconst oAuth2Client=new google.auth.OAuth2(client_id,client_secret,'http://localhost:3000/oauth2callback');\noAuth2Client.setCredentials(tokens);\nconst calendar=google.calendar({version:'v3',auth:oAuth2Client});\nconst tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);\nconst start=new Date(tomorrow);start.setHours(0,0,0,0);\nconst end=new Date(tomorrow);end.setHours(23,59,59,999);\nconst calIds=gcalConfig.calendars.map(c=>c.calendar_id);\nPromise.all(calIds.map(calId=>calendar.events.list({calendarId:calId,timeMin:start.toISOString(),timeMax:end.toISOString(),singleEvents:true,orderBy:'startTime',maxResults:10}).then(res=>({calId,events:res.data.items||[]})))).then(results=>{\nlet all=[];results.forEach(r=>r.events.forEach(e=>all.push(e)));\nall.sort((a,b)=>new Date(a.start.dateTime||a.start.date)-new Date(b.start.dateTime||b.start.date));\nif(all.length===0){console.log('Nothing scheduled tomorrow.');}\nelse{all.forEach(e=>{const s=e.start.dateTime||e.start.date;const en=e.end.dateTime||e.end.date;const st=new Date(s).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',timeZone:'America/New_York'});const et=new Date(en).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',timeZone:'America/New_York'});console.log(st+' – '+et+' | '+e.summary+(e.location?' @ '+e.location:''));});}\n}).catch(e=>console.error('Calendar error:',e.message));\n\"\n\nSTEP 3.5 — Synthesize preview with Ollama\nCall mcp__ollama__ollama_generate with:\n  model: \"gemma3:4b\"\n  prompt: \"Write a concise evening preview message for Yung. Calendar tomorrow: [paste output from STEP 3]. Todos: [paste top items from todo-list.md]. Work todos: [paste top items from Work/work-todo-list.md]. Format the response as plain text with these sections: Schedule (list events or say Nothing scheduled), Top priorities (pick 2-3), Work (list work items or say All clear). Keep it brief and practical. No markdown symbols.\"\nSave the Ollama response as PREVIEW_TEXT.\n\nSTEP 4 — Send ONE message via mcp__nanoclaw__send_message\n\nUse PREVIEW_TEXT as the message body. Add a timestamp line at the end in ET.\nFormat (Telegram formatting, single *asterisks* only):\n*🌙 Tomorrow's Preview*\n\n*📅 Schedule*\n[calendar events, or \"Nothing scheduled\"]\n\n*✅ Top priorities*\n[top 2-3 from todo-list.md]\n\n*💼 Work*\n[any pending work tasks from Work/work-todo-list.md, or \"All clear 👍\"]\n\n[timestamp in ET: e.g. Mar 27 · 8:45 PM EDT]\n\nSTEP 5 — Update job status\nWrite to /workspace/group/memory/docs/job-status.json: tomorrow_preview last_run = now ISO, last_status = \"ok\", last_model = \"gemma3:4b\", last_tokens = 0.\n\nSTEP 5.5 — Log token usage\nnode -e \"try{const h=require('/workspace/group/memory/docs/token-usage-helper.js');h.logTokenUsage('tomorrow_preview','gemma3:4b',0);}catch(e){}\"\n\nSTEP 6 — Deregister\nRemove \"tomorrow_preview\" from active_jobs in /workspace/group/memory/docs/job-tracker.json.\n</internal>"
+    }
+[02:27:37.190] [32mINFO[39m (37044): [36mTask updated via IPC[39m
+    [35mtaskId[39m: "task-1774226620914-4ll2ho"
+    [35msourceGroup[39m: "telegram_main"
+    [35mupdates[39m: {
+      "prompt": "IMPORTANT: Wrap ALL your reasoning and text output in <internal> tags. The ONLY message sent to the user is via the explicit mcp__nanoclaw__send_message call at the end of this prompt. Do not produce any visible text output outside of <internal> tags.\n\nYou are the Gmail Scanner Learning Agent for Cortana. Your job is to improve the Gmail scanning rules over time by analyzing patterns in the Notion Gmail Events database.\n\nSTEP 1 — Read context files:\n  Read /workspace/group/memory/tools/inbox-pipeline/digest.md\n  Read /workspace/group/memory/tools/inbox-pipeline/learning-log.md\n\nSTEP 2 — Query Notion for Ignored rows:\n  Use mcp__notion__API-query-data-source with:\n    data_source_id: \"32b7c3af-c311-81d9-b5c2-000b9620cf94\"\n    filter: { \"property\": \"Status\", \"select\": { \"equals\": \"Ignored\" } }\n  If no Ignored rows, skip to STEP 4.\n\nSTEP 3 — Process each Ignored row:\n  For each row returned in STEP 2:\n  a. Extract: Event Title, From (sender email), Notes, Event Date from the row properties.\n  b. Call mcp__ollama__ollama_generate to analyze why it was ignored:\n     model: \"gemma3:4b\"\n     prompt: \"Analyze this email entry that was marked as not worth calendaring. What makes it skippable? What sender domain, subject keyword, or content pattern could be used as a skip rule? Entry — Title: [title], From: [from email], Notes: [notes]. Respond with: 1) Why it was ignored (1 sentence). 2) Suggested skip rule (or 'no clear rule').\"\n  c. Identify any new patterns worth adding as scanner skip rules (based on Ollama response).\n  d. Append findings to /workspace/group/memory/tools/inbox-pipeline/learning-log.md.\n  e. Set Learned = true on the Notion row via mcp__notion__API-patch-page:\n     page_id: <row's Notion page ID>\n     properties: { \"Learned\": { \"checkbox\": true } }\n  f. Set Status = \"Archived\" on the Notion row via mcp__notion__API-patch-page:\n     page_id: <row's Notion page ID>\n     properties: { \"Status\": { \"select\": { \"name\": \"Archived\" } } }\n  (Terminal state: Ignored → Learned=true → Archived)\n\nSTEP 4 — Analyze recent scan results from digest.md:\n  Read the content of digest.md, then call mcp__ollama__ollama_generate:\n    model: \"gemma3:4b\"\n    prompt: \"Review these Gmail scan results. Identify any repeated patterns in emails that were misclassified (incorrectly flagged as events, or missed events). What skip rules or include rules would improve accuracy? Only suggest rules if you see a clear, repeated pattern — not one-off cases. Scan digest: [paste digest.md content here]\"\n  Use the Ollama analysis to decide what to write to learning-log.md.\n  Update /workspace/group/memory/tools/inbox-pipeline/learning-log.md with findings.\n\n  For each actionable new skip rule or pattern identified (only if high confidence — clear repeated pattern, not a one-off):\n    Create a Notion row to queue it for Yung's approval:\n    Call mcp__notion__API-post-page with:\n      parent: { \"database_id\": \"32b7c3af-c311-813f-8dae-f8516b39294f\" }\n      properties: {\n        \"Event Title\": { \"title\": [{ \"type\": \"text\", \"text\": { \"content\": \"<rule description>\" } }] },\n        \"Type\": { \"select\": { \"name\": \"Rule\" } },\n        \"Status\": { \"select\": { \"name\": \"Pending\" } },\n        \"Notes\": { \"rich_text\": [{ \"type\": \"text\", \"text\": { \"content\": \"<reasoning and evidence>\" } }] }\n      }\n    Do NOT send a separate Telegram message per rule — rules appear in Notion for Yung to review.\n\n  If no new rules worth proposing: skip Notion row creation.\n\nSTEP 5 — Send a brief summary via mcp__nanoclaw__send_message (sender: \"Cortana\"):\n  Report: number of Ignored rows processed, patterns identified, any rule proposals pushed to Notion.\n  Use WhatsApp formatting only (*bold*, _italic_, • bullets).\n  If nothing to report, send: \"Learning Agent: no new patterns to report.\"\n\nSTEP 6 — Update job status:\n  node -e \"try{const fs=require('fs');const p='/workspace/group/memory/docs/job-status.json';let d={};try{d=JSON.parse(fs.readFileSync(p,'utf8'));}catch{}d.learning_agent={last_run:new Date().toISOString(),last_status:'ok',last_model:'gemma3:4b',last_tokens:0};fs.writeFileSync(p,JSON.stringify(d,null,2));}catch(e){}\""
+    }
+[02:27:59.455] [32mINFO[39m (37044): [36mTask updated via IPC[39m
+    [35mtaskId[39m: "task-1774317651498-tf3uqs"
+    [35msourceGroup[39m: "telegram_main"
+    [35mupdates[39m: {
+      "prompt": "You are Cortana's Approval Queue Runner. Your job is to process approved Gmail events into Google Calendar, patch registered event titles, and apply approved scanner rules.\n\nSETUP:\n- Report file: /workspace/group/memory/docs/reports/phase_c.json\n- job-status file: /workspace/group/memory/docs/job-status.json\n- Notion Gmail Events DB: 32b7c3af-c311-813f-8dae-f8516b39294f\n- Notion block ID for status patch: 32d7c3af-c311-8187-bc53-d99dc5e6d94e\n- Google account: edencheng@gmail.com\n\nDefault behavior: silent — write report only, do NOT send Telegram message.\nEXCEPTION: If events were actually added to Google Calendar in Part A, send a Telegram message (that is important news).\n\nModel routing: Use mcp__ollama__ollama_generate with deepseek-r1:8b for conflict detection reasoning. Claude for MCP tool calls and everything else.\n\n---\n\nPART A — NEW APPROVED EVENTS\n\nStep A1 — Query Notion for approved events:\n  Use mcp__notion__API-query-data-source with:\n    data_source_id: \"32b7c3af-c311-81d9-b5c2-000b9620cf94\"\n    filter: { \"property\": \"Status\", \"select\": { \"equals\": \"Approved\" } }\n  If no approved events → skip to Part B, note \"no approved events\" in report.\n\nStep A2 — For each approved event, check for calendar conflicts:\n  Use mcp__GoogleWorkspace__get_events with:\n    user_google_email: \"edencheng@gmail.com\"\n    time_min: event start ISO\n    time_max: event end ISO (or start + 2 hours if no end time)\n\n  If events returned overlap the proposed time, call mcp__ollama__ollama_generate to reason about the conflict:\n    model: \"deepseek-r1:8b\"\n    prompt: \"Calendar conflict analysis. Existing event: [existing event title and time]. Proposed event: [proposed event title and time]. Is this a real conflict? Should the new event be added anyway? Respond with JSON ONLY: {\\"conflict\\": true/false, \\"recommendation\\": \\"add\\" or \\"skip\\" or \\"reschedule\\", \\"reason\\": \\"brief explanation\\"}\"\n  Parse the JSON from Ollama response to get conflict and recommendation.\n\nStep A3a — Apply registration title suffix:\n  Read the Notion row's \"Registered\" and \"Registration Required\" properties:\n  - If \"Registered\" checkbox = true → append \" (Registered)\" to the event title\n  - Else if \"Registration Required\" = true → append \" (Register!)\" to the event title\n  - Else → no suffix\n  Use the final titled (with suffix if any) for the calendar event.\n\nStep A3b — If no conflict (or recommendation = 'add'), create calendar event:\n  Use mcp__GoogleWorkspace__manage_event with:\n    action: \"create\"\n    user_google_email: \"edencheng@gmail.com\"\n    summary: final event title (from A3a)\n    start_time: event start ISO\n    end_time: event end ISO (or start + 1 hour if unknown)\n    location: event location if available\n    description: event notes\n    calendar_id: \"Family\" if from chengfam514@gmail.com, else \"primary\"\n    reminders: [{\"method\": \"popup\", \"minutes\": 30}, {\"method\": \"email\", \"minutes\": 1440}]\n  Save the returned event_id as gcal_event_id.\n\nStep A4 — Mark processed pages in Notion:\n  For each event successfully written to Google Calendar:\n  a. Write GCal Event ID back to Notion via mcp__notion__API-patch-page:\n     page_id: event's Notion page ID\n     properties: { \"GCal Event ID\": { \"rich_text\": [{ \"type\": \"text\", \"text\": { \"content\": \"<gcal_event_id>\" } }] } }\n  b. Set Status = \"Added to Calendar\" via mcp__notion__API-patch-page (same page_id):\n     properties: { \"Status\": { \"select\": { \"name\": \"Added to Calendar\" } } }\n  c. Set Status = \"Archived\" via mcp__notion__API-patch-page (same page_id):\n     properties: { \"Status\": { \"select\": { \"name\": \"Archived\" } } }\n  Terminal state: Approved → Added to Calendar → Archived (all in same run).\n\nTrack how many events were added to calendar (call this N_ADDED).\n\n---\n\nPART B — REGISTERED TITLE PATCHES\n\nStep B1 — Query Notion for registered updates:\n  Use mcp__notion__API-query-data-source with:\n    data_source_id: \"32b7c3af-c311-81d9-b5c2-000b9620cf94\"\n    filter: { \"property\": \"Status\", \"select\": { \"equals\": \"Registered\" } }\n  Look for events that have a GCal Event ID property and a title that differs from the calendar event.\n\nStep B2 — For each update:\n  Use mcp__GoogleWorkspace__manage_event with:\n    action: \"update\"\n    user_google_email: \"edencheng@gmail.com\"\n    event_id: the GCal Event ID from the Notion row\n    summary: updated title\n  Silent if no updates needed.\n\n---\n\nPART C — APPROVED RULE ROWS\n\nStep C1 — Query Notion for approved rules:\n  Use mcp__notion__API-query-data-source with:\n    data_source_id: \"32b7c3af-c311-81d9-b5c2-000b9620cf94\"\n    filter: {\n      \"and\": [\n        { \"property\": \"Status\", \"select\": { \"equals\": \"Approved\" } },\n        { \"property\": \"Type\", \"select\": { \"equals\": \"Rule\" } }\n      ]\n    }\n  If no approved rules → skip to STEP C.\n\nStep C2 — For each approved rule:\n  a. Extract Event Title (rule description) and Notes (reasoning) from the Notion row properties.\n  b. Read /workspace/group/memory/tools/inbox-pipeline/scanner-guide.md.\n     Find or create a \"## Learned Rules\" section at the end of the file.\n     Append: \"- [rule description] (approved [YYYY-MM-DD])\"\n     Write the updated content back.\n  c. Set Status = \"Archived\" via mcp__notion__API-patch-page:\n     page_id: rule's Notion page ID\n     properties: { \"Status\": { \"select\": { \"name\": \"Archived\" } } }\n  Track how many rules were applied (call this N_RULES).\n\n---\n\nSTEP C — WRITE REPORT FILE\nWrite /workspace/group/memory/docs/reports/phase_c.json with:\n  {job: \"phase_c\", job_label: \"Approval Queue Runner\", status: \"ok\", message: \"<BRIEF_SUMMARY>\", timestamp: now ISO, sent: false}\n\n---\n\nSTEP D — SEND TELEGRAM (only if N_ADDED > 0)\nIf events were actually added to Google Calendar, send via mcp__nanoclaw__send_message with sender=\"Cortana\":\n  \"Approval Queue Runner: Added N event(s) to calendar — [list titles]. Check your calendar!\"\n\nDo NOT send a message if nothing was added. Do NOT send for registered title patches only.\n\n---\n\nSTEP E — UPDATE job-status.json\nUpdate \"phase_c\" in /workspace/group/memory/docs/job-status.json:\n  { \"last_run\": \"<ISO timestamp>\", \"last_status\": \"ok\" }\n\n---\n\nSTEP F — PATCH NOTION STATUS BLOCK\nUse mcp__notion__API-update-a-block to patch block 32d7c3af-c311-8187-bc53-d99dc5e6d94e with status text \"ok\".\nFallback node script if MCP tool unavailable:\n  node -e \"const crypto=require('crypto'),https=require('https');const enc='fca70b8bd3befa09b7d742d2aa601c312f12a9f37c1e93e31cf4ad35f918c8dbe0dbe2fdb8f73309481e701492d9b48245f8335b4ab3c74b1a8fa7bedec59048';const key=Buffer.from('244a01af524e664e08f7fbdaacd6363f032b5366c5d4cb53d6bef7077a1dd62b','hex');const iv=Buffer.from('03af8acf53e5ca6975cf13140a14cae0','hex');const d=crypto.createDecipheriv('aes-256-cbc',key,iv);let t=d.update(enc,'hex','utf8')+d.final('utf8');const b=JSON.stringify({rich_text:[{type:'text',text:{content:'ok'}}]});const r=https.request({hostname:'api.notion.com',path:'/v1/blocks/32d7c3af-c311-8187-bc53-d99dc5e6d94e',method:'PATCH',headers:{Authorization:'Bearer '+t,'Content-Type':'application/json','Notion-Version':'2022-06-28','Content-Length':Buffer.byteLength(b)}},s=>{let d='';s.on('data',c=>d+=c);s.on('end',()=>console.log('PATCH:',s.statusCode));});r.write(b);r.end();\""
+    }
+[02:28:35.386] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 838
+[02:28:35.386] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[02:28:38.688] [32mINFO[39m (37044): [36mAgent output: 314 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[02:28:38.939] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 314
+[02:28:48.017] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 619
+[02:28:48.017] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[02:28:50.984] [32mINFO[39m (37044): [36mAgent output: 196 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[02:28:51.230] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 196
+[02:28:51.497] [32mINFO[39m (37044): [36mContainer completed (streaming mode)[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mduration[39m: 5007880
+    [35mnewSessionId[39m: "274d7d54-eca4-4f4d-b84f-949fd8ad0f30"
+[02:31:48.498] [32mINFO[39m (37044): [36mTelegram message stored[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35mchatName[39m: "Yung"
+    [35msender[39m: "Yung"
+[02:31:50.344] [32mINFO[39m (37044): [36mNew messages[39m
+    [35mcount[39m: 1
+[02:31:50.375] [32mINFO[39m (37044): [36mProcessing messages[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mmessageCount[39m: 1
+[02:31:50.891] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 16
+[02:31:51.063] [32mINFO[39m (37044): [36mSpawning container agent[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mcontainerName[39m: "nanoclaw-telegram-main-1775284311062"
+    [35mmountCount[39m: 7
+    [35misMain[39m: true
+[02:32:12.656] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 108
+[02:32:12.656] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[02:34:31.607] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 136
+[02:34:31.607] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[02:36:38.454] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 1400
+[02:36:38.454] [32mINFO[39m (37044): [36mIPC message sent[39m
+    [35mchatJid[39m: "tg:7620573381"
+    [35msourceGroup[39m: "telegram_main"
+[02:36:41.554] [32mINFO[39m (37044): [36mAgent output: 240 chars[39m
+    [35mgroup[39m: "Yung Cheng"
+[02:36:41.806] [32mINFO[39m (37044): [36mTelegram message sent[39m
+    [35mjid[39m: "tg:7620573381"
+    [35mlength[39m: 240
+[03:06:42.698] [32mINFO[39m (37044): [36mContainer completed (streaming mode)[39m
+    [35mgroup[39m: "Yung Cheng"
+    [35mduration[39m: 2091669
+    [35mnewSessionId[39m: "274d7d54-eca4-4f4d-b84f-949fd8ad0f30"
+[10:09:30.414] [32mINFO[39m (13800): [36mStopped orphaned containers[39m
+    [35mcount[39m: 1
+    [35mnames[39m: [
+      "nanoclaw-telegram-main-1775311733321"
+    ]
+[10:09:30.424] [32mINFO[39m (13800): [36mDatabase initialized[39m
+[10:09:30.425] [32mINFO[39m (13800): [36mState loaded[39m
+    [35mgroupCount[39m: 1
+[10:09:30.442] [31mERROR[39m (13800): [36mFailed to start NanoClaw[39m
+    err: {
+      "type": "Error",
+      "message": "listen EADDRINUSE: address already in use 0.0.0.0:3001",
+      "stack":
+          Error: listen EADDRINUSE: address already in use 0.0.0.0:3001
+              at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+              at listenInCluster (node:net:2005:12)
+              at node:net:2214:7
+              at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+      "code": "EADDRINUSE",
+      "errno": -4091,
+      "syscall": "listen",
+      "address": "0.0.0.0",
+      "port": 3001
+    }
