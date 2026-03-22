@@ -25,6 +25,7 @@
 
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -32,10 +33,10 @@ const GROUP_DIR  = process.env.NANOCLAW_GROUP_DIR || '/workspace/group';
 const MEMORY_DIR = path.join(GROUP_DIR, 'memory');
 const GMAIL_DIR  = path.join(MEMORY_DIR, 'tools', 'gmail');
 const LOGS_DIR   = path.join(GROUP_DIR, 'logs');
+const KEY_FILE     = path.join(MEMORY_DIR, '.address-key.md');
 const PENDING_FILE = path.join(GMAIL_DIR, 'events-pending.json');
 const INDEX_FILE   = path.join(GMAIL_DIR, 'notion-index.json');
 const SCAN_LOG     = path.join(LOGS_DIR, 'gmail-scan.log');
-const ENV_FILE     = process.env.NANOCLAW_ENV_FILE || path.join(__dirname, '..', '..', '..', '.env');
 
 const DB_ID          = '32b7c3af-c311-813f-8dae-f8516b39294f';
 const DB_URL         = 'https://www.notion.so/32b7c3afc311813f8daef8516b39294f';
@@ -51,15 +52,17 @@ const limit    = limitArg !== -1 ? parseInt(args[limitArg + 1], 10) : null;
 const statusArg = args.indexOf('--status');
 const statusFilter = statusArg !== -1 ? args[statusArg + 1] : null;
 
-// --- Env loader ---
-function loadEnv() {
-  const raw = fs.readFileSync(ENV_FILE, 'utf8');
-  const env = {};
-  for (const line of raw.split('\n')) {
-    const match = line.match(/^([A-Z_]+)=(.+)$/);
-    if (match) env[match[1]] = match[2].trim();
-  }
-  return env;
+// --- Notion token (decrypt from .address-key.md) ---
+function loadNotionToken(keyFilePath) {
+  const content = fs.readFileSync(keyFilePath, 'utf8');
+  const enc = content.match(/ENCRYPTED:\s*([a-f0-9]+)/m)?.[1];
+  const key = content.match(/KEY:\s*([a-f0-9]{64})/m)?.[1];
+  const iv  = content.match(/IV:\s*([a-f0-9]{32})/m)?.[1];
+  if (!enc || !key || !iv) throw new Error('Notion token not found in .address-key.md');
+  const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key, 'hex'), Buffer.from(iv, 'hex'));
+  let dec = decipher.update(enc, 'hex', 'utf8');
+  dec += decipher.final('utf8');
+  return dec;
 }
 
 // --- Logging ---
@@ -316,9 +319,8 @@ async function cmdClean(token) {
 
 // --- Entry point ---
 async function main() {
-  const env = loadEnv();
-  const token = env.NOTION_TOKEN || process.env.NOTION_TOKEN;
-  if (!token) { console.error('NOTION_TOKEN not found in .env'); process.exit(1); }
+  const token = process.env.NOTION_TOKEN || loadNotionToken(KEY_FILE);
+  if (!token) { console.error('NOTION_TOKEN not found in env or .address-key.md'); process.exit(1); }
 
   if (doSync)       await cmdSync(token);
   else if (doClean) await cmdClean(token);
