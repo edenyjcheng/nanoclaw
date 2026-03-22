@@ -19,7 +19,8 @@ import { google } from 'googleapis';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const MEMORY_DIR = path.join(__dirname, '..', 'groups', 'telegram_main', 'memory');
+const GROUP_DIR = process.env.NANOCLAW_GROUP_DIR || '/workspace/group';
+const MEMORY_DIR = path.join(GROUP_DIR, 'memory');
 const KEY_FILE = path.join(MEMORY_DIR, '.address-key.md');
 const CONFIG_FILE = path.join(MEMORY_DIR, 'gmail-config.json');
 
