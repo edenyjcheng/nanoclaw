@@ -21,8 +21,9 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const GROUP_DIR = process.env.NANOCLAW_GROUP_DIR || '/workspace/group';
 const MEMORY_DIR = path.join(GROUP_DIR, 'memory');
+const GMAIL_DIR = path.join(MEMORY_DIR, 'tools', 'gmail');
 const KEY_FILE = path.join(MEMORY_DIR, '.address-key.md');
-const CONFIG_FILE = path.join(MEMORY_DIR, 'gmail-config.json');
+const CONFIG_FILE = path.join(GMAIL_DIR, 'config.json');
 
 const SCOPES = [
   'https://www.googleapis.com/auth/gmail.readonly',
@@ -160,8 +161,8 @@ function upsertAccount(config, accountName, email, tokenFile) {
   const entry = {
     name: accountName,
     email,
-    credentials_file: path.basename(tokenFile),
-    token_file: `.gmail-token-${accountName.toLowerCase()}.enc`,
+    credentials_file: `.creds-${accountName.toLowerCase()}.enc`,
+    token_file: `.token-${accountName.toLowerCase()}.enc`,
     enabled: true,
     scan: {
       mode: 'interval',
@@ -202,7 +203,7 @@ async function main() {
   const key = loadEncryptionKey();
 
   // Encrypt and save token
-  const tokenFile = path.join(MEMORY_DIR, `.gmail-token-${accountName.toLowerCase()}.enc`);
+  const tokenFile = path.join(GMAIL_DIR, `.token-${accountName.toLowerCase()}.enc`);
   const encryptedToken = encrypt(JSON.stringify(tokens), key);
   fs.writeFileSync(tokenFile, encryptedToken, 'utf8');
   console.log(`\nToken saved (encrypted): ${tokenFile}`);

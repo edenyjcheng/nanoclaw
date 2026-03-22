@@ -30,11 +30,12 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const GROUP_DIR  = process.env.NANOCLAW_GROUP_DIR || '/workspace/group';
 const MEMORY_DIR = path.join(GROUP_DIR, 'memory');
+const GMAIL_DIR  = path.join(MEMORY_DIR, 'tools', 'gmail');
 const LOGS_DIR   = path.join(GROUP_DIR, 'logs');
-const PENDING_FILE = path.join(MEMORY_DIR, 'gmail-events-pending.json');
-const INDEX_FILE   = path.join(MEMORY_DIR, 'gmail-notion-index.json');
+const PENDING_FILE = path.join(GMAIL_DIR, 'events-pending.json');
+const INDEX_FILE   = path.join(GMAIL_DIR, 'notion-index.json');
 const SCAN_LOG     = path.join(LOGS_DIR, 'gmail-scan.log');
-const ENV_FILE     = process.env.NANOCLAW_ENV_FILE || path.join(__dirname, '..', '.env');
+const ENV_FILE     = process.env.NANOCLAW_ENV_FILE || path.join(__dirname, '..', '..', '..', '.env');
 
 const DB_ID          = '32b7c3af-c311-813f-8dae-f8516b39294f';
 const DB_URL         = 'https://www.notion.so/32b7c3afc311813f8daef8516b39294f';

@@ -39,12 +39,13 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const GROUP_DIR = process.env.NANOCLAW_GROUP_DIR || '/workspace/group';
 const MEMORY_DIR = path.join(GROUP_DIR, 'memory');
+const GMAIL_DIR = path.join(MEMORY_DIR, 'tools', 'gmail');
 const LOGS_DIR = path.join(GROUP_DIR, 'logs');
 const KEY_FILE = path.join(MEMORY_DIR, '.address-key.md');
-const CONFIG_FILE = path.join(MEMORY_DIR, 'gmail-config.json');
-const PENDING_FILE = path.join(MEMORY_DIR, 'gmail-events-pending.json');
+const CONFIG_FILE = path.join(GMAIL_DIR, 'config.json');
+const PENDING_FILE = path.join(GMAIL_DIR, 'events-pending.json');
 const SCAN_LOG = path.join(LOGS_DIR, 'gmail-scan.log');
-const GUIDE_FILE = path.join(MEMORY_DIR, 'gmail-scanner-guide.md');
+const GUIDE_FILE = path.join(GMAIL_DIR, 'scanner-guide.md');
 
 // --- CLI args ---
 const args = process.argv.slice(2);
@@ -282,8 +283,8 @@ function decodeBody(payload) {
 
 // --- Process one account ---
 async function scanAccount(account, key, scannedIds, dryRun, guide) {
-  const credsEncrypted = fs.readFileSync(path.join(MEMORY_DIR, account.credentials_file), 'utf8');
-  const tokenEncrypted = fs.readFileSync(path.join(MEMORY_DIR, account.token_file), 'utf8');
+  const credsEncrypted = fs.readFileSync(path.join(GMAIL_DIR, account.credentials_file), 'utf8');
+  const tokenEncrypted = fs.readFileSync(path.join(GMAIL_DIR, account.token_file), 'utf8');
 
   const creds = JSON.parse(decrypt(credsEncrypted, key));
   const tokens = JSON.parse(decrypt(tokenEncrypted, key));
@@ -302,7 +303,7 @@ async function scanAccount(account, key, scannedIds, dryRun, guide) {
       const cipher = crypto.createCipheriv('aes-256-cbc', encKey, iv);
       const encrypted = Buffer.concat([cipher.update(JSON.stringify(merged), 'utf8'), cipher.final()]);
       fs.writeFileSync(
-        path.join(MEMORY_DIR, account.token_file),
+        path.join(GMAIL_DIR, account.token_file),
         JSON.stringify({ iv: iv.toString('hex'), data: encrypted.toString('hex') }),
         'utf8'
       );
