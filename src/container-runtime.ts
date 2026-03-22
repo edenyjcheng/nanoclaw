@@ -104,10 +104,15 @@ export function ensureContainerRuntimeRunning(): void {
 export function cleanupOrphans(): void {
   try {
     const output = execSync(
-      `${CONTAINER_RUNTIME_BIN} ps --filter name=nanoclaw- --format '{{.Names}}'`,
+      `${CONTAINER_RUNTIME_BIN} ps --filter name=nanoclaw- --format {{.Names}}`,
       { stdio: ['pipe', 'pipe', 'pipe'], encoding: 'utf-8' },
     );
-    const orphans = output.trim().split('\n').filter(Boolean);
+    // Strip any surrounding quotes that some shells/platforms add
+    const orphans = output
+      .trim()
+      .split('\n')
+      .map((n) => n.replace(/^['"]|['"]$/g, '').trim())
+      .filter(Boolean);
     for (const name of orphans) {
       try {
         execSync(stopContainer(name), { stdio: 'pipe' });
