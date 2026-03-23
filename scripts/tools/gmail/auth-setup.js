@@ -202,11 +202,18 @@ async function main() {
   // Load encryption key
   const key = loadEncryptionKey();
 
+  // Encrypt and save credentials
+  fs.mkdirSync(GMAIL_DIR, { recursive: true });
+  const credsFile = path.join(GMAIL_DIR, `.creds-${accountName.toLowerCase()}.enc`);
+  const encryptedCreds = encrypt(credentialsRaw, key);
+  fs.writeFileSync(credsFile, encryptedCreds, 'utf8');
+  console.log(`\nCredentials saved (encrypted): ${credsFile}`);
+
   // Encrypt and save token
   const tokenFile = path.join(GMAIL_DIR, `.token-${accountName.toLowerCase()}.enc`);
   const encryptedToken = encrypt(JSON.stringify(tokens), key);
   fs.writeFileSync(tokenFile, encryptedToken, 'utf8');
-  console.log(`\nToken saved (encrypted): ${tokenFile}`);
+  console.log(`Token saved (encrypted): ${tokenFile}`);
 
   // Determine email — ask user if not in credentials
   let email = clientEmail;

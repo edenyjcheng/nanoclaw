@@ -116,7 +116,15 @@
       "Bash(powershell.exe -Command \"Get-ScheduledTask | Where-Object { \\\\$_.TaskName -like '*nano*' -or \\\\$_.TaskName -like '*Nano*' } | Select TaskName, State\" 2>&1)",
       "Bash(powershell.exe -Command \"Get-ScheduledTask | Select TaskName, State | Out-String\")",
       "Bash(powershell.exe -Command \"Get-Process -Id 32360 -ErrorAction SilentlyContinue | Select-Object Id, ProcessName, StartTime\" 2>&1)",
-      "Bash(powershell.exe -Command \"Stop-Process -Id 32360 -Force\" 2>&1)"
+      "Bash(powershell.exe -Command \"Stop-Process -Id 32360 -Force\" 2>&1)",
+      "Bash(2)",
+      "Bash(powershell.exe -Command \"Get-Process -Name node -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Id\" 2>&1)",
+      "Bash(npx pm2:*)",
+      "Bash(sort -t/ -k9)",
+      "Bash(wmic process:*)",
+      "Bash(xargs -I{} taskkill //F //PID {})",
+      "Bash(do taskkill:*)",
+      "Bash(NANOCLAW_GROUP_DIR=\"C:/workspace/claude/nanoclaw/groups/telegram_main\" node scripts/tools/gmail/gcal-auth-setup.js --account Personal 2>&1)"
     ]
   }
 }

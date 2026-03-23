@@ -44,6 +44,7 @@ const LOGS_DIR = path.join(GROUP_DIR, 'logs');
 const KEY_FILE = path.join(MEMORY_DIR, '.address-key.md');
 const CONFIG_FILE = path.join(GMAIL_DIR, 'config.json');
 const PENDING_FILE = path.join(GMAIL_DIR, 'events-pending.json');
+const ALERTS_FILE  = path.join(GMAIL_DIR, 'alerts-pending.json');
 const SCAN_LOG = path.join(LOGS_DIR, 'gmail-scan.log');
 const GUIDE_FILE = path.join(GMAIL_DIR, 'scanner-guide.md');
 
@@ -114,11 +115,31 @@ function loadGuide() {
     return match ? match[1].trim() : null;
   }
 
+  // Parse ## ALERT CATEGORIES blocks
+  function parseAlertCategories() {
+    const section = text.match(/## ALERT CATEGORIES([\s\S]*?)(?=\n## |$)/);
+    if (!section) return [];
+    const cats = [];
+    const blocks = [...section[1].matchAll(/### Alert: (.+?)\n([\s\S]*?)(?=\n### Alert:|$)/g)];
+    for (const b of blocks) {
+      const name = b[1].trim();
+      const body = b[2];
+      const emoji = body.match(/Emoji:\s*(\S+)/)?.[1] || '🔔';
+      const kwMatch = body.match(/Match keywords[^\n]*\n([\s\S]*?)(?=\nSummary:|Note:|$)/);
+      const keywords = kwMatch
+        ? kwMatch[1].split(',').map(k => k.trim()).filter(k => k.length > 0)
+        : [];
+      cats.push({ name, emoji, keywords });
+    }
+    return cats;
+  }
+
   return {
     skipFrom: parseList('Skip Sender').map(e => e.toLowerCase()),
     skipSubjectPatterns: parseList('Skip Subject Patterns').map(p => new RegExp(p, 'i')),
     onlyFrom: parseList('Only Sender').map(e => e.toLowerCase()),
     extractionGuidelines,
+    alertCategories: parseAlertCategories(),
     ollamaUrl: parseSetting('ollama_url') || OLLAMA_URL_DEFAULT,
     ollamaModel: parseSetting('ollama_model') || OLLAMA_MODEL_DEFAULT,
   };
@@ -257,6 +278,35 @@ async function extractEvents(emailSubject, emailBody, emailFrom, guide) {
   }
 }
 
+// --- Alert summary generation (Ollama, falls back to subject line) ---
+async function generateAlertSummary(categoryName, subject, body, guide) {
+  const prompt = `Summarize this email in exactly 1 sentence for the "${categoryName}" alert category.
+
+Subject: ${subject}
+Body:
+${body.slice(0, 2000)}
+
+Respond with ONE sentence only. No explanation.`;
+  try {
+    const res = await fetch(`${guide.ollamaUrl}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: guide.ollamaModel,
+        messages: [{ role: 'user', content: prompt }],
+        stream: false,
+        options: { temperature: 0.1 },
+      }),
+      signal: AbortSignal.timeout(20000),
+    });
+    if (!res.ok) throw new Error(`Ollama HTTP ${res.status}`);
+    const data = await res.json();
+    return data.message?.content?.trim() || subject;
+  } catch {
+    return subject;
+  }
+}
+
 // --- Decode email body ---
 function decodeBody(payload) {
   const parts = payload.parts || [payload];
@@ -327,6 +377,7 @@ async function scanAccount(account, key, scannedIds, dryRun, guide) {
   logLine(`SCAN_FOUND | account=${account.name} | count=${messages.length}`);
 
   const extractedEvents = [];
+  const alertsFound = [];
   let skipped = 0;
   let extracted = 0;
 
@@ -362,32 +413,47 @@ async function scanAccount(account, key, scannedIds, dryRun, guide) {
 
     logLine(`MSG | account=${account.name} | msg_id=${msgId} | subject=${subject.slice(0, 60)} | action=processing`);
 
+    // Alert detection (runs alongside event extraction; same email can be both)
+    const emailAlerts = [];
+    if (guide.alertCategories.length > 0) {
+      const searchText = (subject + ' ' + body).toLowerCase();
+      for (const cat of guide.alertCategories) {
+        if (cat.keywords.some(k => searchText.includes(k.toLowerCase()))) {
+          const summary = await generateAlertSummary(cat.name, subject, body, guide);
+          emailAlerts.push({ category: cat.name, emoji: cat.emoji, summary, msg_id: msgId, subject, from, account: account.name });
+          logLine(`ALERT | account=${account.name} | msg_id=${msgId} | category=${cat.name} | summary=${summary.slice(0, 80)}`);
+        }
+      }
+    }
+
     const events = await extractEvents(subject, body, from, guide);
+    const source = { account: account.name, email: account.email, msg_id: msgId, subject, from };
 
     if (events.length > 0) {
       extracted++;
-      for (const event of events) {
-        extractedEvents.push({
-          ...event,
-          source: {
-            account: account.name,
-            email: account.email,
-            msg_id: msgId,
-            subject,
-            from,
-          },
-        });
-      }
+      for (const event of events) extractedEvents.push({ ...event, source });
       logLine(`MSG | account=${account.name} | msg_id=${msgId} | subject=${subject.slice(0, 60)} | action=extracted | events=${events.length}`);
     } else {
       logLine(`MSG | account=${account.name} | msg_id=${msgId} | subject=${subject.slice(0, 60)} | action=no_events`);
     }
 
+    // Write alerts as events too (type=Alert) for Notion record keeping
+    for (const alert of emailAlerts) {
+      extractedEvents.push({
+        title: `[${alert.category}] ${alert.subject.slice(0, 80)}`,
+        date: null,
+        type: 'Alert',
+        notes: alert.summary,
+        source,
+      });
+    }
+
     scannedIds.add(msgId);
+    alertsFound.push(...emailAlerts);
   }
 
-  logLine(`SCAN_END | account=${account.name} | extracted=${extracted} | skipped=${skipped} | total=${messages.length}`);
-  return extractedEvents;
+  logLine(`SCAN_END | account=${account.name} | extracted=${extracted} | skipped=${skipped} | total=${messages.length} | alerts=${alertsFound.length}`);
+  return { events: extractedEvents, alerts: alertsFound };
 }
 
 // --- Format review output ---
@@ -426,25 +492,43 @@ async function main() {
   }
 
   const guide = loadGuide();
-  logLine(`GUIDE_LOADED | skipFrom=${guide.skipFrom.length} | skipPatterns=${guide.skipSubjectPatterns.length} | onlyFrom=${guide.onlyFrom.length} | ollama=${guide.ollamaUrl} | model=${guide.ollamaModel}`);
+  logLine(`GUIDE_LOADED | skipFrom=${guide.skipFrom.length} | skipPatterns=${guide.skipSubjectPatterns.length} | onlyFrom=${guide.onlyFrom.length} | alertCategories=${guide.alertCategories.length} | ollama=${guide.ollamaUrl} | model=${guide.ollamaModel}`);
 
   if (dryRun) console.log('[DRY RUN] No files will be written.\n');
 
   const allEvents = [];
+  const allAlerts = [];
   for (const account of accounts) {
-    const events = await scanAccount(account, key, scannedIds, dryRun, guide);
+    const { events, alerts } = await scanAccount(account, key, scannedIds, dryRun, guide);
     allEvents.push(...events);
+    allAlerts.push(...alerts);
   }
 
-  // Write pending events
+  // Write pending events (includes Alert-type entries for Notion record keeping)
   if (!dryRun) {
     fs.writeFileSync(PENDING_FILE, JSON.stringify(allEvents, null, 2), 'utf8');
     console.log(`\nPending events saved: ${PENDING_FILE}`);
   }
 
+  // Write alerts-pending.json for the agent to send as Telegram heads-up
+  if (allAlerts.length > 0) {
+    if (!dryRun) {
+      fs.writeFileSync(ALERTS_FILE, JSON.stringify(allAlerts, null, 2), 'utf8');
+    }
+    // Print structured alert block — agent reads this and sends via send_message
+    console.log('\nALERTS_FOUND:');
+    const lines = [`🔔 *Heads Up* — ${allAlerts.length} alert(s) from your inbox:`];
+    for (const a of allAlerts) lines.push(`${a.emoji} *${a.category}* — ${a.summary}`);
+    console.log(JSON.stringify({ type: 'TELEGRAM_SEND', message: lines.join('\n') }));
+  } else if (!dryRun) {
+    // Clear stale alerts file if no alerts this run
+    if (fs.existsSync(ALERTS_FILE)) fs.writeFileSync(ALERTS_FILE, '[]', 'utf8');
+  }
+
   // Print review format
+  const reviewEvents = allEvents.filter(e => e.type !== 'Alert');
   console.log('\n' + '='.repeat(50));
-  console.log(formatReview(allEvents));
+  console.log(formatReview(reviewEvents));
   console.log('='.repeat(50));
 
   return allEvents;

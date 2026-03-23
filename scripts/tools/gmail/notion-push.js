@@ -14,7 +14,7 @@
  *   (default)        Push pending events; skip items already in archive or notion-index
  *   --repush <id>    Force re-push a specific event by Gmail Msg ID (from archive or pending)
  *   --sync           Query Notion DB, reconcile with local index, report orphans
- *   --clean          Archive Notion pages + clear local index (all or by --status)
+ *   --clean          Archive Added pages older than 7 days + clear their index entries
  *
  * Options:
  *   --dry-run   Show what would happen, no API calls or file writes
@@ -24,8 +24,11 @@
  * Files:
  *   events-pending.json   → events waiting to be pushed (failed items stay here for retry)
  *   events-archived.json  → events successfully pushed (source of truth for dedup)
- *   notion-index.json     → msg_id:slug → Notion page_id mapping
+ *   notion-index.json     → msg_id:slug → { page_id, title, msg_id, pushed_at, status } mapping
+ *                           status: pushed | ignored | approved | added | not_pushed
  * Logs: groups/telegram_main/logs/gmail-scan.log
+ *       NOTION_PUSH / NOTION_PUSH_END / NOTION_REPUSH / NOTION_SYNC / NOTION_CLEAN /
+ *       DELETED_BY_USER
  */
 
 import fs from 'fs';
@@ -199,7 +202,7 @@ async function pushEvent(event, token, index) {
       properties: buildProperties(event),
     }).then(d => d.id);
 
-    index[key] = { page_id: pageId, title: event.title, msg_id: event.source?.msg_id, pushed_at: new Date().toISOString() };
+    index[key] = { page_id: pageId, title: event.title, msg_id: event.source?.msg_id, pushed_at: new Date().toISOString(), status: 'pushed' };
     saveIndex(index);
     logLine(`NOTION_PUSH | title=${label} | msg_id=${event.source?.msg_id} | page_id=${pageId} | status=ok`);
     return { ok: true, pageId };
@@ -302,21 +305,60 @@ async function cmdRepush(token) {
 }
 
 // --- SYNC ---
+// Notion Status → local status mapping
+const NOTION_STATUS_MAP = { 'Pending': 'pushed', 'Ignored': 'ignored', 'Approved': 'approved', 'Added': 'added' };
+
 async function cmdSync(token) {
   console.log('Syncing local index with Notion DB...\n');
   const index = loadIndex();
   const pages = await queryAllPages(token, null);
 
-  const notionIds = new Set(pages.map(p => p.id));
+  const notionMap = new Map(pages.map(p => [p.id, p]));
   const indexedIds = new Set(Object.values(index).map(e => e.page_id));
 
   // Pages in Notion but not in local index (pushed outside this tool or index was cleared)
   const orphanedInNotion = pages.filter(p => !indexedIds.has(p.id));
   // Entries in local index but page no longer in Notion (manually deleted)
-  const missingInNotion = Object.entries(index).filter(([, v]) => !notionIds.has(v.page_id));
+  const missingInNotion = Object.entries(index).filter(([, v]) => !notionMap.has(v.page_id));
 
   console.log(`Notion DB total pages: ${pages.length}`);
   console.log(`Local index entries:   ${Object.keys(index).length}`);
+
+  // Update local index status to match Notion Status; sync Comment for Ignored items
+  let statusUpdated = 0;
+  let commentSynced = 0;
+  for (const [key, entry] of Object.entries(index)) {
+    const page = notionMap.get(entry.page_id);
+    if (!page) continue;
+    const notionStatus = page.properties['Status']?.select?.name || 'Pending';
+    const localStatus = NOTION_STATUS_MAP[notionStatus] || 'pushed';
+    if (entry.status !== localStatus) {
+      if (dryRun) {
+        console.log(`  [DRY RUN] Would update status: ${entry.title} | ${entry.status || '?'} → ${localStatus}`);
+      } else {
+        index[key].status = localStatus;
+        logLine(`NOTION_SYNC | status_update | title=${entry.title?.slice(0, 50)} | ${entry.status || '?'} → ${localStatus}`);
+      }
+      statusUpdated++;
+    }
+    // Sync Comment field for Ignored items (Learning Agent reads these for rule proposals)
+    if (localStatus === 'ignored') {
+      const comment = page.properties['Comment']?.rich_text?.[0]?.plain_text || null;
+      const existing = entry.comment || null;
+      if (existing !== comment) {
+        if (dryRun) {
+          console.log(`  [DRY RUN] Would sync comment for: ${entry.title} | "${comment?.slice(0, 60)}"`);
+        } else {
+          index[key].comment = comment;
+          if (comment) logLine(`NOTION_SYNC | comment_synced | title=${entry.title?.slice(0, 50)} | comment=${comment.slice(0, 80)}`);
+        }
+        commentSynced++;
+      }
+    }
+  }
+  if (statusUpdated > 0) console.log(`\nUpdated ${statusUpdated} local status(es) from Notion.`);
+  else console.log('\nAll local statuses match Notion. ✓');
+  if (commentSynced > 0) console.log(`Synced ${commentSynced} comment(s) from Ignored items.`);
 
   if (orphanedInNotion.length > 0) {
     console.log(`\nIn Notion but NOT in local index (${orphanedInNotion.length}):`);
@@ -330,9 +372,10 @@ async function cmdSync(token) {
   }
 
   if (missingInNotion.length > 0) {
-    console.log(`\nIn local index but NOT in Notion (${missingInNotion.length}) — likely manually deleted:`);
+    console.log(`\nIn local index but NOT in Notion (${missingInNotion.length}) — likely deleted by user:`);
     for (const [key, val] of missingInNotion) {
       console.log(`  - ${val.title} | key: ${key}`);
+      logLine(`DELETED_BY_USER | title=${val.title?.slice(0, 50)} | msg_id=${val.msg_id} | page_id=${val.page_id}`);
     }
     if (!dryRun) {
       for (const [key] of missingInNotion) delete index[key];
@@ -349,31 +392,50 @@ async function cmdSync(token) {
     for (const p of orphanedInNotion) {
       const title = p.properties['Event Title']?.title?.[0]?.plain_text || '(untitled)';
       const msgId = p.properties['Gmail Msg ID']?.rich_text?.[0]?.plain_text || 'unknown';
+      const notionStatus = p.properties['Status']?.select?.name || 'Pending';
+      const localStatus = NOTION_STATUS_MAP[notionStatus] || 'pushed';
       const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 40);
       const key = `${msgId}:${slug}`;
-      index[key] = { page_id: p.id, title, msg_id: msgId, pushed_at: p.created_time };
+      index[key] = { page_id: p.id, title, msg_id: msgId, pushed_at: p.created_time, status: localStatus };
     }
     saveIndex(index);
     console.log(`\nAdded ${orphanedInNotion.length} orphaned page(s) to local index.`);
     logLine(`NOTION_SYNC | adopted_orphans=${orphanedInNotion.length}`);
   }
+
+  if (!dryRun && statusUpdated > 0) saveIndex(index);
 }
 
 // --- CLEAN ---
 async function cmdClean(token) {
-  const filterLabel = statusFilter ? `Status = ${statusFilter}` : 'all items';
+  // Default: only archive pages with Notion Status=Added that are 7+ days old in the local index.
+  // With --status S: archive pages matching that specific Status (no age filter).
+  const filterLabel = statusFilter ? `Status = ${statusFilter}` : 'Added items older than 7 days';
   console.log(`Cleaning Notion DB (${filterLabel})${dryRun ? ' [DRY RUN]' : ''}...\n`);
 
-  const pages = await queryAllPages(token, statusFilter);
-  if (pages.length === 0) {
-    console.log('No matching pages found in Notion DB.');
+  const queryStatus = statusFilter || 'Added';
+  const pages = await queryAllPages(token, queryStatus);
+
+  const index = loadIndex();
+
+  // Default mode: apply 7-day age filter based on pushed_at in local index
+  const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const eligiblePages = statusFilter
+    ? pages
+    : pages.filter(page => {
+        const entry = Object.values(index).find(v => v.page_id === page.id);
+        const pushedAt = new Date(entry?.pushed_at || page.created_time || 0);
+        return pushedAt < cutoff;
+      });
+
+  if (eligiblePages.length === 0) {
+    console.log('No matching pages found for archiving.');
     return;
   }
 
-  const index = loadIndex();
   let archived = 0, failed = 0;
 
-  for (const page of pages) {
+  for (const page of eligiblePages) {
     const title = page.properties['Event Title']?.title?.[0]?.plain_text || '(untitled)';
     const status = page.properties['Status']?.select?.name || '?';
 
@@ -385,7 +447,6 @@ async function cmdClean(token) {
 
     try {
       await notionRequest('PATCH', `/pages/${page.id}`, token, { archived: true });
-      // Remove from local index
       const entry = Object.entries(index).find(([, v]) => v.page_id === page.id);
       if (entry) delete index[entry[0]];
       logLine(`NOTION_CLEAN | title=${title.slice(0, 50)} | page_id=${page.id} | status=archived`);
