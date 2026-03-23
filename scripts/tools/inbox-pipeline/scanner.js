@@ -39,7 +39,7 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const GROUP_DIR = process.env.NANOCLAW_GROUP_DIR || '/workspace/group';
 const MEMORY_DIR = path.join(GROUP_DIR, 'memory');
-const GMAIL_DIR = path.join(MEMORY_DIR, 'tools', 'gmail');
+const GMAIL_DIR = path.join(MEMORY_DIR, 'tools', 'inbox-pipeline');
 const LOGS_DIR = path.join(GROUP_DIR, 'logs');
 const KEY_FILE = path.join(MEMORY_DIR, '.address-key.md');
 const CONFIG_FILE = path.join(GMAIL_DIR, 'config.json');

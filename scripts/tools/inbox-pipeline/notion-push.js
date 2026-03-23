@@ -5,10 +5,10 @@
  * Tracks pushed items locally to avoid duplicates.
  *
  * Usage:
- *   node scripts/tools/gmail/notion-push.js [--dry-run] [--limit N]
- *   node scripts/tools/gmail/notion-push.js --repush <msg_id>
- *   node scripts/tools/gmail/notion-push.js --sync
- *   node scripts/tools/gmail/notion-push.js --clean [--status <Pending|Approved|...>] [--dry-run]
+ *   node scripts/tools/inbox-pipeline/notion-push.js [--dry-run] [--limit N]
+ *   node scripts/tools/inbox-pipeline/notion-push.js --repush <msg_id>
+ *   node scripts/tools/inbox-pipeline/notion-push.js --sync
+ *   node scripts/tools/inbox-pipeline/notion-push.js --clean [--status <Pending|Approved|...>] [--dry-run]
  *
  * Commands:
  *   (default)        Push pending events; skip items already in archive or notion-index
@@ -39,7 +39,7 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const GROUP_DIR  = process.env.NANOCLAW_GROUP_DIR || '/workspace/group';
 const MEMORY_DIR = path.join(GROUP_DIR, 'memory');
-const GMAIL_DIR  = path.join(MEMORY_DIR, 'tools', 'gmail');
+const GMAIL_DIR  = path.join(MEMORY_DIR, 'tools', 'inbox-pipeline');
 const LOGS_DIR   = path.join(GROUP_DIR, 'logs');
 const KEY_FILE      = path.join(MEMORY_DIR, '.address-key.md');
 const PENDING_FILE  = path.join(GMAIL_DIR, 'events-pending.json');

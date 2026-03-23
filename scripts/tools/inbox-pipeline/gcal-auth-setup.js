@@ -5,16 +5,16 @@
  * Defaults to the Personal account credentials saved by Tool 1 (auth-setup.js).
  *
  * Usage:
- *   node scripts/tools/gmail/gcal-auth-setup.js
+ *   node scripts/tools/inbox-pipeline/gcal-auth-setup.js
  *                                             ← uses Personal account credentials (.creds-personal.enc)
- *   node scripts/tools/gmail/gcal-auth-setup.js --account Work
+ *   node scripts/tools/inbox-pipeline/gcal-auth-setup.js --account Work
  *                                             ← loads .creds-work.enc (must have run auth-setup.js for Work first)
- *   node scripts/tools/gmail/gcal-auth-setup.js --credentials ./credentials.json [--account Personal]
+ *   node scripts/tools/inbox-pipeline/gcal-auth-setup.js --credentials ./credentials.json [--account Personal]
  *                                             ← use raw credentials.json directly
  *
  * Output:
- *   groups/telegram_main/memory/tools/gmail/.token-gcal-{account}.enc  (encrypted OAuth token)
- *   groups/telegram_main/memory/tools/gmail/gcal-config.json           (created/updated with account entry)
+ *   groups/telegram_main/memory/tools/inbox-pipeline/.token-gcal-{account}.enc  (encrypted OAuth token)
+ *   groups/telegram_main/memory/tools/inbox-pipeline/gcal-config.json           (created/updated with account entry)
  */
 
 import fs from 'fs';
@@ -27,7 +27,7 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const GROUP_DIR  = process.env.NANOCLAW_GROUP_DIR || '/workspace/group';
 const MEMORY_DIR = path.join(GROUP_DIR, 'memory');
-const GMAIL_DIR  = path.join(MEMORY_DIR, 'tools', 'gmail');
+const GMAIL_DIR  = path.join(MEMORY_DIR, 'tools', 'inbox-pipeline');
 const KEY_FILE   = path.join(MEMORY_DIR, '.address-key.md');
 const GCAL_CONFIG_FILE = path.join(GMAIL_DIR, 'gcal-config.json');
 

@@ -5,7 +5,7 @@
  * so gcal-event-writer.js (Tool 5) can create the corresponding calendar events.
  *
  * Usage:
- *   node scripts/tools/gmail/notion-event-query.js [--type Event|Task|all] [--dry-run]
+ *   node scripts/tools/inbox-pipeline/notion-event-query.js [--type Event|Task|all] [--dry-run]
  *
  * Options:
  *   --type <filter>   Event | Task | Alert | all  (default: Event)
@@ -39,7 +39,7 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const GROUP_DIR  = process.env.NANOCLAW_GROUP_DIR || '/workspace/group';
 const MEMORY_DIR = path.join(GROUP_DIR, 'memory');
-const GMAIL_DIR  = path.join(MEMORY_DIR, 'tools', 'gmail');
+const GMAIL_DIR  = path.join(MEMORY_DIR, 'tools', 'inbox-pipeline');
 const LOGS_DIR   = path.join(GROUP_DIR, 'logs');
 const KEY_FILE   = path.join(MEMORY_DIR, '.address-key.md');
 const SCAN_LOG   = path.join(LOGS_DIR, 'gmail-scan.log');

@@ -100,7 +100,11 @@ export function startCredentialProxy(
 
   // Prefer OAuth as primary (free within Pro subscription).
   // API key is fallback only, even when both are present.
-  const authMode: AuthMode = getLiveToken() ? 'oauth' : (secrets.ANTHROPIC_API_KEY ? 'api-key' : 'oauth');
+  const authMode: AuthMode = getLiveToken()
+    ? 'oauth'
+    : secrets.ANTHROPIC_API_KEY
+      ? 'api-key'
+      : 'oauth';
 
   const upstreamUrl = new URL(
     secrets.ANTHROPIC_BASE_URL || 'https://api.anthropic.com',
@@ -125,10 +129,17 @@ export function startCredentialProxy(
     const upstream = makeRequest(
       { ...upstreamOpts, path: url, method, headers } as RequestOptions,
       (upRes: IncomingMessage) => {
-        if (upRes.statusCode === 429 && canFallback && secrets.ANTHROPIC_API_KEY) {
+        if (
+          upRes.statusCode === 429 &&
+          canFallback &&
+          secrets.ANTHROPIC_API_KEY
+        ) {
           // OAuth rate-limited — drain response and retry with API key
           upRes.resume();
-          logger.warn({ url }, 'OAuth rate-limited, retrying with ANTHROPIC_API_KEY');
+          logger.warn(
+            { url },
+            'OAuth rate-limited, retrying with ANTHROPIC_API_KEY',
+          );
 
           const fallbackHeaders = { ...headers };
           delete fallbackHeaders['authorization'];
@@ -136,10 +147,18 @@ export function startCredentialProxy(
           fallbackHeaders['x-api-key'] = secrets.ANTHROPIC_API_KEY;
 
           const retry = makeRequest(
-            { ...upstreamOpts, path: url, method, headers: fallbackHeaders } as RequestOptions,
+            {
+              ...upstreamOpts,
+              path: url,
+              method,
+              headers: fallbackHeaders,
+            } as RequestOptions,
             (retryRes: IncomingMessage) => {
               if (retryRes.statusCode === 429) {
-                logger.error({ url }, 'Both OAuth and API key rate-limited — switching to Ollama fallback');
+                logger.error(
+                  { url },
+                  'Both OAuth and API key rate-limited — switching to Ollama fallback',
+                );
                 markExhausted();
               } else {
                 markRecovered();
@@ -150,14 +169,20 @@ export function startCredentialProxy(
           );
           retry.on('error', (err) => {
             logger.error({ err, url }, 'API key fallback request error');
-            if (!clientRes.headersSent) { clientRes.writeHead(502); clientRes.end('Bad Gateway'); }
+            if (!clientRes.headersSent) {
+              clientRes.writeHead(502);
+              clientRes.end('Bad Gateway');
+            }
           });
           retry.write(body);
           retry.end();
         } else {
           if (upRes.statusCode === 429) {
             // No fallback available — this credential is the only one
-            logger.error({ url }, 'API rate-limited and no fallback available — switching to Ollama fallback');
+            logger.error(
+              { url },
+              'API rate-limited and no fallback available — switching to Ollama fallback',
+            );
             markExhausted();
           } else {
             markRecovered();
@@ -169,7 +194,10 @@ export function startCredentialProxy(
     );
     upstream.on('error', (err) => {
       logger.error({ err, url }, 'Credential proxy upstream error');
-      if (!clientRes.headersSent) { clientRes.writeHead(502); clientRes.end('Bad Gateway'); }
+      if (!clientRes.headersSent) {
+        clientRes.writeHead(502);
+        clientRes.end('Bad Gateway');
+      }
     });
     upstream.write(body);
     upstream.end();
@@ -215,14 +243,25 @@ export function startCredentialProxy(
             if (token) headers['authorization'] = `Bearer ${token}`;
           }
           // Allow API key fallback on inference calls when key is available and not force-overridden
-          const canFallback = isInferenceCall && !!secrets.ANTHROPIC_API_KEY && !forcedAuthMode;
-          forwardRequest(req.method!, req.url!, headers, body, res, canFallback);
+          const canFallback =
+            isInferenceCall && !!secrets.ANTHROPIC_API_KEY && !forcedAuthMode;
+          forwardRequest(
+            req.method!,
+            req.url!,
+            headers,
+            body,
+            res,
+            canFallback,
+          );
         }
       });
     });
 
     server.listen(port, host, () => {
-      logger.info({ port, host, authMode, hasApiFallback: !!secrets.ANTHROPIC_API_KEY }, 'Credential proxy started');
+      logger.info(
+        { port, host, authMode, hasApiFallback: !!secrets.ANTHROPIC_API_KEY },
+        'Credential proxy started',
+      );
       resolve(server);
     });
 

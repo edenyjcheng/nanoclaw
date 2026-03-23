@@ -14,8 +14,8 @@ import { GROUPS_DIR } from './config.js';
 export interface QueuedItem {
   id: string;
   chatJid: string;
-  prompt: string;     // original formatted message(s) to re-run through agent
-  summary: string;    // short label shown to user (first 120 chars of last user line)
+  prompt: string; // original formatted message(s) to re-run through agent
+  summary: string; // short label shown to user (first 120 chars of last user line)
   queuedAt: string;
 }
 
@@ -36,7 +36,11 @@ export function loadQueue(groupFolder: string): QueuedItem[] {
 export function saveQueue(groupFolder: string, queue: QueuedItem[]): void {
   const dir = path.dirname(queueFile(groupFolder));
   fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(queueFile(groupFolder), JSON.stringify(queue, null, 2), 'utf-8');
+  fs.writeFileSync(
+    queueFile(groupFolder),
+    JSON.stringify(queue, null, 2),
+    'utf-8',
+  );
 }
 
 export function addToQueue(
