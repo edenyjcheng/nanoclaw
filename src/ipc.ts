@@ -23,6 +23,7 @@ export interface IpcDeps {
     registeredJids: Set<string>,
   ) => void;
   onTasksChanged: () => void;
+  setLlmMode?: (mode: 'auto' | 'oauth' | 'api-key' | 'ollama') => void;
 }
 
 let ipcWatcherRunning = false;
@@ -165,6 +166,7 @@ export async function processTaskIpc(
     groupFolder?: string;
     chatJid?: string;
     targetJid?: string;
+    mode?: string;
     // For register_group
     jid?: string;
     name?: string;
@@ -452,6 +454,20 @@ export async function processTaskIpc(
           { data },
           'Invalid register_group request - missing required fields',
         );
+      }
+      break;
+
+    case 'set_llm_mode':
+      // Only main group can change LLM mode
+      if (!isMain) {
+        logger.warn({ sourceGroup }, 'Unauthorized set_llm_mode attempt blocked');
+        break;
+      }
+      if (deps.setLlmMode && ['auto', 'oauth', 'api-key', 'ollama'].includes(data.mode as string)) {
+        deps.setLlmMode(data.mode as 'auto' | 'oauth' | 'api-key' | 'ollama');
+        logger.info({ mode: data.mode, sourceGroup }, 'LLM mode changed via IPC');
+      } else {
+        logger.warn({ mode: data.mode }, 'Invalid set_llm_mode value — must be auto | oauth | api-key | ollama');
       }
       break;
 

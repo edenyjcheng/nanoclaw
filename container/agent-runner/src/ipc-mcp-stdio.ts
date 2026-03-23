@@ -333,6 +333,48 @@ Use available_groups.json to find the JID for a group. The folder name must be c
   },
 );
 
+server.tool(
+  'set_llm_mode',
+  `Switch the LLM backend used to respond to messages. Main group only.
+
+Modes:
+• auto      — Default. OAuth first → API key fallback → Ollama when both rate-limited
+• oauth     — Force OAuth (Claude Pro subscription) only. No API key fallback.
+• api-key   — Force ANTHROPIC_API_KEY only. Skips OAuth.
+• ollama    — Pure conversation mode. Skips containers entirely, answers via local Ollama.
+              Use when both Claude APIs are unavailable or to save API credits.
+
+Switching back to "auto" resumes normal priority logic.`,
+  {
+    mode: z.enum(['auto', 'oauth', 'api-key', 'ollama']).describe('The LLM mode to switch to'),
+  },
+  async (args) => {
+    if (!isMain) {
+      return {
+        content: [{ type: 'text' as const, text: 'Only the main group can change LLM mode.' }],
+        isError: true,
+      };
+    }
+
+    writeIpcFile(TASKS_DIR, {
+      type: 'set_llm_mode',
+      mode: args.mode,
+      groupFolder,
+      timestamp: new Date().toISOString(),
+    });
+
+    const descriptions: Record<string, string> = {
+      auto:      'Auto mode — OAuth → API key → Ollama fallback on exhaustion.',
+      oauth:     'OAuth mode — Claude Pro subscription only.',
+      'api-key': 'API key mode — ANTHROPIC_API_KEY only.',
+      ollama:    'Ollama mode — local model only, no tool access.',
+    };
+    return {
+      content: [{ type: 'text' as const, text: `LLM mode switched to "${args.mode}". ${descriptions[args.mode]}` }],
+    };
+  },
+);
+
 // Start the stdio transport
 const transport = new StdioServerTransport();
 await server.connect(transport);
