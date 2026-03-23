@@ -1,9 +1,10 @@
+import { spawn } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 
 import { CronExpressionParser } from 'cron-parser';
 
-import { DATA_DIR, IPC_POLL_INTERVAL, TIMEZONE } from './config.js';
+import { DATA_DIR, GROUPS_DIR, IPC_POLL_INTERVAL, TIMEZONE } from './config.js';
 import { AvailableGroup } from './container-runner.js';
 import { createTask, deleteTask, getTaskById, updateTask } from './db.js';
 import { isValidGroupFolder } from './group-folder.js';
@@ -174,6 +175,14 @@ export async function processTaskIpc(
     trigger?: string;
     requiresTrigger?: boolean;
     containerConfig?: RegisteredGroup['containerConfig'];
+    // For gcal_write_event
+    title?: string;
+    start?: string;
+    end?: string;
+    account?: string;
+    location?: string;
+    description?: string;
+    notionPageId?: string;
   },
   sourceGroup: string, // Verified identity from IPC directory
   isMain: boolean, // Verified from directory path
@@ -460,16 +469,75 @@ export async function processTaskIpc(
     case 'set_llm_mode':
       // Only main group can change LLM mode
       if (!isMain) {
-        logger.warn({ sourceGroup }, 'Unauthorized set_llm_mode attempt blocked');
+        logger.warn(
+          { sourceGroup },
+          'Unauthorized set_llm_mode attempt blocked',
+        );
         break;
       }
-      if (deps.setLlmMode && ['auto', 'oauth', 'api-key', 'ollama'].includes(data.mode as string)) {
+      if (
+        deps.setLlmMode &&
+        ['auto', 'oauth', 'api-key', 'ollama'].includes(data.mode as string)
+      ) {
         deps.setLlmMode(data.mode as 'auto' | 'oauth' | 'api-key' | 'ollama');
-        logger.info({ mode: data.mode, sourceGroup }, 'LLM mode changed via IPC');
+        logger.info(
+          { mode: data.mode, sourceGroup },
+          'LLM mode changed via IPC',
+        );
       } else {
-        logger.warn({ mode: data.mode }, 'Invalid set_llm_mode value — must be auto | oauth | api-key | ollama');
+        logger.warn(
+          { mode: data.mode },
+          'Invalid set_llm_mode value — must be auto | oauth | api-key | ollama',
+        );
       }
       break;
+
+    case 'gcal_write_event': {
+      // Run gcal-event-writer.js on the host with the provided event details.
+      // Parses EVENT_CREATED from stdout and sends confirmation to the user.
+      const scriptPath = path.join(process.cwd(), 'scripts', 'tools', 'gmail', 'gcal-event-writer.js');
+      const gcalArgs = ['--title', String(data.title), '--start', String(data.start)];
+      if (data.end)           gcalArgs.push('--end', String(data.end));
+      if (data.account)       gcalArgs.push('--account', String(data.account));
+      if (data.location)      gcalArgs.push('--location', String(data.location));
+      if (data.description)   gcalArgs.push('--description', String(data.description));
+      if (data.notionPageId)  gcalArgs.push('--notion-page-id', String(data.notionPageId));
+
+      const groupFolder = String(data.groupFolder || sourceGroup);
+      const groupDir  = path.join(GROUPS_DIR, groupFolder);
+
+      logger.info({ title: data.title, start: data.start }, 'Running gcal-event-writer.js');
+
+      const proc = spawn('node', [scriptPath, ...gcalArgs], {
+        env: { ...process.env, NANOCLAW_GROUP_DIR: groupDir },
+      });
+
+      let stdout = '';
+      let stderr = '';
+      proc.stdout.on('data', (chunk: Buffer) => { stdout += chunk.toString(); });
+      proc.stderr.on('data', (chunk: Buffer) => { stderr += chunk.toString(); });
+
+      proc.on('close', async (code) => {
+        const chatJid = String(data.chatJid || '');
+        if (code === 0) {
+          const match = stdout.match(/EVENT_CREATED:\s*(\{.+\})/);
+          if (match) {
+            try {
+              const result = JSON.parse(match[1]) as { eventId: string; htmlLink: string };
+              const msg = `✅ *${data.title}* added to calendar!\n${result.htmlLink}`;
+              if (chatJid) await deps.sendMessage(chatJid, msg).catch(() => {});
+            } catch {
+              if (chatJid) await deps.sendMessage(chatJid, `✅ Event "${data.title}" added to calendar.`).catch(() => {});
+            }
+          }
+        } else {
+          logger.error({ code, stderr }, 'gcal-event-writer.js failed');
+          const errLine = stderr.split('\n').find(l => l.trim()) || 'Unknown error';
+          if (chatJid) await deps.sendMessage(chatJid, `❌ Failed to add event to calendar: ${errLine}`).catch(() => {});
+        }
+      });
+      break;
+    }
 
     default:
       logger.warn({ type: data.type }, 'Unknown IPC task type');
