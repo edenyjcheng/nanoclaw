@@ -63,10 +63,14 @@ const repushMsgId = repushArg !== -1 ? args[repushArg + 1] : null;
 // --- Notion token (decrypt from .address-key.md) ---
 function loadNotionToken(keyFilePath) {
   const content = fs.readFileSync(keyFilePath, 'utf8');
-  const enc = content.match(/ENCRYPTED:\s*([a-f0-9]+)/m)?.[1];
-  const key = content.match(/KEY:\s*([a-f0-9]{64})/m)?.[1];
-  const iv  = content.match(/IV:\s*([a-f0-9]{32})/m)?.[1];
-  if (!enc || !key || !iv) throw new Error('Notion token not found in .address-key.md');
+  // Scope to the Notion section only — avoids picking up other keys in the file
+  const sectionMatch = content.match(/# Notion API Token[\s\S]*?(?=\n#|$)/i);
+  if (!sectionMatch) throw new Error('Notion API Token section not found in .address-key.md');
+  const section = sectionMatch[0];
+  const enc = section.match(/ENCRYPTED:\s*([a-f0-9]+)/)?.[1];
+  const key = section.match(/KEY:\s*([a-f0-9]{64})/)?.[1];
+  const iv  = section.match(/IV:\s*([a-f0-9]{32})/)?.[1];
+  if (!enc || !key || !iv) throw new Error('Notion token fields (ENCRYPTED/KEY/IV) missing in .address-key.md');
   const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key, 'hex'), Buffer.from(iv, 'hex'));
   let dec = decipher.update(enc, 'hex', 'utf8');
   dec += decipher.final('utf8');
