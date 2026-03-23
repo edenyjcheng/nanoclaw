@@ -74,8 +74,47 @@ let registeredGroups: Record<string, RegisteredGroup> = {};
 let lastAgentTimestamp: Record<string, string> = {};
 let messageLoopRunning = false;
 
-// Groups pending a startup warmup run (chatJid -> startup prompt)
-const startupWarmupPending = new Map<string, string>();
+// Groups pending a startup warmup (chatJid -> true)
+const startupWarmupPending = new Map<string, boolean>();
+
+const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434';
+const OLLAMA_WARMUP_MODEL = process.env.OLLAMA_WARMUP_MODEL || '';
+
+/**
+ * Ask a local Ollama model to generate the startup "back online" message.
+ * Falls back to a static string if Ollama is unavailable or has no models.
+ */
+async function ollamaWarmupMessage(assistantName: string): Promise<string> {
+  try {
+    // Use configured model or fall back to first available
+    let model = OLLAMA_WARMUP_MODEL;
+    if (!model) {
+      const tagsRes = await fetch(`${OLLAMA_HOST}/api/tags`);
+      if (!tagsRes.ok) throw new Error(`tags ${tagsRes.status}`);
+      const tags = (await tagsRes.json()) as {
+        models?: Array<{ name: string }>;
+      };
+      model = tags.models?.[0]?.name ?? '';
+      if (!model) throw new Error('no models installed');
+    }
+
+    const res = await fetch(`${OLLAMA_HOST}/api/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model,
+        prompt: `You are ${assistantName}, a personal AI assistant. Write a single short sentence (under 15 words) telling the user you are back online and ready to help. No greeting, no fluff.`,
+        stream: false,
+      }),
+    });
+    if (!res.ok) throw new Error(`generate ${res.status}`);
+    const data = (await res.json()) as { response: string };
+    return data.response.trim();
+  } catch (err) {
+    logger.warn({ err }, 'Ollama warmup failed, using static message');
+    return `${assistantName} is back online and ready.`;
+  }
+}
 
 const channels: Channel[] = [];
 const queue = new GroupQueue();
@@ -241,24 +280,13 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
 
   // No real messages — check for a pending startup warmup
   if (missedMessages.length === 0) {
-    const startupPrompt = startupWarmupPending.get(chatJid);
-    if (startupPrompt) {
+    if (startupWarmupPending.get(chatJid)) {
       startupWarmupPending.delete(chatJid);
-      logger.info({ group: group.name }, 'Running startup warmup');
+      logger.info({ group: group.name }, 'Running startup warmup via Ollama');
       await channel.setTyping?.(chatJid, true);
-      await runAgent(group, startupPrompt, chatJid, async (result) => {
-        if (result.result) {
-          const raw =
-            typeof result.result === 'string'
-              ? result.result
-              : JSON.stringify(result.result);
-          const text = raw
-            .replace(/<internal>[\s\S]*?<\/internal>/g, '')
-            .trim();
-          if (text) await channel.sendMessage(chatJid, text);
-        }
-      });
+      const text = await ollamaWarmupMessage(ASSISTANT_NAME);
       await channel.setTyping?.(chatJid, false);
+      if (text) await channel.sendMessage(chatJid, text);
     }
     return true;
   }
@@ -600,19 +628,14 @@ function ensureContainerSystemRunning(): void {
 
 /**
  * Queue a startup warmup for the main group.
- * Starts the container immediately so the first real user message
- * gets piped to an already-warm container instead of cold-starting.
- * The agent also notifies the user that it's back online.
+ * Sends a short "back online" message via Ollama (no container spin-up).
  */
 function startupWarmup(): void {
   const mainEntry = Object.entries(registeredGroups).find(([, g]) => g.isMain);
   if (!mainEntry) return;
 
   const [chatJid] = mainEntry;
-  startupWarmupPending.set(
-    chatJid,
-    '[STARTUP] NanoClaw has just restarted. Send the user a short message letting them know you are back online and ready.',
-  );
+  startupWarmupPending.set(chatJid, true);
   queue.enqueueMessageCheck(chatJid);
   logger.info({ chatJid }, 'Startup warmup enqueued');
 }
