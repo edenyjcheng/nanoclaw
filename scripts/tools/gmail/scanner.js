@@ -138,6 +138,7 @@ function loadGuide() {
     skipFrom: parseList('Skip Sender').map(e => e.toLowerCase()),
     skipSubjectPatterns: parseList('Skip Subject Patterns').map(p => new RegExp(p, 'i')),
     onlyFrom: parseList('Only Sender').map(e => e.toLowerCase()),
+    skipCategories: parseList('Skip Gmail Categories').map(c => c.toLowerCase()),
     extractionGuidelines,
     alertCategories: parseAlertCategories(),
     ollamaUrl: parseSetting('ollama_url') || OLLAMA_URL_DEFAULT,
@@ -194,6 +195,14 @@ function buildQuery(scan, keywords) {
   }
   const keywordQuery = keywords.map(k => `"${k}"`).join(' OR ');
   return `${dateFilter} (${keywordQuery})`.trim();
+}
+
+// --- Build query with guide categories ---
+function buildQueryWithGuide(scan, keywords, guide) {
+  const base = buildQuery(scan, keywords);
+  if (!guide.skipCategories || guide.skipCategories.length === 0) return base;
+  const categoryFilter = guide.skipCategories.map(c => `-category:${c}`).join(' ');
+  return `${base} ${categoryFilter}`.trim();
 }
 
 // --- Shared prompt builder ---
@@ -362,7 +371,7 @@ async function scanAccount(account, key, scannedIds, dryRun, guide) {
 
   const gmail = google.gmail({ version: 'v1', auth: oAuth2Client });
   const config = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
-  const query = buildQuery(account.scan, config.keywords);
+  const query = buildQueryWithGuide(account.scan, config.keywords, guide);
 
   logLine(`SCAN_START | account=${account.name} | mode=${account.scan.mode} | query="${query}"`);
 
@@ -492,7 +501,7 @@ async function main() {
   }
 
   const guide = loadGuide();
-  logLine(`GUIDE_LOADED | skipFrom=${guide.skipFrom.length} | skipPatterns=${guide.skipSubjectPatterns.length} | onlyFrom=${guide.onlyFrom.length} | alertCategories=${guide.alertCategories.length} | ollama=${guide.ollamaUrl} | model=${guide.ollamaModel}`);
+  logLine(`GUIDE_LOADED | skipFrom=${guide.skipFrom.length} | skipPatterns=${guide.skipSubjectPatterns.length} | onlyFrom=${guide.onlyFrom.length} | skipCategories=${guide.skipCategories.length} | alertCategories=${guide.alertCategories.length} | ollama=${guide.ollamaUrl} | model=${guide.ollamaModel}`);
 
   if (dryRun) console.log('[DRY RUN] No files will be written.\n');
 
