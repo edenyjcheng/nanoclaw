@@ -13,6 +13,7 @@
  *     [--location "Zoom https://zoom.us/j/123"]
  *     [--description "Weekly team sync"]
  *     [--notion-page-id <page_id>]   patch Notion row on success
+ *     [--event-id <id>]              update existing event instead of creating new
  *     [--dry-run]
  *
  * Output (stdout, last line):
@@ -50,27 +51,33 @@ const endArg        = getArg('--end');
 const locationArg   = getArg('--location');
 const descArg       = getArg('--description');
 const notionPageId  = getArg('--notion-page-id');
+const eventIdArg    = getArg('--event-id');   // if set: PATCH existing event
 const dryRun        = hasFlag('--dry-run');
 
-if (!titleArg || !startArg) {
+// In patch mode --title and --start are optional (only patch provided fields).
+// In insert mode both are required.
+if (!eventIdArg && (!titleArg || !startArg)) {
   console.error('Usage: gcal-event-writer.js --title <string> --start <ISO> [--end <ISO>] [--account <name>]');
   console.error('       [--location <string>] [--description <string>] [--notion-page-id <id>] [--dry-run]');
+  console.error('       [--event-id <id>]  update existing event (all other flags optional)');
   process.exit(1);
 }
 
-const eventStart = new Date(startArg);
-if (isNaN(eventStart.getTime())) {
+const eventStart = startArg ? new Date(startArg) : null;
+if (eventStart && isNaN(eventStart.getTime())) {
   console.error('Invalid --start date. Use ISO 8601 format.');
   process.exit(1);
 }
 
-// Default end = start + 1 hour
-const eventEnd = endArg ? new Date(endArg) : new Date(eventStart.getTime() + 60 * 60 * 1000);
-if (isNaN(eventEnd.getTime())) {
+// Default end = start + 1 hour (insert only; patch leaves end unchanged if omitted)
+const eventEnd = endArg
+  ? new Date(endArg)
+  : (eventStart ? new Date(eventStart.getTime() + 60 * 60 * 1000) : null);
+if (eventEnd && isNaN(eventEnd.getTime())) {
   console.error('Invalid --end date. Use ISO 8601 format.');
   process.exit(1);
 }
-if (eventStart >= eventEnd) {
+if (eventStart && eventEnd && eventStart >= eventEnd) {
   console.error('--start must be before --end.');
   process.exit(1);
 }
@@ -189,46 +196,62 @@ async function main() {
   const calendar   = google.calendar({ version: 'v3', auth: oAuth2Client });
   const calendarId = account.default_calendar_id || 'primary';
 
-  logLine(`GCAL_WRITE | account=${accountName} | calendarId=${calendarId} | title=${titleArg} | start=${startArg} | end=${eventEnd.toISOString()}`);
+  const op = eventIdArg ? 'patch' : 'insert';
+  logLine(`GCAL_WRITE | op=${op} | account=${accountName} | calendarId=${calendarId} | title=${titleArg || '(unchanged)'} | start=${startArg || '(unchanged)'}`);
 
   if (dryRun) {
-    console.log(`\n[DRY RUN] Would create event:`);
-    console.log(`  Title:    ${titleArg}`);
-    console.log(`  Start:    ${startArg}`);
-    console.log(`  End:      ${eventEnd.toISOString()}`);
+    console.log(`\n[DRY RUN] Would ${op} event${eventIdArg ? ` (${eventIdArg})` : ''}:`);
+    if (titleArg)    console.log(`  Title:    ${titleArg}`);
+    if (startArg)    console.log(`  Start:    ${startArg}`);
+    if (eventEnd)    console.log(`  End:      ${eventEnd.toISOString()}`);
     if (locationArg) console.log(`  Location: ${locationArg}`);
     if (descArg)     console.log(`  Desc:     ${descArg}`);
     if (notionPageId) console.log(`  Notion:   would patch page ${notionPageId} → Added to Calendar`);
-    console.log(`\nEVENT_CREATED: ${JSON.stringify({ eventId: 'dry-run', htmlLink: 'dry-run', calendarId })}`);
+    console.log(`\nEVENT_CREATED: ${JSON.stringify({ eventId: eventIdArg || 'dry-run', htmlLink: 'dry-run', calendarId })}`);
     return;
   }
 
-  // Build event body
-  const eventBody = {
-    summary: titleArg,
-    start:   { dateTime: eventStart.toISOString() },
-    end:     { dateTime: eventEnd.toISOString() },
-    reminders: {
-      useDefault: false,
-      overrides: [
-        { method: 'popup',  minutes: 30 },
-        { method: 'email',  minutes: 24 * 60 },  // 1 day before
-      ],
-    },
-  };
+  let eventId, htmlLink;
 
-  if (locationArg) eventBody.location    = locationArg;
-  if (descArg)     eventBody.description = descArg;
+  if (eventIdArg) {
+    // PATCH — only include fields that were explicitly provided
+    const patchBody = {};
+    if (titleArg)    patchBody.summary  = titleArg;
+    if (eventStart)  patchBody.start    = { dateTime: eventStart.toISOString() };
+    if (eventEnd)    patchBody.end      = { dateTime: eventEnd.toISOString() };
+    if (locationArg) patchBody.location = locationArg;
+    if (descArg)     patchBody.description = descArg;
 
-  const inserted = await calendar.events.insert({
-    calendarId,
-    resource: eventBody,
-  });
+    const patched = await calendar.events.patch({
+      calendarId,
+      eventId: eventIdArg,
+      resource: patchBody,
+    });
+    eventId  = patched.data.id;
+    htmlLink = patched.data.htmlLink;
+    logLine(`GCAL_WRITE | status=ok | op=patch | eventId=${eventId} | htmlLink=${htmlLink}`);
+  } else {
+    // INSERT — full event body with reminders
+    const eventBody = {
+      summary: titleArg,
+      start:   { dateTime: eventStart.toISOString() },
+      end:     { dateTime: eventEnd.toISOString() },
+      reminders: {
+        useDefault: false,
+        overrides: [
+          { method: 'popup', minutes: 30 },
+          { method: 'email', minutes: 24 * 60 },
+        ],
+      },
+    };
+    if (locationArg) eventBody.location    = locationArg;
+    if (descArg)     eventBody.description = descArg;
 
-  const eventId  = inserted.data.id;
-  const htmlLink = inserted.data.htmlLink;
-
-  logLine(`GCAL_WRITE | status=ok | eventId=${eventId} | htmlLink=${htmlLink}`);
+    const inserted = await calendar.events.insert({ calendarId, resource: eventBody });
+    eventId  = inserted.data.id;
+    htmlLink = inserted.data.htmlLink;
+    logLine(`GCAL_WRITE | status=ok | op=insert | eventId=${eventId} | htmlLink=${htmlLink}`);
+  }
 
   // Update Notion row if page ID was provided
   if (notionPageId) {
@@ -244,7 +267,7 @@ async function main() {
 
   const result = { eventId, htmlLink, calendarId };
   console.log(`\nEVENT_CREATED: ${JSON.stringify(result)}`);
-  console.log(`\n✅ Event created: ${titleArg}`);
+  console.log(`\n✅ Event ${eventIdArg ? 'updated' : 'created'}: ${titleArg || eventIdArg}`);
   console.log(`   ${htmlLink}`);
   if (notionPageId) console.log(`   Notion row updated → Added to Calendar`);
 }
