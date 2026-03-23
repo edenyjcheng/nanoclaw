@@ -5,7 +5,7 @@
  * Optionally suggests the next free 1-hour slot within 3 days.
  *
  * Usage:
- *   node scripts/tools/gmail/gcal-conflict-checker.js \
+ *   node scripts/tools/inbox-pipeline/gcal-conflict-checker.js \
  *     --start 2026-03-25T10:00:00+08:00 \
  *     --end   2026-03-25T11:00:00+08:00 \
  *     [--account Personal] [--suggest-slots] [--dry-run]
@@ -36,7 +36,7 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const GROUP_DIR  = process.env.NANOCLAW_GROUP_DIR || '/workspace/group';
 const MEMORY_DIR = path.join(GROUP_DIR, 'memory');
-const GMAIL_DIR  = path.join(MEMORY_DIR, 'tools', 'gmail');
+const GMAIL_DIR  = path.join(MEMORY_DIR, 'tools', 'inbox-pipeline');
 const LOGS_DIR   = path.join(GROUP_DIR, 'logs');
 const KEY_FILE   = path.join(MEMORY_DIR, '.address-key.md');
 const GCAL_CONFIG_FILE = path.join(GMAIL_DIR, 'gcal-config.json');

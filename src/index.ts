@@ -14,7 +14,11 @@ import {
   POLL_INTERVAL,
   TIMEZONE,
 } from './config.js';
-import { startCredentialProxy, credentialEvents, setForcedAuthMode } from './credential-proxy.js';
+import {
+  startCredentialProxy,
+  credentialEvents,
+  setForcedAuthMode,
+} from './credential-proxy.js';
 import {
   addToQueue,
   clearQueue,
@@ -145,7 +149,10 @@ async function sendToMainGroup(text: string): Promise<void> {
 
 function extractSummary(prompt: string): string {
   // Pull the last non-empty line as the user-visible summary
-  const lines = prompt.split('\n').map((l) => l.trim()).filter(Boolean);
+  const lines = prompt
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean);
   return lines[lines.length - 1] || prompt.slice(0, 120);
 }
 
@@ -158,7 +165,10 @@ async function presentQueueOnRecovery(): Promise<void> {
 
   const queue = loadQueue(group.folder);
   if (queue.length === 0) {
-    await ch.sendMessage(chatJid, `✅ Claude API is available again. Resuming normal mode with full tool access.`);
+    await ch.sendMessage(
+      chatJid,
+      `✅ Claude API is available again. Resuming normal mode with full tool access.`,
+    );
     return;
   }
 
@@ -199,10 +209,14 @@ credentialEvents.on('exhausted', () => {
   ollamaFallbackActive = true;
   if (!ollamaFallbackNotified) {
     ollamaFallbackNotified = true;
-    logger.warn('All Claude credentials rate-limited — switching to Ollama fallback mode');
+    logger.warn(
+      'All Claude credentials rate-limited — switching to Ollama fallback mode',
+    );
     sendToMainGroup(
       `⚠️ Both Claude API credentials are rate-limited. Switched to Ollama-only mode (${OLLAMA_WARMUP_MODEL || 'gemma3:4b'}). Tool access is suspended until limits reset. I'll automatically switch back when Claude becomes available.`,
-    ).catch((err) => logger.warn({ err }, 'Failed to send exhaustion notification'));
+    ).catch((err) =>
+      logger.warn({ err }, 'Failed to send exhaustion notification'),
+    );
   }
 });
 
@@ -462,7 +476,10 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
       toRun = reviewQueue;
     } else {
       // Parse "1 3", "1,3", "1, 3" etc.
-      const nums = lastContent.split(/[\s,]+/).map(Number).filter((n) => !isNaN(n) && n >= 1 && n <= reviewQueue.length);
+      const nums = lastContent
+        .split(/[\s,]+/)
+        .map(Number)
+        .filter((n) => !isNaN(n) && n >= 1 && n <= reviewQueue.length);
       toRun = nums.map((n) => reviewQueue[n - 1]);
     }
 
@@ -475,13 +492,21 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
       return true;
     }
 
-    await channel.sendMessage(chatJid, `▶️ Running ${toRun.length} queued task(s)...`);
+    await channel.sendMessage(
+      chatJid,
+      `▶️ Running ${toRun.length} queued task(s)...`,
+    );
     for (const item of toRun) {
       removeFromQueue(group.folder, new Set([item.id]));
       await runAgent(group, item.prompt, chatJid, async (result) => {
         if (result.result) {
-          const raw = typeof result.result === 'string' ? result.result : JSON.stringify(result.result);
-          const text = raw.replace(/<internal>[\s\S]*?<\/internal>/g, '').trim();
+          const raw =
+            typeof result.result === 'string'
+              ? result.result
+              : JSON.stringify(result.result);
+          const text = raw
+            .replace(/<internal>[\s\S]*?<\/internal>/g, '')
+            .trim();
           if (text) await channel.sendMessage(chatJid, text);
         }
       });
@@ -490,16 +515,25 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
   }
 
   // --- Ollama mode: "queue" command — queue the last prompt for Claude ---
-  if (ollamaFallbackActive && (lastContent === 'queue' || lastContent === 'q')) {
+  if (
+    ollamaFallbackActive &&
+    (lastContent === 'queue' || lastContent === 'q')
+  ) {
     const last = lastOllamaPrompt.get(chatJid);
     if (last) {
       addToQueue(group.folder, chatJid, last.prompt, last.summary);
       lastOllamaPrompt.delete(chatJid);
       lastAgentTimestamp[chatJid] = lastMsg.timestamp;
       saveState();
-      await channel.sendMessage(chatJid, `✅ Queued. I'll remind you when Claude is back.`);
+      await channel.sendMessage(
+        chatJid,
+        `✅ Queued. I'll remind you when Claude is back.`,
+      );
     } else {
-      await channel.sendMessage(chatJid, `Nothing to queue — send your request first, then reply "queue".`);
+      await channel.sendMessage(
+        chatJid,
+        `Nothing to queue — send your request first, then reply "queue".`,
+      );
       lastAgentTimestamp[chatJid] = lastMsg.timestamp;
       saveState();
     }
@@ -508,7 +542,10 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
 
   // --- Ollama fallback mode: answer directly without spawning a container ---
   if (ollamaFallbackActive) {
-    logger.info({ group: group.name }, 'Ollama fallback mode: routing to Ollama directly');
+    logger.info(
+      { group: group.name },
+      'Ollama fallback mode: routing to Ollama directly',
+    );
     const model = OLLAMA_WARMUP_MODEL || 'gemma3:4b';
     const modeNotice = `⚠️ *Conversation Mode* — Claude API unavailable. Responding via Ollama (${model}). No tool access.\n\n`;
     await channel.setTyping?.(chatJid, true);
@@ -519,9 +556,17 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
     lastOllamaPrompt.set(chatJid, { prompt, summary: extractSummary(prompt) });
 
     if (response) {
-      await channel.sendMessage(chatJid, modeNotice + response + `\n\n_Reply_ \`queue\` _to save this task for Claude._`);
+      await channel.sendMessage(
+        chatJid,
+        modeNotice +
+          response +
+          `\n\n_Reply_ \`queue\` _to save this task for Claude._`,
+      );
     } else {
-      await channel.sendMessage(chatJid, `⚠️ *Conversation Mode* — Claude API unavailable and Ollama also failed to respond. Please try again later.\n\n_Reply_ \`queue\` _to save this for Claude._`);
+      await channel.sendMessage(
+        chatJid,
+        `⚠️ *Conversation Mode* — Claude API unavailable and Ollama also failed to respond. Please try again later.\n\n_Reply_ \`queue\` _to save this for Claude._`,
+      );
     }
     lastAgentTimestamp[chatJid] = lastMsg.timestamp;
     saveState();
