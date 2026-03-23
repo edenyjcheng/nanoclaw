@@ -5,22 +5,27 @@
  * Tracks pushed items locally to avoid duplicates.
  *
  * Usage:
- *   node scripts/gmail-notion-push.js [--dry-run] [--limit N]
- *   node scripts/gmail-notion-push.js --sync
- *   node scripts/gmail-notion-push.js --clean [--status <Pending|Approved|...>] [--dry-run]
+ *   node scripts/tools/gmail/notion-push.js [--dry-run] [--limit N]
+ *   node scripts/tools/gmail/notion-push.js --repush <msg_id>
+ *   node scripts/tools/gmail/notion-push.js --sync
+ *   node scripts/tools/gmail/notion-push.js --clean [--status <Pending|Approved|...>] [--dry-run]
  *
  * Commands:
- *   (default)   Push pending events, skip already-indexed items
- *   --sync      Query Notion DB, reconcile with local index, report orphans
- *   --clean     Archive Notion pages + clear local index (all or by --status)
+ *   (default)        Push pending events; skip items already in archive or notion-index
+ *   --repush <id>    Force re-push a specific event by Gmail Msg ID (from archive or pending)
+ *   --sync           Query Notion DB, reconcile with local index, report orphans
+ *   --clean          Archive Notion pages + clear local index (all or by --status)
  *
  * Options:
  *   --dry-run   Show what would happen, no API calls or file writes
  *   --limit N   Only push the first N new items
  *   --status S  Filter by Status for --clean (e.g. Pending, Approved)
  *
- * Index file: groups/telegram_main/memory/gmail-notion-index.json
- * Logs:       groups/telegram_main/logs/gmail-scan.log
+ * Files:
+ *   events-pending.json   → events waiting to be pushed (failed items stay here for retry)
+ *   events-archived.json  → events successfully pushed (source of truth for dedup)
+ *   notion-index.json     → msg_id:slug → Notion page_id mapping
+ * Logs: groups/telegram_main/logs/gmail-scan.log
  */
 
 import fs from 'fs';
@@ -33,24 +38,27 @@ const GROUP_DIR  = process.env.NANOCLAW_GROUP_DIR || '/workspace/group';
 const MEMORY_DIR = path.join(GROUP_DIR, 'memory');
 const GMAIL_DIR  = path.join(MEMORY_DIR, 'tools', 'gmail');
 const LOGS_DIR   = path.join(GROUP_DIR, 'logs');
-const KEY_FILE     = path.join(MEMORY_DIR, '.address-key.md');
-const PENDING_FILE = path.join(GMAIL_DIR, 'events-pending.json');
-const INDEX_FILE   = path.join(GMAIL_DIR, 'notion-index.json');
-const SCAN_LOG     = path.join(LOGS_DIR, 'gmail-scan.log');
+const KEY_FILE      = path.join(MEMORY_DIR, '.address-key.md');
+const PENDING_FILE  = path.join(GMAIL_DIR, 'events-pending.json');
+const ARCHIVE_FILE  = path.join(GMAIL_DIR, 'events-archived.json');
+const INDEX_FILE    = path.join(GMAIL_DIR, 'notion-index.json');
+const SCAN_LOG      = path.join(LOGS_DIR, 'gmail-scan.log');
 
 const DB_ID          = '32b7c3af-c311-813f-8dae-f8516b39294f';
 const DB_URL         = 'https://www.notion.so/32b7c3afc311813f8daef8516b39294f';
 const NOTION_VERSION = '2022-06-28';
 
 // --- CLI args ---
-const args     = process.argv.slice(2);
-const dryRun   = args.includes('--dry-run');
-const doSync   = args.includes('--sync');
-const doClean  = args.includes('--clean');
-const limitArg = args.indexOf('--limit');
-const limit    = limitArg !== -1 ? parseInt(args[limitArg + 1], 10) : null;
-const statusArg = args.indexOf('--status');
+const args        = process.argv.slice(2);
+const dryRun      = args.includes('--dry-run');
+const doSync      = args.includes('--sync');
+const doClean     = args.includes('--clean');
+const limitArg    = args.indexOf('--limit');
+const limit       = limitArg !== -1 ? parseInt(args[limitArg + 1], 10) : null;
+const statusArg   = args.indexOf('--status');
 const statusFilter = statusArg !== -1 ? args[statusArg + 1] : null;
+const repushArg   = args.indexOf('--repush');
+const repushMsgId = repushArg !== -1 ? args[repushArg + 1] : null;
 
 // --- Notion token (decrypt from .address-key.md) ---
 function loadNotionToken(keyFilePath) {
@@ -89,6 +97,20 @@ function saveIndex(index) {
 function makeIndexKey(event) {
   const slug = (event.title || 'untitled').toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 40);
   return `${event.source?.msg_id || 'unknown'}:${slug}`;
+}
+
+// --- Archive helpers (events-archived.json) ---
+function loadArchive() {
+  if (!fs.existsSync(ARCHIVE_FILE)) return [];
+  return JSON.parse(fs.readFileSync(ARCHIVE_FILE, 'utf8'));
+}
+
+function saveArchive(archive) {
+  if (!dryRun) fs.writeFileSync(ARCHIVE_FILE, JSON.stringify(archive, null, 2), 'utf8');
+}
+
+function archivedMsgIds(archive) {
+  return new Set(archive.map(e => e.source?.msg_id).filter(Boolean));
 }
 
 // --- Date parser ---
@@ -156,6 +178,33 @@ function buildProperties(event) {
   return props;
 }
 
+// --- Push one event to Notion, update index ---
+async function pushEvent(event, token, index) {
+  const key = makeIndexKey(event);
+  const label = event.title?.slice(0, 50);
+
+  if (dryRun) {
+    console.log(`  [DRY RUN] Would push: ${event.title} (${event.source?.account})`);
+    console.log(`    Date: ${event.date || 'unknown'} | Type: ${event.type || 'Event'}`);
+    return { ok: true };
+  }
+
+  try {
+    const pageId = await notionRequest('POST', '/pages', token, {
+      parent: { database_id: DB_ID },
+      properties: buildProperties(event),
+    }).then(d => d.id);
+
+    index[key] = { page_id: pageId, title: event.title, msg_id: event.source?.msg_id, pushed_at: new Date().toISOString() };
+    saveIndex(index);
+    logLine(`NOTION_PUSH | title=${label} | msg_id=${event.source?.msg_id} | page_id=${pageId} | status=ok`);
+    return { ok: true, pageId };
+  } catch (err) {
+    logLine(`NOTION_PUSH | title=${label} | msg_id=${event.source?.msg_id} | status=error | error=${err.message}`);
+    return { ok: false, error: err.message };
+  }
+}
+
 // --- PUSH (default command) ---
 async function cmdPush(token) {
   if (!fs.existsSync(PENDING_FILE)) {
@@ -165,53 +214,86 @@ async function cmdPush(token) {
 
   let events = JSON.parse(fs.readFileSync(PENDING_FILE, 'utf8'));
   const index = loadIndex();
+  const archive = loadArchive();
+  const archivedIds = archivedMsgIds(archive);
 
-  // Filter out already-indexed events
-  const newEvents = events.filter(e => !index[makeIndexKey(e)]);
+  // Skip events already in archive (pushed before) or notion-index
+  const newEvents = events.filter(e => {
+    if (archivedIds.has(e.source?.msg_id)) return false;
+    if (index[makeIndexKey(e)]) return false;
+    return true;
+  });
   const skipped = events.length - newEvents.length;
   if (skipped > 0) console.log(`Skipping ${skipped} already-pushed item(s).`);
 
   const toProcess = limit ? newEvents.slice(0, limit) : newEvents;
   if (toProcess.length === 0) {
-    console.log('No new events to push — all already in Notion.');
+    console.log('No new events to push — all already in archive or Notion.');
     return;
   }
 
-  if (dryRun) console.log('[DRY RUN] No Notion API calls or index writes.\n');
+  if (dryRun) console.log('[DRY RUN] No Notion API calls or file writes.\n');
   logLine(`NOTION_PUSH_START | new=${toProcess.length} | skipped=${skipped} | db=${DB_ID}`);
 
   let pushed = 0, failed = 0;
+  const pushedEvents = [];
+
   for (const event of toProcess) {
-    const key = makeIndexKey(event);
-    const label = event.title?.slice(0, 50);
-
-    if (dryRun) {
-      console.log(`  [DRY RUN] Would push: ${event.title} (${event.source?.account})`);
-      console.log(`    Date: ${event.date || 'unknown'} | Type: ${event.type || 'Event'}`);
+    const result = await pushEvent(event, token, index);
+    if (result.ok) {
       pushed++;
-      continue;
-    }
-
-    try {
-      const pageId = await notionRequest('POST', '/pages', token, {
-        parent: { database_id: DB_ID },
-        properties: buildProperties(event),
-      }).then(d => d.id);
-
-      index[key] = { page_id: pageId, title: event.title, msg_id: event.source?.msg_id, pushed_at: new Date().toISOString() };
-      saveIndex(index);
-      logLine(`NOTION_PUSH | title=${label} | msg_id=${event.source?.msg_id} | page_id=${pageId} | status=ok`);
-      pushed++;
-    } catch (err) {
-      logLine(`NOTION_PUSH | title=${label} | msg_id=${event.source?.msg_id} | status=error | error=${err.message}`);
+      pushedEvents.push(event);
+    } else {
       failed++;
     }
   }
 
+  // Move successfully pushed events: pending → archive
+  if (!dryRun && pushedEvents.length > 0) {
+    const pushedMsgIds = new Set(pushedEvents.map(e => e.source?.msg_id));
+    const remaining = events.filter(e => !pushedMsgIds.has(e.source?.msg_id));
+    fs.writeFileSync(PENDING_FILE, JSON.stringify(remaining, null, 2), 'utf8');
+
+    const now = new Date().toISOString();
+    for (const e of pushedEvents) archive.push({ ...e, archived_at: now });
+    saveArchive(archive);
+  }
+
   logLine(`NOTION_PUSH_END | pushed=${pushed} | failed=${failed}`);
   if (!dryRun && pushed > 0) {
-    console.log(`\n${pushed} item(s) added to Notion.`);
+    console.log(`\n${pushed} item(s) added to Notion and moved to archive.`);
     console.log(`Open: ${DB_URL}`);
+  }
+}
+
+// --- REPUSH — force re-push a specific event by msg_id ---
+async function cmdRepush(token) {
+  const archive = loadArchive();
+  const pending = fs.existsSync(PENDING_FILE)
+    ? JSON.parse(fs.readFileSync(PENDING_FILE, 'utf8'))
+    : [];
+
+  const event = [...archive, ...pending].find(e => e.source?.msg_id === repushMsgId);
+  if (!event) {
+    console.error(`No event found with msg_id: ${repushMsgId}`);
+    console.error('Check events-archived.json or events-pending.json for valid msg IDs.');
+    process.exit(1);
+  }
+
+  console.log(`Re-pushing: ${event.title} (msg_id: ${repushMsgId})`);
+  if (dryRun) {
+    console.log('[DRY RUN] Would create new Notion page for this event.');
+    return;
+  }
+
+  const index = loadIndex();
+  const result = await pushEvent(event, token, index);
+  if (result.ok) {
+    console.log(`Done. New Notion page: ${result.pageId}`);
+    logLine(`NOTION_REPUSH | msg_id=${repushMsgId} | page_id=${result.pageId} | status=ok`);
+  } else {
+    console.error(`Failed: ${result.error}`);
+    process.exit(1);
   }
 }
 
@@ -322,7 +404,8 @@ async function main() {
   const token = process.env.NOTION_TOKEN || loadNotionToken(KEY_FILE);
   if (!token) { console.error('NOTION_TOKEN not found in env or .address-key.md'); process.exit(1); }
 
-  if (doSync)       await cmdSync(token);
+  if (repushMsgId)  await cmdRepush(token);
+  else if (doSync)  await cmdSync(token);
   else if (doClean) await cmdClean(token);
   else              await cmdPush(token);
 }
