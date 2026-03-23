@@ -14,6 +14,14 @@ import {
   POLL_INTERVAL,
   TIMEZONE,
 } from './config.js';
+import { startCredentialProxy, credentialEvents, setForcedAuthMode } from './credential-proxy.js';
+import {
+  addToQueue,
+  clearQueue,
+  loadQueue,
+  removeFromQueue,
+  type QueuedItem,
+} from './conversation-queue.js';
 import './channels/index.js';
 import {
   getChannelFactory,
@@ -113,6 +121,135 @@ async function ollamaWarmupMessage(assistantName: string): Promise<string> {
   } catch (err) {
     logger.warn({ err }, 'Ollama warmup failed, using static message');
     return `${assistantName} is back online and ready.`;
+  }
+}
+
+// --- Ollama fallback mode ---
+// Activated when both OAuth and API key are rate-limited.
+// In this mode, incoming messages are answered directly via Ollama (no container).
+let ollamaFallbackActive = false;
+let ollamaFallbackNotified = false;
+
+// Last user prompt per chatJid while in Ollama mode — used when user replies "queue"
+const lastOllamaPrompt = new Map<string, { prompt: string; summary: string }>();
+// Groups waiting for the user to pick which queued items to run after recovery
+const pendingQueueReview = new Map<string, QueuedItem[]>();
+
+async function sendToMainGroup(text: string): Promise<void> {
+  const mainEntry = Object.entries(registeredGroups).find(([, g]) => g.isMain);
+  if (!mainEntry) return;
+  const [chatJid] = mainEntry;
+  const ch = findChannel(channels, chatJid);
+  await ch?.sendMessage(chatJid, text);
+}
+
+function extractSummary(prompt: string): string {
+  // Pull the last non-empty line as the user-visible summary
+  const lines = prompt.split('\n').map((l) => l.trim()).filter(Boolean);
+  return lines[lines.length - 1] || prompt.slice(0, 120);
+}
+
+async function presentQueueOnRecovery(): Promise<void> {
+  const mainEntry = Object.entries(registeredGroups).find(([, g]) => g.isMain);
+  if (!mainEntry) return;
+  const [chatJid, group] = mainEntry;
+  const ch = findChannel(channels, chatJid);
+  if (!ch) return;
+
+  const queue = loadQueue(group.folder);
+  if (queue.length === 0) {
+    await ch.sendMessage(chatJid, `✅ Claude API is available again. Resuming normal mode with full tool access.`);
+    return;
+  }
+
+  const lines = [
+    `✅ Claude API is back! You have ${queue.length} queued task(s) from Conversation Mode:\n`,
+    ...queue.map((item, i) => `${i + 1}. ${item.summary}`),
+    `\nReply with numbers to run (e.g. *1 3*), *all* to run all, or *skip* to clear the queue.`,
+  ];
+  pendingQueueReview.set(chatJid, queue);
+  await ch.sendMessage(chatJid, lines.join('\n'));
+}
+
+async function callOllamaChat(prompt: string): Promise<string | null> {
+  const model = OLLAMA_WARMUP_MODEL || 'gemma3:4b';
+  try {
+    const res = await fetch(`${OLLAMA_HOST}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: 'user', content: prompt }],
+        stream: false,
+        options: { temperature: 0.7 },
+      }),
+      signal: AbortSignal.timeout(60000),
+    });
+    if (!res.ok) throw new Error(`Ollama HTTP ${res.status}`);
+    const data = (await res.json()) as { message?: { content: string } };
+    return data.message?.content?.trim() || null;
+  } catch (err) {
+    logger.warn({ err }, 'Ollama chat failed');
+    return null;
+  }
+}
+
+// Wire up credential exhaustion events (proxy emits these)
+credentialEvents.on('exhausted', () => {
+  ollamaFallbackActive = true;
+  if (!ollamaFallbackNotified) {
+    ollamaFallbackNotified = true;
+    logger.warn('All Claude credentials rate-limited — switching to Ollama fallback mode');
+    sendToMainGroup(
+      `⚠️ Both Claude API credentials are rate-limited. Switched to Ollama-only mode (${OLLAMA_WARMUP_MODEL || 'gemma3:4b'}). Tool access is suspended until limits reset. I'll automatically switch back when Claude becomes available.`,
+    ).catch((err) => logger.warn({ err }, 'Failed to send exhaustion notification'));
+  }
+});
+
+credentialEvents.on('recovered', () => {
+  if (ollamaFallbackActive) {
+    ollamaFallbackActive = false;
+    ollamaFallbackNotified = false;
+    logger.info('Claude credentials recovered — exiting Ollama fallback mode');
+    // Notify and show queue if any items are pending
+    presentQueueOnRecovery().catch((err) =>
+      logger.warn({ err }, 'Failed to present queue on recovery'),
+    );
+  }
+});
+
+export type LlmMode = 'auto' | 'oauth' | 'api-key' | 'ollama';
+
+/**
+ * Manually switch the LLM mode. Called by Cortana via IPC set_llm_mode command.
+ *   auto     — default: OAuth → API key fallback → Ollama on exhaustion
+ *   oauth    — force OAuth only (no API key fallback)
+ *   api-key  — force ANTHROPIC_API_KEY only (skip OAuth)
+ *   ollama   — skip containers entirely, answer via Ollama (conversation only)
+ */
+export function setLlmMode(mode: LlmMode): void {
+  logger.info({ mode }, 'LLM mode changed by Cortana');
+  switch (mode) {
+    case 'auto':
+      setForcedAuthMode(null);
+      ollamaFallbackActive = false;
+      ollamaFallbackNotified = false;
+      break;
+    case 'oauth':
+      setForcedAuthMode('oauth');
+      ollamaFallbackActive = false;
+      ollamaFallbackNotified = false;
+      break;
+    case 'api-key':
+      setForcedAuthMode('api-key');
+      ollamaFallbackActive = false;
+      ollamaFallbackNotified = false;
+      break;
+    case 'ollama':
+      setForcedAuthMode(null);
+      ollamaFallbackActive = true;
+      ollamaFallbackNotified = true; // suppress auto-exhaustion notification
+      break;
   }
 }
 
@@ -304,6 +441,92 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
   }
 
   const prompt = formatMessages(missedMessages, TIMEZONE);
+  const lastMsg = missedMessages[missedMessages.length - 1];
+  const lastContent = lastMsg.content.trim().toLowerCase();
+
+  // --- Queue review: user is responding to the recovery queue list ---
+  const reviewQueue = pendingQueueReview.get(chatJid);
+  if (reviewQueue && reviewQueue.length > 0) {
+    pendingQueueReview.delete(chatJid);
+    lastAgentTimestamp[chatJid] = lastMsg.timestamp;
+    saveState();
+
+    if (lastContent === 'skip') {
+      clearQueue(group.folder);
+      await channel.sendMessage(chatJid, `🗑️ Queue cleared.`);
+      return true;
+    }
+
+    let toRun: QueuedItem[];
+    if (lastContent === 'all') {
+      toRun = reviewQueue;
+    } else {
+      // Parse "1 3", "1,3", "1, 3" etc.
+      const nums = lastContent.split(/[\s,]+/).map(Number).filter((n) => !isNaN(n) && n >= 1 && n <= reviewQueue.length);
+      toRun = nums.map((n) => reviewQueue[n - 1]);
+    }
+
+    const skipped = reviewQueue.filter((i) => !toRun.includes(i));
+    removeFromQueue(group.folder, new Set(skipped.map((i) => i.id)));
+
+    if (toRun.length === 0) {
+      clearQueue(group.folder);
+      await channel.sendMessage(chatJid, `🗑️ Queue cleared.`);
+      return true;
+    }
+
+    await channel.sendMessage(chatJid, `▶️ Running ${toRun.length} queued task(s)...`);
+    for (const item of toRun) {
+      removeFromQueue(group.folder, new Set([item.id]));
+      await runAgent(group, item.prompt, chatJid, async (result) => {
+        if (result.result) {
+          const raw = typeof result.result === 'string' ? result.result : JSON.stringify(result.result);
+          const text = raw.replace(/<internal>[\s\S]*?<\/internal>/g, '').trim();
+          if (text) await channel.sendMessage(chatJid, text);
+        }
+      });
+    }
+    return true;
+  }
+
+  // --- Ollama mode: "queue" command — queue the last prompt for Claude ---
+  if (ollamaFallbackActive && (lastContent === 'queue' || lastContent === 'q')) {
+    const last = lastOllamaPrompt.get(chatJid);
+    if (last) {
+      addToQueue(group.folder, chatJid, last.prompt, last.summary);
+      lastOllamaPrompt.delete(chatJid);
+      lastAgentTimestamp[chatJid] = lastMsg.timestamp;
+      saveState();
+      await channel.sendMessage(chatJid, `✅ Queued. I'll remind you when Claude is back.`);
+    } else {
+      await channel.sendMessage(chatJid, `Nothing to queue — send your request first, then reply "queue".`);
+      lastAgentTimestamp[chatJid] = lastMsg.timestamp;
+      saveState();
+    }
+    return true;
+  }
+
+  // --- Ollama fallback mode: answer directly without spawning a container ---
+  if (ollamaFallbackActive) {
+    logger.info({ group: group.name }, 'Ollama fallback mode: routing to Ollama directly');
+    const model = OLLAMA_WARMUP_MODEL || 'gemma3:4b';
+    const modeNotice = `⚠️ *Conversation Mode* — Claude API unavailable. Responding via Ollama (${model}). No tool access.\n\n`;
+    await channel.setTyping?.(chatJid, true);
+    const response = await callOllamaChat(prompt);
+    await channel.setTyping?.(chatJid, false);
+
+    // Save this prompt so user can reply "queue" to queue it for Claude
+    lastOllamaPrompt.set(chatJid, { prompt, summary: extractSummary(prompt) });
+
+    if (response) {
+      await channel.sendMessage(chatJid, modeNotice + response + `\n\n_Reply_ \`queue\` _to save this task for Claude._`);
+    } else {
+      await channel.sendMessage(chatJid, `⚠️ *Conversation Mode* — Claude API unavailable and Ollama also failed to respond. Please try again later.\n\n_Reply_ \`queue\` _to save this for Claude._`);
+    }
+    lastAgentTimestamp[chatJid] = lastMsg.timestamp;
+    saveState();
+    return true;
+  }
 
   // Advance cursor so the piping path in startMessageLoop won't re-fetch
   // these messages. Save the old cursor so we can roll back on error.
@@ -792,6 +1015,7 @@ async function main(): Promise<void> {
     },
     registeredGroups: () => registeredGroups,
     registerGroup,
+    setLlmMode,
     syncGroups: async (force: boolean) => {
       await Promise.all(
         channels

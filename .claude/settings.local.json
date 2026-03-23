@@ -116,7 +116,8 @@
       "Bash(powershell.exe -Command \"Get-ScheduledTask | Where-Object { \\\\$_.TaskName -like '*nano*' -or \\\\$_.TaskName -like '*Nano*' } | Select TaskName, State\" 2>&1)",
       "Bash(powershell.exe -Command \"Get-ScheduledTask | Select TaskName, State | Out-String\")",
       "Bash(powershell.exe -Command \"Get-Process -Id 32360 -ErrorAction SilentlyContinue | Select-Object Id, ProcessName, StartTime\" 2>&1)",
-      "Bash(powershell.exe -Command \"Stop-Process -Id 32360 -Force\" 2>&1)"
+      "Bash(powershell.exe -Command \"Stop-Process -Id 32360 -Force\" 2>&1)",
+      "Bash(GIT_EDITOR=true git rebase --continue)"
     ]
   }
 }
