@@ -545,6 +545,47 @@ Switching back to "auto" resumes normal priority logic.`,
   },
 );
 
+server.tool(
+  'add_to_calendar',
+  `Add an event directly to Google Calendar. Use when the user asks to add, schedule, or book something on their calendar.
+
+The host runs gcal-event-writer.js and sends a confirmation message with the calendar link when done.
+End time defaults to start + 1 hour if not provided.
+
+Examples of user requests that should use this tool:
+• "Add team lunch on Friday at 12pm to my calendar"
+• "Schedule dentist appointment March 28 at 2pm"
+• "Put the concert on my calendar — April 5, 8pm to 11pm at Stadium"`,
+  {
+    title:        z.string().describe('Event title'),
+    start:        z.string().describe('Start datetime in ISO 8601 (e.g. 2026-03-28T14:00:00+08:00)'),
+    end:          z.string().optional().describe('End datetime in ISO 8601. Defaults to start + 1 hour.'),
+    account:      z.string().optional().describe('Calendar account name from gcal-config.json (default: Personal)'),
+    location:     z.string().optional().describe('Event location or URL'),
+    description:  z.string().optional().describe('Event description or notes'),
+    notionPageId: z.string().optional().describe('Notion page ID to update Status → Added to Calendar after creation'),
+  },
+  async (args) => {
+    writeIpcFile(TASKS_DIR, {
+      type:         'gcal_write_event',
+      title:        args.title,
+      start:        args.start,
+      end:          args.end,
+      account:      args.account,
+      location:     args.location,
+      description:  args.description,
+      notionPageId: args.notionPageId,
+      chatJid,
+      groupFolder,
+      timestamp:    new Date().toISOString(),
+    });
+
+    return {
+      content: [{ type: 'text' as const, text: `Adding "${args.title}" to calendar (${args.start})… You'll get a confirmation message with the link shortly.` }],
+    };
+  },
+);
+
 // Start the stdio transport
 const transport = new StdioServerTransport();
 await server.connect(transport);
