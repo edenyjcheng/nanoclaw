@@ -121,10 +121,24 @@ function archivedMsgIds(archive) {
 }
 
 // --- Date parser ---
+// Handles: ISO (2026-03-25), M/D/YY (6/22/26), M/D/YYYY (6/22/2026),
+//          "Month D YYYY" (March 25 2026), "Month D, YYYY", natural Date.parse strings
 function parseDate(dateStr) {
   if (!dateStr) return null;
-  const d = new Date(dateStr);
-  if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
+  const s = String(dateStr).trim();
+
+  // M/D/YY or M/D/YYYY
+  const mdy = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  if (mdy) {
+    let [, m, d, y] = mdy;
+    if (y.length === 2) y = `20${y}`;
+    const dt = new Date(`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}T00:00:00`);
+    if (!isNaN(dt.getTime())) return dt.toISOString().split('T')[0];
+  }
+
+  // Fallback: let Date.parse handle it (covers ISO, "March 25 2026", etc.)
+  const dt = new Date(s);
+  if (!isNaN(dt.getTime())) return dt.toISOString().split('T')[0];
   return null;
 }
 
@@ -148,9 +162,12 @@ async function queryAllPages(token, statusFilter) {
   const pages = [];
   let cursor = undefined;
   do {
-    const filter = statusFilter
-      ? { property: 'Status', select: { equals: statusFilter } }
-      : undefined;
+    let filter;
+    if (Array.isArray(statusFilter)) {
+      filter = { or: statusFilter.map(s => ({ property: 'Status', select: { equals: s } })) };
+    } else if (statusFilter) {
+      filter = { property: 'Status', select: { equals: statusFilter } };
+    }
     const body = { page_size: 100, ...(cursor ? { start_cursor: cursor } : {}), ...(filter ? { filter } : {}) };
     const data = await notionRequest('POST', `/databases/${DB_ID}/query`, token, body);
     pages.push(...data.results);
@@ -171,16 +188,17 @@ function buildProperties(event) {
   };
 
   const dateStr = parseDate(event.date);
-  if (dateStr) props['Event Date'] = { date: { start: dateStr } };
+  const endDateStr = parseDate(event.end_date);
+  if (dateStr) props['Event Date'] = { date: { start: dateStr, ...(endDateStr ? { end: endDateStr } : {}) } };
+  if (event.time) props['Event Time'] = { rich_text: [{ text: { content: String(event.time).slice(0, 200) } }] };
+  if (event.source?.subject) props['Email Subject'] = { rich_text: [{ text: { content: event.source.subject.slice(0, 2000) } }] };
   if (event.location) props['Location'] = { rich_text: [{ text: { content: event.location } }] };
   if (typeof event.registration_required === 'boolean')
     props['Registration Required'] = { checkbox: event.registration_required };
   if (event.registration_link) props['Registration Link'] = { url: event.registration_link };
   const rsvpDate = parseDate(event.rsvp_deadline);
   if (rsvpDate) props['RSVP Deadline'] = { date: { start: rsvpDate } };
-  const notes = [event.notes, event.source?.subject ? `Source: ${event.source.subject}` : null]
-    .filter(Boolean).join(' | ');
-  if (notes) props['Notes'] = { rich_text: [{ text: { content: notes.slice(0, 2000) } }] };
+  if (event.notes) props['Notes'] = { rich_text: [{ text: { content: event.notes.slice(0, 2000) } }] };
 
   return props;
 }
@@ -306,7 +324,7 @@ async function cmdRepush(token) {
 
 // --- SYNC ---
 // Notion Status → local status mapping
-const NOTION_STATUS_MAP = { 'Pending': 'pushed', 'Ignored': 'ignored', 'Approved': 'approved', 'Added': 'added' };
+const NOTION_STATUS_MAP = { 'Pending': 'pushed', 'Ignored': 'ignored', 'Approved': 'approved', 'Added to Calendar': 'added', 'Added to Todo': 'added' };
 
 async function cmdSync(token) {
   console.log('Syncing local index with Notion DB...\n');
@@ -408,12 +426,13 @@ async function cmdSync(token) {
 
 // --- CLEAN ---
 async function cmdClean(token) {
-  // Default: only archive pages with Notion Status=Added that are 7+ days old in the local index.
+  // Default: archive pages with Status = "Added to Calendar" OR "Added to Todo" that are 7+ days old.
   // With --status S: archive pages matching that specific Status (no age filter).
-  const filterLabel = statusFilter ? `Status = ${statusFilter}` : 'Added items older than 7 days';
+  const DEFAULT_CLEAN_STATUSES = ['Added to Calendar', 'Added to Todo'];
+  const filterLabel = statusFilter ? `Status = ${statusFilter}` : 'Added to Calendar / Added to Todo items older than 7 days';
   console.log(`Cleaning Notion DB (${filterLabel})${dryRun ? ' [DRY RUN]' : ''}...\n`);
 
-  const queryStatus = statusFilter || 'Added';
+  const queryStatus = statusFilter || DEFAULT_CLEAN_STATUSES;
   const pages = await queryAllPages(token, queryStatus);
 
   const index = loadIndex();

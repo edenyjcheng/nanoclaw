@@ -18,10 +18,12 @@
  *   {
  *     pageId:       string   (Notion page ID — pass to gcal-event-writer --notion-page-id)
  *     title:        string
- *     date:         string | null   (ISO date)
- *     time:         string | null
+ *     date:         string | null   (ISO start date)
+ *     end_date:     string | null   (ISO end date for multi-day events, null otherwise)
+ *     time:         string | null   (e.g. "10:00am - 4:00pm")
  *     location:     string | null
  *     notes:        string | null
+ *     emailSubject: string | null
  *     calendar:     string | null   (target calendar name, e.g. "Personal")
  *     msgId:        string | null
  *     sourceAccount:string | null
@@ -136,6 +138,10 @@ function dateVal(prop) {
   return prop?.date?.start || null;
 }
 
+function dateEndVal(prop) {
+  return prop?.date?.end || null;
+}
+
 function titleVal(prop) {
   return prop?.title?.map(t => t.plain_text).join('') || '(untitled)';
 }
@@ -147,8 +153,11 @@ function mapPage(page) {
     pageId:        page.id,
     title:         titleVal(props['Event Title']),
     date:          dateVal(props['Event Date']),
+    end_date:      dateEndVal(props['Event Date']),
+    time:          richText(props['Event Time']),
     location:      richText(props['Location']),
     notes:         richText(props['Notes']),
+    emailSubject:  richText(props['Email Subject']),
     calendar:      selectVal(props['Calendar']),
     msgId:         richText(props['Gmail Msg ID']),
     sourceAccount: richText(props['Source Account']),
