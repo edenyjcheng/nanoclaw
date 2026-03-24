@@ -159,6 +159,7 @@ function mapPage(page) {
     notes:         richText(props['Notes']),
     emailSubject:  richText(props['Email Subject']),
     calendar:      selectVal(props['Calendar']),
+    gcalEventId:   richText(props['GCal Event ID']),
     msgId:         richText(props['Gmail Msg ID']),
     sourceAccount: richText(props['Source Account']),
     type:          selectVal(props['Type']) || 'Event',
