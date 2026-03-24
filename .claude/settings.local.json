@@ -139,7 +139,8 @@
       "Bash(docker buildx:*)",
       "Bash(./container/build.sh)",
       "Bash(export PATH=\"$PATH:/c/Program Files/Docker/Docker/resources/bin\")",
-      "Bash(docker version:*)"
+      "Bash(docker version:*)",
+      "mcp__claude_ai_Notion__notion-update-data-source"
     ]
   }
 }
