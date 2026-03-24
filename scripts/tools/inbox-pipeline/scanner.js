@@ -220,13 +220,14 @@ ${emailBody.slice(0, 3000)}
 
 Extract all events found. For each event return a JSON object with these fields:
 - title: string (event name, inferred from context)
-- date: string (ISO date if parseable, or natural language like "March 25, 2026")
-- time: string or null (e.g. "10:00 AM", "3pm", null if not found)
+- date: string (start date in YYYY-MM-DD format if parseable, or natural language like "March 25, 2026")
+- end_date: string or null (end date in YYYY-MM-DD for multi-day events, null for single-day or unknown)
+- time: string or null (time of day as a string, e.g. "10:00am - 4:00pm", null if not found)
 - location: string or null (physical address or virtual URL)
 - registration_required: boolean
 - registration_link: string or null
 - rsvp_deadline: string or null
-- notes: string or null (any other relevant details)
+- notes: string or null (include full context: description, pricing, organizer, who sent it, any other relevant details)
 
 If no events found, return an empty array.
 Respond with ONLY a valid JSON array, no explanation.`;
