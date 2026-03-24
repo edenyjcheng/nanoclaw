@@ -297,6 +297,8 @@ function buildProperties(event) {
   if (rsvpDate) props['RSVP Deadline'] = { date: { start: rsvpDate } };
   if (event.notes) props['Notes'] = { rich_text: [{ text: { content: event.notes.slice(0, 2000) } }] };
 
+  props['Calendar'] = { select: { name: event.calendar || "Eden's Schedule" } };
+
   return props;
 }
 
