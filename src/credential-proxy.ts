@@ -25,11 +25,40 @@ import { logger } from './logger.js';
 
 /**
  * Emits 'exhausted' when all credentials return 429 (rate-limited).
- * Emits 'recovered' when a request succeeds after exhaustion.
+ * Emits 'recovered' when a request succeeds after exhaustion, or when the
+ * auto-recovery timer fires after the rate-limit window expires.
  * Consumed by index.ts to switch to Ollama fallback mode.
  */
 export const credentialEvents = new EventEmitter();
 let credentialsExhausted = false;
+
+/**
+ * Auto-recovery timer: fires after the rate-limit window and resets exhaustion
+ * so the next real user message retries Claude instead of staying in Ollama mode.
+ * Uses exponential backoff — no synthetic API calls, zero extra cost.
+ * Backoff schedule (minutes): 1 → 5 → 15 → 30 (capped).
+ */
+export const RECOVERY_BACKOFF_MS = [1, 5, 15, 30].map((m) => m * 60 * 1000);
+let recoveryTimer: ReturnType<typeof setTimeout> | null = null;
+let recoveryAttempt = 0;
+
+function scheduleRecovery(): void {
+  if (recoveryTimer) clearTimeout(recoveryTimer);
+  const delay = RECOVERY_BACKOFF_MS[Math.min(recoveryAttempt, RECOVERY_BACKOFF_MS.length - 1)];
+  recoveryAttempt++;
+  logger.info(
+    { attempt: recoveryAttempt, delayMs: delay },
+    'Scheduling auto-recovery probe — will retry Claude on next message',
+  );
+  recoveryTimer = setTimeout(() => {
+    recoveryTimer = null;
+    logger.info({ attempt: recoveryAttempt }, 'Auto-recovery window elapsed — resetting exhaustion flag');
+    // Reset without a real API call. The next organic request will verify.
+    // If it 429s again, markExhausted() re-fires and backoff continues.
+    credentialsExhausted = false;
+    credentialEvents.emit('recovered');
+  }, delay);
+}
 
 /**
  * Override the auth mode for all subsequent requests and new containers.
@@ -43,14 +72,29 @@ export function setForcedAuthMode(mode: AuthMode | null): void {
   logger.info({ mode: mode ?? 'auto' }, 'LLM auth mode set');
 }
 
+/** Reset all recovery state. Exposed for tests only. */
+export function resetRecoveryState(): void {
+  if (recoveryTimer) clearTimeout(recoveryTimer);
+  recoveryTimer = null;
+  recoveryAttempt = 0;
+  credentialsExhausted = false;
+}
+
 function markExhausted(): void {
   if (!credentialsExhausted) {
     credentialsExhausted = true;
     credentialEvents.emit('exhausted');
+    scheduleRecovery();
   }
 }
 
 function markRecovered(): void {
+  // Called when a real request succeeds — cancel the timer and reset backoff.
+  if (recoveryTimer) {
+    clearTimeout(recoveryTimer);
+    recoveryTimer = null;
+  }
+  recoveryAttempt = 0;
   if (credentialsExhausted) {
     credentialsExhausted = false;
     credentialEvents.emit('recovered');
@@ -229,6 +273,9 @@ export function startCredentialProxy(
 
         if (effectiveAuthMode === 'api-key') {
           // API key mode: inject x-api-key on every request (no OAuth fallback available)
+          // Also strip Authorization header in case the container has a cached OAuth token
+          // in ~/.claude/.credentials.json — sending it alongside x-api-key causes 401.
+          delete headers['authorization'];
           delete headers['x-api-key'];
           headers['x-api-key'] = secrets.ANTHROPIC_API_KEY;
           forwardRequest(req.method!, req.url!, headers, body, res, false);

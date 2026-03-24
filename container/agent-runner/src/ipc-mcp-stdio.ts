@@ -504,6 +504,135 @@ Use available_groups.json to find the JID for a group. The folder name must be c
 );
 
 server.tool(
+  'test_llm_mode',
+  `Ping-test an LLM mode to verify credentials/service are reachable. Main group only.
+
+Temporarily switches to the requested mode, makes a minimal test call, then restores auto mode.
+Use set_llm_mode to commit permanently after a successful test.
+
+Modes:
+• oauth    — verifies Claude Pro OAuth token is valid
+• api-key  — verifies ANTHROPIC_API_KEY is valid
+• ollama   — verifies local Ollama is reachable and lists available models`,
+  {
+    mode: z.enum(['oauth', 'api-key', 'ollama']).describe('Mode to test'),
+  },
+  async (args) => {
+    if (!isMain) {
+      return {
+        content: [{ type: 'text' as const, text: 'Only the main group can test LLM modes.' }],
+        isError: true,
+      };
+    }
+
+    // 1. Request temporary mode switch via IPC
+    writeIpcFile(TASKS_DIR, {
+      type: 'set_llm_mode',
+      mode: args.mode,
+      groupFolder,
+      timestamp: new Date().toISOString(),
+    });
+
+    // 2. Wait for host IPC poll to process the switch (~1 s poll + buffer)
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    // 3. Test connectivity for the requested mode
+    let ok = false;
+    let detail = '';
+
+    if (args.mode === 'ollama') {
+      const ollamaHost = process.env.OLLAMA_HOST || 'http://host.docker.internal:11434';
+      try {
+        const res = await fetch(`${ollamaHost}/api/tags`, {
+          signal: AbortSignal.timeout(5000),
+        });
+        if (res.ok) {
+          const data = (await res.json()) as { models?: Array<{ name: string }> };
+          const models = data.models?.map((m) => m.name).join(', ') || '(none loaded)';
+          ok = true;
+          detail = `Ollama reachable. Models: ${models}`;
+        } else {
+          detail = `Ollama returned HTTP ${res.status}`;
+        }
+      } catch (err) {
+        // Fallback: try localhost instead of host.docker.internal
+        try {
+          const fallbackHost = ollamaHost.replace('host.docker.internal', 'localhost');
+          const res2 = await fetch(`${fallbackHost}/api/tags`, {
+            signal: AbortSignal.timeout(5000),
+          });
+          if (res2.ok) {
+            const data = (await res2.json()) as { models?: Array<{ name: string }> };
+            const models = data.models?.map((m) => m.name).join(', ') || '(none loaded)';
+            ok = true;
+            detail = `Ollama reachable via localhost. Models: ${models}`;
+          } else {
+            detail = `Ollama unreachable (host.docker.internal + localhost both failed)`;
+          }
+        } catch {
+          detail = `Ollama unreachable: ${err instanceof Error ? err.message : String(err)}`;
+        }
+      }
+    } else {
+      // oauth / api-key: make a minimal inference call through the credential proxy.
+      // The proxy is at ANTHROPIC_BASE_URL and injects the real credential based on
+      // the current effectiveAuthMode — we just send the matching placeholder header.
+      const baseUrl = process.env.ANTHROPIC_BASE_URL || 'https://api.anthropic.com';
+      const headers: Record<string, string> = {
+        'content-type': 'application/json',
+        'anthropic-version': '2023-06-01',
+      };
+      if (args.mode === 'api-key') {
+        headers['x-api-key'] = process.env.ANTHROPIC_API_KEY || 'placeholder';
+      } else {
+        // oauth: send Authorization so the proxy replaces it with the real token
+        headers['authorization'] = `Bearer ${process.env.CLAUDE_CODE_OAUTH_TOKEN || 'placeholder'}`;
+      }
+      try {
+        const res = await fetch(`${baseUrl}/v1/messages`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            model: 'claude-haiku-4-5-20251001',
+            max_tokens: 1,
+            messages: [{ role: 'user', content: 'Hi' }],
+          }),
+          signal: AbortSignal.timeout(15000),
+        });
+        if (res.ok || res.status === 529) {
+          // 529 = API overloaded but credentials are valid
+          ok = true;
+          detail = `HTTP ${res.status} — credentials accepted`;
+        } else {
+          const body = await res.text().catch(() => '');
+          detail = `HTTP ${res.status} — ${body.slice(0, 200)}`;
+        }
+      } catch (err) {
+        detail = `Request failed: ${err instanceof Error ? err.message : String(err)}`;
+      }
+    }
+
+    // 4. Restore auto mode — test does not permanently change the mode
+    writeIpcFile(TASKS_DIR, {
+      type: 'set_llm_mode',
+      mode: 'auto',
+      groupFolder,
+      timestamp: new Date().toISOString(),
+    });
+
+    const icon = ok ? '✅' : '❌';
+    const status = ok ? 'OK' : 'FAIL';
+    return {
+      content: [{
+        type: 'text' as const,
+        text: `${icon} ${args.mode}: ${status}\n${detail}\n\nMode restored to auto. Use set_llm_mode("${args.mode}") to switch permanently.`,
+      }],
+      isError: !ok,
+    };
+  },
+);
+
+server.tool(
   'set_llm_mode',
   `Switch the LLM backend used to respond to messages. Main group only.
 

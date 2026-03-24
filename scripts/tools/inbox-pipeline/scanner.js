@@ -27,9 +27,18 @@ const OLLAMA_MODEL_DEFAULT = 'gemma3:4b';
 
 function loadClaudeApiKey() {
   try {
-    const configPath = path.join(os.homedir(), '.claude', 'config.json');
-    const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-    return config.primaryApiKey || null;
+    const content = fs.readFileSync(KEY_FILE, 'utf8');
+    const sectionMatch = content.match(/# Anthropic API Key[\s\S]*?(?=\n#|$)/i);
+    if (!sectionMatch) return null;
+    const section = sectionMatch[0];
+    const enc = section.match(/ENCRYPTED:\s*([a-f0-9]+)/)?.[1];
+    const key = section.match(/KEY:\s*([a-f0-9]{64})/)?.[1];
+    const iv  = section.match(/IV:\s*([a-f0-9]{32})/)?.[1];
+    if (!enc || !key || !iv) return null;
+    const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key, 'hex'), Buffer.from(iv, 'hex'));
+    let dec = decipher.update(enc, 'hex', 'utf8');
+    dec += decipher.final('utf8');
+    return dec || null;
   } catch {
     return null;
   }
