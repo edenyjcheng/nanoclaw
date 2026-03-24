@@ -127,7 +127,7 @@ function loadNotionToken() {
 }
 
 // --- Notion PATCH ---
-async function patchNotionStatus(pageId, token, status) {
+async function patchNotion(pageId, token, properties) {
   const res = await fetch(`https://api.notion.com/v1/pages/${pageId}`, {
     method: 'PATCH',
     headers: {
@@ -135,11 +135,7 @@ async function patchNotionStatus(pageId, token, status) {
       'Notion-Version': NOTION_VERSION,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      properties: {
-        'Status': { select: { name: status } },
-      },
-    }),
+    body: JSON.stringify({ properties }),
   });
   const data = await res.json();
   if (data.object === 'error') throw new Error(`Notion PATCH: ${data.message}`);
@@ -217,7 +213,7 @@ async function main() {
     if (eventEnd)    console.log(`  End:      ${eventEnd.toISOString()}`);
     if (locationArg) console.log(`  Location: ${locationArg}`);
     if (descArg)     console.log(`  Desc:     ${descArg}`);
-    if (notionPageId) console.log(`  Notion:   would patch page ${notionPageId} → Added to Calendar`);
+    if (notionPageId) console.log(`  Notion:   would patch page ${notionPageId} → Added to Calendar + GCal Event ID`);
     console.log(`\nEVENT_CREATED: ${JSON.stringify({ eventId: eventIdArg || 'dry-run', htmlLink: 'dry-run', calendarId })}`);
     return;
   }
@@ -268,8 +264,11 @@ async function main() {
   if (notionPageId) {
     try {
       const notionToken = loadNotionToken();
-      await patchNotionStatus(notionPageId, notionToken, 'Added to Calendar');
-      logLine(`NOTION_STATUS | page_id=${notionPageId} | status=Added to Calendar | status=ok`);
+      await patchNotion(notionPageId, notionToken, {
+        'Status':        { select: { name: 'Added to Calendar' } },
+        'GCal Event ID': { rich_text: [{ text: { content: eventId } }] },
+      });
+      logLine(`NOTION_STATUS | page_id=${notionPageId} | status=Added to Calendar | gcalEventId=${eventId} | status=ok`);
     } catch (err) {
       logLine(`NOTION_STATUS | page_id=${notionPageId} | status=error | error=${err.message}`);
       // Don't fail the whole script — the calendar event was already created
