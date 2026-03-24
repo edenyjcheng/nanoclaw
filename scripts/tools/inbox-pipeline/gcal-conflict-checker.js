@@ -12,6 +12,8 @@
  *
  * Options:
  *   --account <name>    Calendar account from gcal-config.json (default: Personal)
+ *   --calendar <name>   Calendar name from Notion "Calendar" column (e.g. "Family").
+ *                       If omitted, checks all calendars for the account.
  *   --start <ISO>       Proposed event start (ISO 8601)
  *   --end   <ISO>       Proposed event end   (ISO 8601)
  *   --suggest-slots     Also find the next free 1h slot within 3 days
@@ -48,6 +50,7 @@ const getArg  = (flag) => { const i = args.indexOf(flag); return i !== -1 ? args
 const hasFlag = (flag) => args.includes(flag);
 
 const accountName  = getArg('--account') || 'Personal';
+const calendarName = getArg('--calendar') || null;
 const startArg     = getArg('--start');
 const endArg       = getArg('--end');
 const suggestSlots = hasFlag('--suggest-slots');
@@ -55,7 +58,7 @@ const dryRun       = hasFlag('--dry-run');
 
 // --- Validation ---
 if (!startArg || !endArg) {
-  console.error('Usage: gcal-conflict-checker.js --start <ISO> --end <ISO> [--account <name>] [--suggest-slots]');
+  console.error('Usage: gcal-conflict-checker.js --start <ISO> --end <ISO> [--account <name>] [--calendar <name>] [--suggest-slots]');
   process.exit(1);
 }
 
@@ -236,12 +239,20 @@ async function main() {
 
   const calendar   = google.calendar({ version: 'v3', auth: oAuth2Client });
   const defaultCalId = account.default_calendar_id || 'primary';
+  const configCalendars = (config.calendars || [])
+    .filter(c => c.account.toLowerCase() === accountName.toLowerCase());
 
-  // Build list of all calendar IDs for this account from gcal-config.json
-  const accountCalendars = (config.calendars || [])
-    .filter(c => c.account.toLowerCase() === accountName.toLowerCase())
-    .map(c => c.calendar_id);
-  const allCalendarIds = [...new Set([defaultCalId, ...accountCalendars])];
+  // If --calendar given, resolve to that specific calendar ID.
+  // Otherwise check all calendars for the account.
+  let allCalendarIds;
+  if (calendarName) {
+    const match = configCalendars.find(c => c.name.toLowerCase() === calendarName.toLowerCase());
+    if (!match) throw new Error(`Calendar "${calendarName}" not found in gcal-config.json for account "${accountName}"`);
+    allCalendarIds = [match.calendar_id];
+  } else {
+    const accountCalIds = configCalendars.map(c => c.calendar_id);
+    allCalendarIds = [...new Set([defaultCalId, ...accountCalIds])];
+  }
 
   // Query window: start-30min to end+30min
   const timeMin = new Date(eventStart.getTime() - 30 * 60 * 1000).toISOString();
