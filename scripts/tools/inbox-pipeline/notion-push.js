@@ -555,26 +555,50 @@ async function cmdSync(token) {
 
 // --- CLEAN ---
 async function cmdClean(token) {
-  // Default: archive pages with Status = "Added to Calendar" OR "Added to Todo" that are 7+ days old.
-  // With --status S: archive pages matching that specific Status (no age filter).
+  // Default mode (no --status flag):
+  //   1. Ignored rows where Learned = true → archive immediately (Learning Agent already processed them)
+  //   2. Added to Calendar / Added to Todo rows older than 7 days → archive
+  // With --status S: archive pages matching that specific Status (no age filter, ignores Learned).
   const DEFAULT_CLEAN_STATUSES = ['Added to Calendar', 'Added to Todo'];
-  const filterLabel = statusFilter ? `Status = ${statusFilter}` : 'Added to Calendar / Added to Todo items older than 7 days';
+  const filterLabel = statusFilter
+    ? `Status = ${statusFilter}`
+    : 'Ignored (Learned=true) + Added to Calendar / Added to Todo items older than 7 days';
   console.log(`Cleaning Notion DB (${filterLabel})${dryRun ? ' [DRY RUN]' : ''}...\n`);
-
-  const queryStatus = statusFilter || DEFAULT_CLEAN_STATUSES;
-  const pages = await queryAllPages(token, queryStatus);
 
   const index = loadIndex();
 
-  // Default mode: apply 7-day age filter based on pushed_at in local index
-  const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-  const eligiblePages = statusFilter
-    ? pages
-    : pages.filter(page => {
-        const entry = Object.values(index).find(v => v.page_id === page.id);
-        const pushedAt = new Date(entry?.pushed_at || page.created_time || 0);
-        return pushedAt < cutoff;
-      });
+  let eligiblePages = [];
+
+  if (statusFilter) {
+    // Explicit --status: archive all pages with that status, no other filters
+    const pages = await queryAllPages(token, statusFilter);
+    eligiblePages = pages;
+  } else {
+    // 1. Ignored + Learned=true (no age restriction — Learning Agent already processed)
+    const learnedIgnoredPages = await notionRequest('POST', `/databases/${DB_ID}/query`, token, {
+      page_size: 100,
+      filter: {
+        and: [
+          { property: 'Status', select: { equals: 'Ignored' } },
+          { property: 'Learned', checkbox: { equals: true } },
+        ],
+      },
+    }).then(d => d.results || []);
+
+    // 2. Added to Calendar / Added to Todo older than 7 days
+    const addedPages = await queryAllPages(token, DEFAULT_CLEAN_STATUSES);
+    const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const oldAddedPages = addedPages.filter(page => {
+      const entry = Object.values(index).find(v => v.page_id === page.id);
+      const pushedAt = new Date(entry?.pushed_at || page.created_time || 0);
+      return pushedAt < cutoff;
+    });
+
+    eligiblePages = [...learnedIgnoredPages, ...oldAddedPages];
+    if (learnedIgnoredPages.length > 0 || oldAddedPages.length > 0) {
+      console.log(`  Ignored (Learned): ${learnedIgnoredPages.length} | Added (7d+): ${oldAddedPages.length}`);
+    }
+  }
 
   if (eligiblePages.length === 0) {
     console.log('No matching pages found for archiving.');
