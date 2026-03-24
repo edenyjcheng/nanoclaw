@@ -122,10 +122,14 @@ function archivedMsgIds(archive) {
 
 // --- Date parser ---
 // Handles: ISO (2026-03-25), M/D/YY (6/22/26), M/D/YYYY (6/22/2026),
-//          "Month D YYYY" (March 25 2026), "Month D, YYYY", natural Date.parse strings
+//          "Month D YYYY" (March 25 2026), "Month D, YYYY", natural Date.parse strings,
+//          date ranges like "6/22/26 - 8/14/26" (takes the start date)
 function parseDate(dateStr) {
   if (!dateStr) return null;
-  const s = String(dateStr).trim();
+  let s = String(dateStr).trim();
+
+  // Range splitter: "6/22/26 - 8/14/26" → take start date only
+  if (s.includes(' - ')) s = s.split(' - ')[0].trim();
 
   // M/D/YY or M/D/YYYY
   const mdy = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
@@ -176,6 +180,96 @@ async function queryAllPages(token, statusFilter) {
   return pages;
 }
 
+// --- Duplicate detection helpers ---
+
+// Tokenise a title into lowercase words (strips punctuation)
+function titleWords(title) {
+  return (title || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(Boolean);
+}
+
+// Returns true if titles are similar enough to be the same event:
+//   - one contains the other (substring, case-insensitive), OR
+//   - word overlap ratio > 80% relative to the larger word set
+function titlesSimilar(a, b) {
+  const al = (a || '').toLowerCase();
+  const bl = (b || '').toLowerCase();
+  if (al.includes(bl) || bl.includes(al)) return true;
+  const aw = new Set(titleWords(a));
+  const bw = new Set(titleWords(b));
+  if (aw.size === 0 || bw.size === 0) return false;
+  let overlap = 0;
+  for (const w of aw) if (bw.has(w)) overlap++;
+  return overlap / Math.max(aw.size, bw.size) > 0.8;
+}
+
+// Fetch all Pending + Approved rows from Notion (for dedup, run once per push session)
+async function fetchActivePagesForDedup(token) {
+  return queryAllPages(token, ['Pending', 'Approved']);
+}
+
+// Returns the existing Notion page if it's a duplicate of `event`, otherwise null.
+// Match criteria: same Event Date start AND similar title.
+function findDuplicate(event, activePages) {
+  const eventDate = parseDate(event.date);
+  if (!eventDate) return null; // can't match without a date
+
+  const eventTitle = (event.title || '').trim();
+
+  for (const page of activePages) {
+    const pageDate = page.properties['Event Date']?.date?.start || null;
+    if (!pageDate) continue;
+    if (pageDate.slice(0, 10) !== eventDate) continue;
+
+    const pageTitle = page.properties['Event Title']?.title?.map(t => t.plain_text).join('') || '';
+    if (titlesSimilar(eventTitle, pageTitle)) return page;
+  }
+  return null;
+}
+
+// PATCH the existing Notion row with non-empty fields from the new event,
+// but only if the existing field is currently empty.
+async function mergeEvent(event, existingPage, token, index) {
+  const props = existingPage.properties;
+  const pageId = existingPage.id;
+
+  const patch = {};
+
+  const isEmpty = (richTextProp) => !richTextProp?.rich_text?.[0]?.plain_text;
+
+  if (event.location && isEmpty(props['Location']))
+    patch['Location'] = { rich_text: [{ text: { content: event.location } }] };
+
+  if (event.time && isEmpty(props['Event Time']))
+    patch['Event Time'] = { rich_text: [{ text: { content: String(event.time).slice(0, 200) } }] };
+
+  if (event.notes && isEmpty(props['Notes']))
+    patch['Notes'] = { rich_text: [{ text: { content: event.notes.slice(0, 2000) } }] };
+
+  const existingTitle = props['Event Title']?.title?.map(t => t.plain_text).join('') || '';
+  const label = event.title?.slice(0, 50);
+
+  if (dryRun) {
+    const fields = Object.keys(patch);
+    console.log(`  [DRY RUN] MERGE (duplicate): ${event.title}`);
+    console.log(`    → existing page ${pageId} ("${existingTitle}")`);
+    console.log(`    → would fill empty fields: ${fields.length > 0 ? fields.join(', ') : 'none'}`);
+    return { ok: true, merged: true };
+  }
+
+  if (Object.keys(patch).length > 0) {
+    await notionRequest('PATCH', `/pages/${pageId}`, token, { properties: patch });
+  }
+
+  // Track in index so it isn't re-processed
+  const key = makeIndexKey(event);
+  index[key] = { page_id: pageId, title: event.title, msg_id: event.source?.msg_id, pushed_at: new Date().toISOString(), status: 'pushed' };
+  saveIndex(index);
+
+  const filled = Object.keys(patch);
+  logLine(`NOTION_MERGE | title=${label} | msg_id=${event.source?.msg_id} | existing_page_id=${pageId} | filled=${filled.join(',') || 'none'}`);
+  return { ok: true, merged: true };
+}
+
 // --- Build Notion page properties ---
 function buildProperties(event) {
   const props = {
@@ -188,7 +282,10 @@ function buildProperties(event) {
   };
 
   const dateStr = parseDate(event.date);
-  const endDateStr = parseDate(event.end_date);
+  // If event.date is a range (e.g. "6/22/26 - 8/14/26"), extract end from second part
+  const rawDate = String(event.date || '').trim();
+  const rangeEnd = rawDate.includes(' - ') ? rawDate.split(' - ')[1]?.trim() : null;
+  const endDateStr = parseDate(event.end_date) || (rangeEnd ? parseDate(rangeEnd) : null);
   if (dateStr) props['Event Date'] = { date: { start: dateStr, ...(endDateStr ? { end: endDateStr } : {}) } };
   if (event.time) props['Event Time'] = { rich_text: [{ text: { content: String(event.time).slice(0, 200) } }] };
   if (event.source?.subject) props['Email Subject'] = { rich_text: [{ text: { content: event.source.subject.slice(0, 2000) } }] };
@@ -260,10 +357,24 @@ async function cmdPush(token) {
   if (dryRun) console.log('[DRY RUN] No Notion API calls or file writes.\n');
   logLine(`NOTION_PUSH_START | new=${toProcess.length} | skipped=${skipped} | db=${DB_ID}`);
 
-  let pushed = 0, failed = 0;
+  // Fetch active (Pending + Approved) rows once for duplicate detection
+  const activePages = dryRun ? [] : await fetchActivePagesForDedup(token);
+
+  let pushed = 0, merged = 0, failed = 0;
   const pushedEvents = [];
 
   for (const event of toProcess) {
+    const duplicate = findDuplicate(event, activePages);
+    if (duplicate) {
+      const result = await mergeEvent(event, duplicate, token, index);
+      if (result.ok) {
+        merged++;
+        pushedEvents.push(event); // move to archive regardless
+      } else {
+        failed++;
+      }
+      continue;
+    }
     const result = await pushEvent(event, token, index);
     if (result.ok) {
       pushed++;
@@ -284,9 +395,10 @@ async function cmdPush(token) {
     saveArchive(archive);
   }
 
-  logLine(`NOTION_PUSH_END | pushed=${pushed} | failed=${failed}`);
-  if (!dryRun && pushed > 0) {
-    console.log(`\n${pushed} item(s) added to Notion and moved to archive.`);
+  logLine(`NOTION_PUSH_END | pushed=${pushed} | merged=${merged} | failed=${failed}`);
+  if (!dryRun && (pushed > 0 || merged > 0)) {
+    if (pushed > 0) console.log(`\n${pushed} item(s) added to Notion and moved to archive.`);
+    if (merged > 0) console.log(`${merged} duplicate(s) merged into existing Notion rows.`);
     console.log(`Open: ${DB_URL}`);
   }
 }
@@ -307,11 +419,26 @@ async function cmdRepush(token) {
 
   console.log(`Re-pushing: ${event.title} (msg_id: ${repushMsgId})`);
   if (dryRun) {
-    console.log('[DRY RUN] Would create new Notion page for this event.');
+    console.log('[DRY RUN] Would create new Notion page for this event (or merge if duplicate found).');
     return;
   }
 
   const index = loadIndex();
+  const activePages = await fetchActivePagesForDedup(token);
+  const duplicate = findDuplicate(event, activePages);
+
+  if (duplicate) {
+    const result = await mergeEvent(event, duplicate, token, index);
+    if (result.ok) {
+      console.log(`Merged into existing page: ${duplicate.id}`);
+      logLine(`NOTION_REPUSH | msg_id=${repushMsgId} | page_id=${duplicate.id} | status=merged`);
+    } else {
+      console.error(`Merge failed`);
+      process.exit(1);
+    }
+    return;
+  }
+
   const result = await pushEvent(event, token, index);
   if (result.ok) {
     console.log(`Done. New Notion page: ${result.pageId}`);
