@@ -115,6 +115,30 @@ function loadGuide() {
     return match ? match[1].trim() : null;
   }
 
+  // Parse ## CALENDAR DEFAULTS blocks (From Sender + Subject Contains)
+  function parseCalendarDefaults() {
+    const section = text.match(/## CALENDAR DEFAULTS([\s\S]*?)(?=\n## |$)/);
+    if (!section) return { fromSender: [], subjectContains: [] };
+
+    function parseRules(header) {
+      const block = section[1].match(new RegExp(`### ${header}\\n([\\s\\S]*?)(?=\\n###|$)`));
+      if (!block) return [];
+      return block[1]
+        .split('\n')
+        .filter(l => /^- .+→.+/.test(l))
+        .map(l => {
+          const parts = l.replace(/^- /, '').split('→').map(s => s.trim());
+          return parts.length === 2 ? { pattern: parts[0], calendar: parts[1] } : null;
+        })
+        .filter(Boolean);
+    }
+
+    return {
+      fromSender: parseRules('From Sender'),
+      subjectContains: parseRules('Subject Contains'),
+    };
+  }
+
   // Parse ## ALERT CATEGORIES blocks
   function parseAlertCategories() {
     const section = text.match(/## ALERT CATEGORIES([\s\S]*?)(?=\n## |$)/);
@@ -141,6 +165,7 @@ function loadGuide() {
     skipCategories: parseList('Skip Gmail Categories').map(c => c.toLowerCase()),
     extractionGuidelines,
     alertCategories: parseAlertCategories(),
+    calendarDefaults: parseCalendarDefaults(),
     ollamaUrl: parseSetting('ollama_url') || OLLAMA_URL_DEFAULT,
     ollamaModel: parseSetting('ollama_model') || OLLAMA_MODEL_DEFAULT,
   };
@@ -228,6 +253,7 @@ Extract all events found. For each event return a JSON object with these fields:
 - registration_link: string or null
 - rsvp_deadline: string or null
 - notes: string or null (include full context: description, pricing, organizer, who sent it, any other relevant details)
+- confidence: number (0.0–1.0 — how confident you are this is a real calendar-worthy event; use < 0.7 for ambiguous or promotional emails)
 
 If no events found, return an empty array.
 Respond with ONLY a valid JSON array, no explanation.`;
@@ -441,7 +467,37 @@ async function scanAccount(account, key, scannedIds, dryRun, guide) {
 
     if (events.length > 0) {
       extracted++;
-      for (const event of events) extractedEvents.push({ ...event, source });
+      for (const event of events) {
+        // Confidence flag: prepend warning to Notes if model confidence < 0.7
+        const confidence = typeof event.confidence === 'number' ? event.confidence : 1.0;
+        if (confidence < 0.7) {
+          const warning = '⚠️ Low confidence — please verify';
+          event.notes = event.notes ? `${warning}\n${event.notes}` : warning;
+          logLine(`MSG | account=${account.name} | msg_id=${msgId} | confidence=${confidence.toFixed(2)} | action=low_confidence`);
+        }
+
+        // Calendar defaults: apply guide rules if model didn't assign a calendar
+        if (!event.calendar) {
+          const fromLower = from.toLowerCase();
+          const subjectLower = subject.toLowerCase();
+          for (const rule of (guide.calendarDefaults?.fromSender || [])) {
+            if (fromLower.includes(rule.pattern.toLowerCase())) {
+              event.calendar = rule.calendar;
+              break;
+            }
+          }
+          if (!event.calendar) {
+            for (const rule of (guide.calendarDefaults?.subjectContains || [])) {
+              if (subjectLower.includes(rule.pattern.toLowerCase())) {
+                event.calendar = rule.calendar;
+                break;
+              }
+            }
+          }
+        }
+
+        extractedEvents.push({ ...event, source });
+      }
       logLine(`MSG | account=${account.name} | msg_id=${msgId} | subject=${subject.slice(0, 60)} | action=extracted | events=${events.length}`);
     } else {
       logLine(`MSG | account=${account.name} | msg_id=${msgId} | subject=${subject.slice(0, 60)} | action=no_events`);
@@ -502,7 +558,7 @@ async function main() {
   }
 
   const guide = loadGuide();
-  logLine(`GUIDE_LOADED | skipFrom=${guide.skipFrom.length} | skipPatterns=${guide.skipSubjectPatterns.length} | onlyFrom=${guide.onlyFrom.length} | skipCategories=${guide.skipCategories.length} | alertCategories=${guide.alertCategories.length} | ollama=${guide.ollamaUrl} | model=${guide.ollamaModel}`);
+  logLine(`GUIDE_LOADED | skipFrom=${guide.skipFrom.length} | skipPatterns=${guide.skipSubjectPatterns.length} | onlyFrom=${guide.onlyFrom.length} | skipCategories=${guide.skipCategories.length} | alertCategories=${guide.alertCategories.length} | calendarDefaults=${(guide.calendarDefaults.fromSender.length + guide.calendarDefaults.subjectContains.length)} | ollama=${guide.ollamaUrl} | model=${guide.ollamaModel}`);
 
   if (dryRun) console.log('[DRY RUN] No files will be written.\n');
 
