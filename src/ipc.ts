@@ -180,6 +180,7 @@ export async function processTaskIpc(
     start?: string;
     end?: string;
     account?: string;
+    calendar?: string;
     location?: string;
     description?: string;
     notionPageId?: string;
@@ -510,6 +511,7 @@ export async function processTaskIpc(
       ];
       if (data.end) gcalArgs.push('--end', String(data.end));
       if (data.account) gcalArgs.push('--account', String(data.account));
+      if (data.calendar) gcalArgs.push('--calendar', String(data.calendar));
       if (data.location) gcalArgs.push('--location', String(data.location));
       if (data.description)
         gcalArgs.push('--description', String(data.description));

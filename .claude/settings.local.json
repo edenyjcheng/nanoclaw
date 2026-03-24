@@ -130,7 +130,16 @@
       "Bash(NANOCLAW_GROUP_DIR=\"C:/workspace/claude/nanoclaw/groups/telegram_main\" node scripts/tools/gmail/gcal-event-writer.js \\\\\n  --title \"NanoClaw Test Event\" \\\\\n  --start \"2026-03-25T10:00:00+08:00\" \\\\\n  --end   \"2026-03-25T11:00:00+08:00\" \\\\\n  --description \"Test from gcal-event-writer.js — safe to delete\")",
       "Bash(NANOCLAW_GROUP_DIR=\"C:/workspace/claude/nanoclaw/groups/telegram_main\" node scripts/tools/gmail/notion-event-query.js --dry-run 2>&1)",
       "Bash(NANOCLAW_GROUP_DIR=\"C:/workspace/claude/nanoclaw/groups/telegram_main\" node scripts/tools/gmail/notion-event-query.js --type all --dry-run 2>&1)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(NANOCLAW_GROUP_DIR=\"C:/workspace/claude/nanoclaw/groups/telegram_main\" node scripts/tools/inbox-pipeline/gcal-event-writer.js --event-id kvaiti2pafj44jleski9ir6b50 --title \"NanoClaw Test Event \\(updated\\)\" --dry-run)",
+      "Bash(NANOCLAW_GROUP_DIR=\"C:/workspace/claude/nanoclaw/groups/telegram_main\" node scripts/tools/inbox-pipeline/gcal-event-writer.js --title \"Insert Test\" --start \"2026-03-26T09:00:00+08:00\" --dry-run)",
+      "Bash(node -e \":*)",
+      "Bash(NANOCLAW_GROUP_DIR=\"C:/workspace/claude/nanoclaw/groups/telegram_main\" node scripts/tools/inbox-pipeline/notion-push.js --repush 19d1cb4a2f027e1f)",
+      "Bash(powershell -Command \"Get-Process -Id 30296 | Select-Object Id, ProcessName, MainWindowTitle, Path\" 2>/dev/null)",
+      "Bash(docker buildx:*)",
+      "Bash(./container/build.sh)",
+      "Bash(export PATH=\"$PATH:/c/Program Files/Docker/Docker/resources/bin\")",
+      "Bash(docker version:*)"
     ]
   }
 }
