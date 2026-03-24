@@ -142,20 +142,22 @@ function buildConflictMessage(conflicts, eventStartISO, eventEndISO) {
 
 // --- Find next free 1-hour slots within 3 days ---
 // Looks at working hours (08:00–22:00 local) in 30-min steps.
-async function findFreeSlots(calendar, calendarId, afterDate, durationMs, maxSlots = 3) {
+async function findFreeSlots(calendar, calendarIds, afterDate, durationMs, maxSlots = 3) {
   const searchEnd = new Date(afterDate.getTime() + 3 * 24 * 60 * 60 * 1000);
 
-  // Fetch all events in the 3-day window
-  const res = await calendar.events.list({
-    calendarId,
-    timeMin: afterDate.toISOString(),
-    timeMax: searchEnd.toISOString(),
-    singleEvents: true,
-    orderBy: 'startTime',
-    maxResults: 100,
-  });
+  // Fetch events from all calendars in the 3-day window
+  const allItems = (await Promise.all(calendarIds.map(calId =>
+    calendar.events.list({
+      calendarId: calId,
+      timeMin: afterDate.toISOString(),
+      timeMax: searchEnd.toISOString(),
+      singleEvents: true,
+      orderBy: 'startTime',
+      maxResults: 100,
+    }).then(res => res.data.items || [])
+  ))).flat();
 
-  const busy = (res.data.items || [])
+  const busy = allItems
     .filter(e => e.start?.dateTime) // exclude all-day events
     .map(e => ({ start: new Date(e.start.dateTime), end: new Date(e.end.dateTime) }));
 
@@ -233,24 +235,33 @@ async function main() {
   });
 
   const calendar   = google.calendar({ version: 'v3', auth: oAuth2Client });
-  const calendarId = account.default_calendar_id || 'primary';
+  const defaultCalId = account.default_calendar_id || 'primary';
+
+  // Build list of all calendar IDs for this account from gcal-config.json
+  const accountCalendars = (config.calendars || [])
+    .filter(c => c.account.toLowerCase() === accountName.toLowerCase())
+    .map(c => c.calendar_id);
+  const allCalendarIds = [...new Set([defaultCalId, ...accountCalendars])];
 
   // Query window: start-30min to end+30min
   const timeMin = new Date(eventStart.getTime() - 30 * 60 * 1000).toISOString();
   const timeMax = new Date(eventEnd.getTime()   + 30 * 60 * 1000).toISOString();
 
-  logLine(`CONFLICT_CHECK | account=${accountName} | calendarId=${calendarId} | start=${startArg} | end=${endArg}`);
+  logLine(`CONFLICT_CHECK | account=${accountName} | calendars=${allCalendarIds.join(',')} | start=${startArg} | end=${endArg}`);
 
-  const res = await calendar.events.list({
-    calendarId,
-    timeMin,
-    timeMax,
-    singleEvents: true,
-    orderBy: 'startTime',
-    maxResults: 20,
-  });
+  // Query all calendars concurrently
+  const allItems = (await Promise.all(allCalendarIds.map(calId =>
+    calendar.events.list({
+      calendarId: calId,
+      timeMin,
+      timeMax,
+      singleEvents: true,
+      orderBy: 'startTime',
+      maxResults: 20,
+    }).then(res => res.data.items || [])
+  ))).flat();
 
-  const candidates = res.data.items || [];
+  const candidates = allItems;
 
   // A conflict is an event whose time overlaps [eventStart, eventEnd)
   const conflicts = candidates
@@ -277,7 +288,7 @@ async function main() {
 
   if (suggestSlots || conflicts.length > 0) {
     // Always fetch free slots when there's a conflict (agent can present [3])
-    freeSlots = await findFreeSlots(calendar, calendarId, eventEnd, durationMs);
+    freeSlots = await findFreeSlots(calendar, allCalendarIds, eventEnd, durationMs);
     logLine(`FREE_SLOTS | found=${freeSlots.length}`);
   }
 
