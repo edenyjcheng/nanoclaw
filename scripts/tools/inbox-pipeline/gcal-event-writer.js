@@ -45,6 +45,7 @@ const getArg  = (flag) => { const i = args.indexOf(flag); return i !== -1 ? args
 const hasFlag = (flag) => args.includes(flag);
 
 const accountName   = getArg('--account') || 'Personal';
+const calendarName  = getArg('--calendar') || null;
 const titleArg      = getArg('--title');
 const startArg      = getArg('--start');
 const endArg        = getArg('--end');
@@ -57,7 +58,7 @@ const dryRun        = hasFlag('--dry-run');
 // In patch mode --title and --start are optional (only patch provided fields).
 // In insert mode both are required.
 if (!eventIdArg && (!titleArg || !startArg)) {
-  console.error('Usage: gcal-event-writer.js --title <string> --start <ISO> [--end <ISO>] [--account <name>]');
+  console.error('Usage: gcal-event-writer.js --title <string> --start <ISO> [--end <ISO>] [--account <name>] [--calendar <name>]');
   console.error('       [--location <string>] [--description <string>] [--notion-page-id <id>] [--dry-run]');
   console.error('       [--event-id <id>]  update existing event (all other flags optional)');
   process.exit(1);
@@ -193,11 +194,21 @@ async function main() {
     }
   });
 
-  const calendar   = google.calendar({ version: 'v3', auth: oAuth2Client });
-  const calendarId = account.default_calendar_id || 'primary';
+  const calendar = google.calendar({ version: 'v3', auth: oAuth2Client });
+
+  // Resolve calendarId: --calendar name → gcal-config.json calendars[] → calendar_id
+  // Falls back to account.default_calendar_id if --calendar not provided.
+  let calendarId = account.default_calendar_id || 'primary';
+  if (calendarName) {
+    const configCalendars = (config.calendars || [])
+      .filter(c => c.account.toLowerCase() === accountName.toLowerCase());
+    const match = configCalendars.find(c => c.name.toLowerCase() === calendarName.toLowerCase());
+    if (!match) throw new Error(`Calendar "${calendarName}" not found in gcal-config.json for account "${accountName}"`);
+    calendarId = match.calendar_id;
+  }
 
   const op = eventIdArg ? 'patch' : 'insert';
-  logLine(`GCAL_WRITE | op=${op} | account=${accountName} | calendarId=${calendarId} | title=${titleArg || '(unchanged)'} | start=${startArg || '(unchanged)'}`);
+  logLine(`GCAL_WRITE | op=${op} | account=${accountName} | calendar=${calendarName || 'default'} | calendarId=${calendarId} | title=${titleArg || '(unchanged)'} | start=${startArg || '(unchanged)'}`);
 
   if (dryRun) {
     console.log(`\n[DRY RUN] Would ${op} event${eventIdArg ? ` (${eventIdArg})` : ''}:`);
