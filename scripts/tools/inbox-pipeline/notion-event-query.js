@@ -6,11 +6,14 @@
  *
  * Usage:
  *   node scripts/tools/inbox-pipeline/notion-event-query.js [--type Event|Task|all] [--dry-run]
+ *   node scripts/tools/inbox-pipeline/notion-event-query.js --registered-updates
  *
  * Options:
- *   --type <filter>   Event | Task | Alert | all  (default: Event)
- *   --mark-added      After outputting, PATCH each page → Status = "Added to Calendar"
- *   --dry-run         Skip PATCH calls; output only
+ *   --type <filter>       Event | Task | Alert | all  (default: Event)
+ *   --mark-added          After outputting, PATCH each page → Status = "Added to Calendar"
+ *   --registered-updates  Query Added to Calendar + Registered=true + has GCal Event ID
+ *                         (events needing title patched with "(Registered)" suffix)
+ *   --dry-run             Skip PATCH calls; output only
  *
  * Output (stdout, last line):
  *   APPROVED_EVENTS: <JSON array>
@@ -54,9 +57,10 @@ const args      = process.argv.slice(2);
 const getArg    = (flag) => { const i = args.indexOf(flag); return i !== -1 ? args[i + 1] : null; };
 const hasFlag   = (flag) => args.includes(flag);
 
-const typeFilter  = getArg('--type') || 'Event';
-const markAdded   = hasFlag('--mark-added');
-const dryRun      = hasFlag('--dry-run');
+const typeFilter          = getArg('--type') || 'Event';
+const markAdded           = hasFlag('--mark-added');
+const dryRun              = hasFlag('--dry-run');
+const doRegisteredUpdates = hasFlag('--registered-updates');
 
 // --- Logging ---
 function logLine(line) {
@@ -166,7 +170,33 @@ function mapPage(page) {
     registrationRequired: props['Registration Required']?.checkbox ?? false,
     registrationLink:     props['Registration Link']?.url || null,
     rsvpDeadline:         dateVal(props['RSVP Deadline']),
+    registered:           props['Registered']?.checkbox ?? false,
   };
+}
+
+// --- Query events needing registration title patch ---
+// Returns Added to Calendar rows where Registered=true and GCal Event ID is set.
+// The Phase C check calls gcal-event-writer --event-id <id> --title "<title> (Registered)" for each.
+async function queryRegisteredUpdates(token) {
+  const pages = [];
+  let cursor;
+  do {
+    const body = {
+      page_size: 100,
+      filter: {
+        and: [
+          { property: 'Status', select: { equals: 'Added to Calendar' } },
+          { property: 'Registered', checkbox: { equals: true } },
+          { property: 'GCal Event ID', rich_text: { is_not_empty: true } },
+        ],
+      },
+      ...(cursor ? { start_cursor: cursor } : {}),
+    };
+    const data = await notionRequest('POST', `/databases/${DB_ID}/query`, token, body);
+    pages.push(...data.results);
+    cursor = data.has_more ? data.next_cursor : undefined;
+  } while (cursor);
+  return pages;
 }
 
 // --- PATCH page status ---
@@ -194,6 +224,25 @@ function formatSummary(events) {
 // --- Main ---
 async function main() {
   const token = loadNotionToken();
+
+  // --registered-updates: find Added to Calendar rows where Registered=true + GCal ID set
+  if (doRegisteredUpdates) {
+    logLine(`NOTION_QUERY | mode=registered-updates`);
+    const pages = await queryRegisteredUpdates(token);
+    const events = pages.map(mapPage);
+    logLine(`NOTION_QUERY | registered_updates_found=${events.length}`);
+    console.log(`\nREGISTERED_UPDATES: ${JSON.stringify(events)}`);
+    if (events.length === 0) {
+      console.log('No registration title patches needed.');
+    } else {
+      console.log(`\n${events.length} event(s) need "(Registered)" title patch:`);
+      events.forEach((e, i) => {
+        console.log(`  [${i + 1}] "${e.title}" → "${e.title} (Registered)"`);
+        console.log(`       gcalEventId: ${e.gcalEventId} | page: ${e.pageId}`);
+      });
+    }
+    return;
+  }
 
   logLine(`NOTION_QUERY | type=${typeFilter} | markAdded=${markAdded}`);
 

@@ -556,13 +556,15 @@ async function cmdSync(token) {
 // --- CLEAN ---
 async function cmdClean(token) {
   // Default mode (no --status flag):
-  //   1. Ignored rows where Learned = true → archive immediately (Learning Agent already processed them)
-  //   2. Added to Calendar / Added to Todo rows older than 7 days → archive
-  // With --status S: archive pages matching that specific Status (no age filter, ignores Learned).
+  //   1. Any non-Pending, non-Archived row where Learned = true → soft-archive (Status="Archived")
+  //   2. Added to Calendar / Added to Todo rows older than 7 days → soft-archive
+  // Soft-archive = set Status="Archived" (stays in DB, hidden from views).
+  // A separate monthly job hard-deletes rows where Status="Archived" and last_edited > 30 days ago.
+  // With --status S: soft-archive pages matching that specific Status (no age filter, ignores Learned).
   const DEFAULT_CLEAN_STATUSES = ['Added to Calendar', 'Added to Todo'];
   const filterLabel = statusFilter
     ? `Status = ${statusFilter}`
-    : 'Ignored (Learned=true) + Added to Calendar / Added to Todo items older than 7 days';
+    : 'non-Pending/non-Archived (Learned=true) + Added to Calendar / Added to Todo items older than 7 days';
   console.log(`Cleaning Notion DB (${filterLabel})${dryRun ? ' [DRY RUN]' : ''}...\n`);
 
   const index = loadIndex();
@@ -570,22 +572,24 @@ async function cmdClean(token) {
   let eligiblePages = [];
 
   if (statusFilter) {
-    // Explicit --status: archive all pages with that status, no other filters
+    // Explicit --status: soft-archive all pages with that status, no other filters
     const pages = await queryAllPages(token, statusFilter);
     eligiblePages = pages;
   } else {
-    // 1. Ignored + Learned=true (no age restriction — Learning Agent already processed)
-    const learnedIgnoredPages = await notionRequest('POST', `/databases/${DB_ID}/query`, token, {
+    // 1. Any non-Pending, non-Archived row where Learned=true
+    //    Covers Ignored, Approved, Added to Calendar, Added to Todo — anything the agent reviewed
+    const learnedPages = await notionRequest('POST', `/databases/${DB_ID}/query`, token, {
       page_size: 100,
       filter: {
         and: [
-          { property: 'Status', select: { equals: 'Ignored' } },
           { property: 'Learned', checkbox: { equals: true } },
+          { property: 'Status', select: { does_not_equal: 'Pending' } },
+          { property: 'Status', select: { does_not_equal: 'Archived' } },
         ],
       },
     }).then(d => d.results || []);
 
-    // 2. Added to Calendar / Added to Todo older than 7 days
+    // 2. Added to Calendar / Added to Todo older than 7 days (even if Learned=false)
     const addedPages = await queryAllPages(token, DEFAULT_CLEAN_STATUSES);
     const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     const oldAddedPages = addedPages.filter(page => {
@@ -594,9 +598,18 @@ async function cmdClean(token) {
       return pushedAt < cutoff;
     });
 
-    eligiblePages = [...learnedIgnoredPages, ...oldAddedPages];
-    if (learnedIgnoredPages.length > 0 || oldAddedPages.length > 0) {
-      console.log(`  Ignored (Learned): ${learnedIgnoredPages.length} | Added (7d+): ${oldAddedPages.length}`);
+    // Deduplicate by page ID (learnedPages may overlap with oldAddedPages)
+    const seenIds = new Set();
+    const deduped = [];
+    for (const page of [...learnedPages, ...oldAddedPages]) {
+      if (!seenIds.has(page.id)) {
+        seenIds.add(page.id);
+        deduped.push(page);
+      }
+    }
+    eligiblePages = deduped;
+    if (learnedPages.length > 0 || oldAddedPages.length > 0) {
+      console.log(`  non-Pending/non-Archived (Learned): ${learnedPages.length} | Added (7d+): ${oldAddedPages.length} | total unique: ${eligiblePages.length}`);
     }
   }
 
@@ -612,16 +625,16 @@ async function cmdClean(token) {
     const status = page.properties['Status']?.select?.name || '?';
 
     if (dryRun) {
-      console.log(`  [DRY RUN] Would archive: ${title} | Status: ${status}`);
+      console.log(`  [DRY RUN] Would soft-archive: ${title} | Status: ${status} → Archived`);
       archived++;
       continue;
     }
 
     try {
-      await notionRequest('PATCH', `/pages/${page.id}`, token, { archived: true });
-      const entry = Object.entries(index).find(([, v]) => v.page_id === page.id);
-      if (entry) delete index[entry[0]];
-      logLine(`NOTION_CLEAN | title=${title.slice(0, 50)} | page_id=${page.id} | status=archived`);
+      await notionRequest('PATCH', `/pages/${page.id}`, token, {
+        properties: { Status: { select: { name: 'Archived' } } },
+      });
+      logLine(`NOTION_CLEAN | title=${title.slice(0, 50)} | page_id=${page.id} | status=soft-archived`);
       archived++;
     } catch (err) {
       logLine(`NOTION_CLEAN | title=${title.slice(0, 50)} | page_id=${page.id} | status=error | error=${err.message}`);
@@ -630,10 +643,9 @@ async function cmdClean(token) {
   }
 
   if (!dryRun) {
-    saveIndex(index);
     logLine(`NOTION_CLEAN_END | archived=${archived} | failed=${failed}`);
   }
-  console.log(`\n${archived} page(s) archived${failed > 0 ? `, ${failed} failed` : ''}.`);
+  console.log(`\n${archived} page(s) soft-archived (Status=Archived)${failed > 0 ? `, ${failed} failed` : ''}.`);
 }
 
 // --- Entry point ---

@@ -249,14 +249,19 @@ describe('credential-proxy auth mode switching', () => {
   // --- Individual credential checks ---
 
   it('OAuth only: placeholder Authorization is replaced before reaching upstream', async () => {
-    proxyPort = await startProxy({ CLAUDE_CODE_OAUTH_TOKEN: 'real-oauth-token' });
+    proxyPort = await startProxy({
+      CLAUDE_CODE_OAUTH_TOKEN: 'real-oauth-token',
+    });
 
     const res = await makeRequest(
       proxyPort,
       {
         method: 'POST',
         path: '/api/oauth/claude_cli/create_api_key',
-        headers: { 'content-type': 'application/json', authorization: 'Bearer placeholder' },
+        headers: {
+          'content-type': 'application/json',
+          authorization: 'Bearer placeholder',
+        },
       },
       '{}',
     );
@@ -277,7 +282,10 @@ describe('credential-proxy auth mode switching', () => {
       {
         method: 'POST',
         path: '/v1/messages',
-        headers: { 'content-type': 'application/json', 'x-api-key': 'placeholder' },
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': 'placeholder',
+        },
       },
       '{}',
     );
@@ -415,14 +423,25 @@ describe('credential-proxy auth mode switching', () => {
 
     credentialEvents.emit('recovered'); // ensure clean state
 
-    const exhausted = new Promise<void>((r) => credentialEvents.once('exhausted', r));
-    const recovered  = new Promise<void>((r) => credentialEvents.once('recovered',  r));
+    const exhausted = new Promise<void>((r) =>
+      credentialEvents.once('exhausted', r),
+    );
+    const recovered = new Promise<void>((r) =>
+      credentialEvents.once('recovered', r),
+    );
 
-    await makeRequest(proxyPort, {
-      method: 'POST',
-      path: '/v1/messages',
-      headers: { 'content-type': 'application/json', authorization: 'Bearer placeholder' },
-    }, '{}');
+    await makeRequest(
+      proxyPort,
+      {
+        method: 'POST',
+        path: '/v1/messages',
+        headers: {
+          'content-type': 'application/json',
+          authorization: 'Bearer placeholder',
+        },
+      },
+      '{}',
+    );
 
     await exhausted;
     await recovered; // real timer fires after 80 ms — no extra API call
@@ -445,27 +464,47 @@ describe('credential-proxy auth mode switching', () => {
 
     credentialEvents.emit('recovered');
 
-    const exhausted = new Promise<void>((r) => credentialEvents.once('exhausted', r));
-    await makeRequest(proxyPort, {
-      method: 'POST',
-      path: '/v1/messages',
-      headers: { 'content-type': 'application/json', authorization: 'Bearer placeholder' },
-    }, '{}');
+    const exhausted = new Promise<void>((r) =>
+      credentialEvents.once('exhausted', r),
+    );
+    await makeRequest(
+      proxyPort,
+      {
+        method: 'POST',
+        path: '/v1/messages',
+        headers: {
+          'content-type': 'application/json',
+          authorization: 'Bearer placeholder',
+        },
+      },
+      '{}',
+    );
     await exhausted;
 
     // Real successful request arrives before the timer fires — should cancel it
     upstreamStatusFn = () => 200;
-    const recovered = new Promise<void>((r) => credentialEvents.once('recovered', r));
-    await makeRequest(proxyPort, {
-      method: 'POST',
-      path: '/v1/messages',
-      headers: { 'content-type': 'application/json', authorization: 'Bearer placeholder' },
-    }, '{}');
+    const recovered = new Promise<void>((r) =>
+      credentialEvents.once('recovered', r),
+    );
+    await makeRequest(
+      proxyPort,
+      {
+        method: 'POST',
+        path: '/v1/messages',
+        headers: {
+          'content-type': 'application/json',
+          authorization: 'Bearer placeholder',
+        },
+      },
+      '{}',
+    );
     await recovered; // markRecovered() from real success
 
     // Timer was cancelled — no spurious second 'recovered' event after waiting
     let spurious = false;
-    credentialEvents.once('recovered', () => { spurious = true; });
+    credentialEvents.once('recovered', () => {
+      spurious = true;
+    });
     await new Promise((r) => setTimeout(r, 100));
     expect(spurious).toBe(false);
 

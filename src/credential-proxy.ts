@@ -5,7 +5,7 @@
  *
  * Auth priority:
  *   1. OAuth (Claude Pro subscription) — primary when credentials file exists
- *   2. ANTHROPIC_API_KEY              — fallback when OAuth returns 429
+ *   2. ANTHROPIC_API_KEY              — fallback when OAuth returns 429 or 400 usage-limit
  *   3. Ollama fallback mode           — host-level, when both are exhausted
  *                                       (handled in index.ts via credentialEvents)
  *
@@ -44,7 +44,10 @@ let recoveryAttempt = 0;
 
 function scheduleRecovery(): void {
   if (recoveryTimer) clearTimeout(recoveryTimer);
-  const delay = RECOVERY_BACKOFF_MS[Math.min(recoveryAttempt, RECOVERY_BACKOFF_MS.length - 1)];
+  const delay =
+    RECOVERY_BACKOFF_MS[
+      Math.min(recoveryAttempt, RECOVERY_BACKOFF_MS.length - 1)
+    ];
   recoveryAttempt++;
   logger.info(
     { attempt: recoveryAttempt, delayMs: delay },
@@ -52,7 +55,10 @@ function scheduleRecovery(): void {
   );
   recoveryTimer = setTimeout(() => {
     recoveryTimer = null;
-    logger.info({ attempt: recoveryAttempt }, 'Auto-recovery window elapsed — resetting exhaustion flag');
+    logger.info(
+      { attempt: recoveryAttempt },
+      'Auto-recovery window elapsed — resetting exhaustion flag',
+    );
     // Reset without a real API call. The next organic request will verify.
     // If it 429s again, markExhausted() re-fires and backoff continues.
     credentialsExhausted = false;
@@ -160,8 +166,18 @@ export function startCredentialProxy(
     port: upstreamUrl.port || (isHttps ? 443 : 80),
   };
 
+  // Returns true when a response indicates quota/rate-limit exhaustion.
+  // Handles Anthropic's non-standard 400 "usage limits" response in addition to 429.
+  function isQuotaExhausted(statusCode: number, body?: string): boolean {
+    if (statusCode === 429) return true;
+    if (statusCode === 400 && body?.includes('API usage limits')) return true;
+    if (statusCode === 400 && body?.includes('usage limit')) return true;
+    return false;
+  }
+
   // Forward a request to upstream with the given headers.
-  // On 429 + canFallback: retries once with ANTHROPIC_API_KEY.
+  // On quota exhaustion (429 or 400 usage-limit) or 401 + canFallback: retries once with ANTHROPIC_API_KEY.
+  // Buffers the response body only when status is 400 or 429 to check for quota messages.
   function forwardRequest(
     method: string,
     url: string,
@@ -170,67 +186,106 @@ export function startCredentialProxy(
     clientRes: ServerResponse,
     canFallback: boolean,
   ): void {
-    const upstream = makeRequest(
-      { ...upstreamOpts, path: url, method, headers } as RequestOptions,
-      (upRes: IncomingMessage) => {
-        if (
-          upRes.statusCode === 429 &&
-          canFallback &&
-          secrets.ANTHROPIC_API_KEY
-        ) {
-          // OAuth rate-limited — drain response and retry with API key
-          upRes.resume();
-          logger.warn(
-            { url },
-            'OAuth rate-limited, retrying with ANTHROPIC_API_KEY',
-          );
+    function doApiKeyFallback(): void {
+      const fallbackHeaders = { ...headers };
+      delete fallbackHeaders['authorization'];
+      delete fallbackHeaders['x-api-key'];
+      fallbackHeaders['x-api-key'] = secrets.ANTHROPIC_API_KEY;
 
-          const fallbackHeaders = { ...headers };
-          delete fallbackHeaders['authorization'];
-          delete fallbackHeaders['x-api-key'];
-          fallbackHeaders['x-api-key'] = secrets.ANTHROPIC_API_KEY;
-
-          const retry = makeRequest(
-            {
-              ...upstreamOpts,
-              path: url,
-              method,
-              headers: fallbackHeaders,
-            } as RequestOptions,
-            (retryRes: IncomingMessage) => {
-              if (retryRes.statusCode === 429) {
+      const retry = makeRequest(
+        {
+          ...upstreamOpts,
+          path: url,
+          method,
+          headers: fallbackHeaders,
+        } as RequestOptions,
+        (retryRes: IncomingMessage) => {
+          if (retryRes.statusCode === 400 || retryRes.statusCode === 429 || retryRes.statusCode === 401) {
+            // Buffer to check for quota message on the retry response too
+            const retryChunks: Buffer[] = [];
+            retryRes.on('data', (c: Buffer) => retryChunks.push(c));
+            retryRes.on('end', () => {
+              const retryBodyText = Buffer.concat(retryChunks).toString('utf8');
+              if (isQuotaExhausted(retryRes.statusCode!, retryBodyText) || retryRes.statusCode === 401) {
                 logger.error(
-                  { url },
-                  'Both OAuth and API key rate-limited — switching to Ollama fallback',
+                  { url, status: retryRes.statusCode },
+                  'Both OAuth and API key failed — switching to Ollama fallback',
                 );
                 markExhausted();
               } else {
+                logger.info(
+                  { url, status: retryRes.statusCode },
+                  'API key fallback succeeded — request served via ANTHROPIC_API_KEY',
+                );
                 markRecovered();
               }
               clientRes.writeHead(retryRes.statusCode!, retryRes.headers);
-              retryRes.pipe(clientRes);
-            },
+              clientRes.end(Buffer.concat(retryChunks));
+            });
+          } else {
+            logger.info(
+              { url, status: retryRes.statusCode },
+              'API key fallback succeeded — request served via ANTHROPIC_API_KEY',
+            );
+            markRecovered();
+            clientRes.writeHead(retryRes.statusCode!, retryRes.headers);
+            retryRes.pipe(clientRes);
+          }
+        },
+      );
+      retry.on('error', (err) => {
+        logger.error({ err, url }, 'API key fallback request error');
+        if (!clientRes.headersSent) {
+          clientRes.writeHead(502);
+          clientRes.end('Bad Gateway');
+        }
+      });
+      retry.write(body);
+      retry.end();
+    }
+
+    const upstream = makeRequest(
+      { ...upstreamOpts, path: url, method, headers } as RequestOptions,
+      (upRes: IncomingMessage) => {
+        if (upRes.statusCode === 401 && canFallback && secrets.ANTHROPIC_API_KEY) {
+          // Auth error — drain and retry with API key (no body check needed)
+          upRes.resume();
+          logger.warn(
+            { url, status: 401 },
+            'OAuth auth error, retrying with ANTHROPIC_API_KEY',
           );
-          retry.on('error', (err) => {
-            logger.error({ err, url }, 'API key fallback request error');
-            if (!clientRes.headersSent) {
-              clientRes.writeHead(502);
-              clientRes.end('Bad Gateway');
+          doApiKeyFallback();
+        } else if (upRes.statusCode === 400 || upRes.statusCode === 429) {
+          // Buffer body to detect quota-exhaustion message.
+          // Anthropic sometimes returns HTTP 400 with "usage limits" instead of 429.
+          const upChunks: Buffer[] = [];
+          upRes.on('data', (c: Buffer) => upChunks.push(c));
+          upRes.on('end', () => {
+            const upBodyText = Buffer.concat(upChunks).toString('utf8');
+            if (isQuotaExhausted(upRes.statusCode!, upBodyText) && canFallback && secrets.ANTHROPIC_API_KEY) {
+              logger.warn(
+                { url, status: upRes.statusCode },
+                'OAuth quota exhausted, retrying with ANTHROPIC_API_KEY',
+              );
+              doApiKeyFallback();
+            } else if (isQuotaExhausted(upRes.statusCode!, upBodyText)) {
+              // Quota exhausted, no fallback available
+              logger.error(
+                { url },
+                'API rate-limited and no fallback available — switching to Ollama fallback',
+              );
+              markExhausted();
+              clientRes.writeHead(upRes.statusCode!, upRes.headers);
+              clientRes.end(Buffer.concat(upChunks));
+            } else {
+              // 400/429 but not quota-related — pass through
+              clientRes.writeHead(upRes.statusCode!, upRes.headers);
+              clientRes.end(Buffer.concat(upChunks));
             }
           });
-          retry.write(body);
-          retry.end();
         } else {
-          if (upRes.statusCode === 429) {
-            // No fallback available — this credential is the only one
-            logger.error(
-              { url },
-              'API rate-limited and no fallback available — switching to Ollama fallback',
-            );
-            markExhausted();
-          } else {
-            markRecovered();
-          }
+          // All other status codes — stream directly to client
+          markRecovered();
           clientRes.writeHead(upRes.statusCode!, upRes.headers);
           upRes.pipe(clientRes);
         }

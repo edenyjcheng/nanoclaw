@@ -54,6 +54,17 @@ const descArg       = getArg('--description');
 const notionPageId  = getArg('--notion-page-id');
 const eventIdArg    = getArg('--event-id');   // if set: PATCH existing event
 const dryRun        = hasFlag('--dry-run');
+// --registered: append "(Registered)" to title — Yung has confirmed registration
+// --registration-required: append "(Register!)" to title when registration needed but not yet done
+const registeredFlag        = hasFlag('--registered');
+const registrationRequired  = hasFlag('--registration-required');
+const effectiveTitle = titleArg
+  ? registeredFlag
+    ? `${titleArg} (Registered)`
+    : registrationRequired
+      ? `${titleArg} (Register!)`
+      : titleArg
+  : null;
 
 // In patch mode --title and --start are optional (only patch provided fields).
 // In insert mode both are required.
@@ -204,11 +215,11 @@ async function main() {
   }
 
   const op = eventIdArg ? 'patch' : 'insert';
-  logLine(`GCAL_WRITE | op=${op} | account=${accountName} | calendar=${calendarName || 'default'} | calendarId=${calendarId} | title=${titleArg || '(unchanged)'} | start=${startArg || '(unchanged)'}`);
+  logLine(`GCAL_WRITE | op=${op} | account=${accountName} | calendar=${calendarName || 'default'} | calendarId=${calendarId} | title=${effectiveTitle || '(unchanged)'} | start=${startArg || '(unchanged)'}`);
 
   if (dryRun) {
     console.log(`\n[DRY RUN] Would ${op} event${eventIdArg ? ` (${eventIdArg})` : ''}:`);
-    if (titleArg)    console.log(`  Title:    ${titleArg}`);
+    if (effectiveTitle) console.log(`  Title:    ${effectiveTitle}`);
     if (startArg)    console.log(`  Start:    ${startArg}`);
     if (eventEnd)    console.log(`  End:      ${eventEnd.toISOString()}`);
     if (locationArg) console.log(`  Location: ${locationArg}`);
@@ -223,7 +234,7 @@ async function main() {
   if (eventIdArg) {
     // PATCH — only include fields that were explicitly provided
     const patchBody = {};
-    if (titleArg)    patchBody.summary  = titleArg;
+    if (effectiveTitle) patchBody.summary  = effectiveTitle;
     if (eventStart)  patchBody.start    = { dateTime: eventStart.toISOString() };
     if (eventEnd)    patchBody.end      = { dateTime: eventEnd.toISOString() };
     if (locationArg) patchBody.location = locationArg;
@@ -240,7 +251,7 @@ async function main() {
   } else {
     // INSERT — full event body with reminders
     const eventBody = {
-      summary: titleArg,
+      summary: effectiveTitle,
       start:   { dateTime: eventStart.toISOString() },
       end:     { dateTime: eventEnd.toISOString() },
       reminders: {
@@ -277,7 +288,7 @@ async function main() {
 
   const result = { eventId, htmlLink, calendarId };
   console.log(`\nEVENT_CREATED: ${JSON.stringify(result)}`);
-  console.log(`\n✅ Event ${eventIdArg ? 'updated' : 'created'}: ${titleArg || eventIdArg}`);
+  console.log(`\n✅ Event ${eventIdArg ? 'updated' : 'created'}: ${effectiveTitle || eventIdArg}`);
   console.log(`   ${htmlLink}`);
   if (notionPageId) console.log(`   Notion row updated → Added to Calendar`);
 }

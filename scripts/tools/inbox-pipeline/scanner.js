@@ -181,8 +181,18 @@ function loadGuide() {
 }
 
 // --- Apply guide filters to an email ---
-function applyGuideFilters(guide, from, subject) {
+function applyGuideFilters(guide, from, subject, body) {
   const fromLower = from.toLowerCase();
+
+  // Kendo Content Override: if subject OR body matches any kendo keyword,
+  // bypass skipFrom entirely — kendo emails must always be scanned.
+  const kendoCat = guide.alertCategories?.find(c => c.name === 'Kendo');
+  const kendoKeywords = kendoCat?.keywords || [];
+  if (kendoKeywords.length > 0) {
+    const searchText = (subject + ' ' + (body || '')).toLowerCase();
+    const isKendo = kendoKeywords.some(kw => searchText.includes(kw.toLowerCase()));
+    if (isKendo) return { skip: false };
+  }
 
   // onlyFrom whitelist (if set)
   if (guide.onlyFrom.length > 0) {
@@ -447,8 +457,8 @@ async function scanAccount(account, key, scannedIds, dryRun, guide) {
     const from = headers.find(h => h.name === 'From')?.value || '';
     const body = decodeBody(full.data.payload);
 
-    // Apply guide filters
-    const filterResult = applyGuideFilters(guide, from, subject);
+    // Apply guide filters (pass body for Kendo Content Override check)
+    const filterResult = applyGuideFilters(guide, from, subject, body);
     if (filterResult.skip) {
       skipped++;
       logLine(`MSG | account=${account.name} | msg_id=${msgId} | subject=${subject.slice(0, 60)} | action=skipped_by_guide | reason=${filterResult.reason}`);
@@ -503,6 +513,12 @@ async function scanAccount(account, key, scannedIds, dryRun, guide) {
               }
             }
           }
+        }
+
+        // Registration tracking: if required but no link found, note TBD in Notes
+        if (event.registration_required && !event.registration_link) {
+          const note = 'Registration Link: TBD';
+          event.notes = event.notes ? `${event.notes}\n${note}` : note;
         }
 
         extractedEvents.push({ ...event, source });

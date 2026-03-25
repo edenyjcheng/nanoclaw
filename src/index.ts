@@ -1097,11 +1097,15 @@ async function main(): Promise<void> {
   });
 }
 
-// Guard: only run when executed directly, not when imported by tests
+// Guard: only run when executed directly, not when imported by tests.
+// NOTE: Do NOT simplify this back to `new URL('file://' + process.argv[1])` —
+// on Windows, process.argv[1] is a relative path when invoked as `node dist/index.js`,
+// which causes URL parsing to treat the first segment as a hostname (breaks silently).
+// path.resolve() ensures we always get an absolute path before URL construction.
 const isDirectRun =
   process.argv[1] &&
   new URL(import.meta.url).pathname ===
-    new URL(`file://${process.argv[1]}`).pathname;
+    new URL(`file://${path.resolve(process.argv[1])}`).pathname;
 
 if (isDirectRun) {
   main().catch((err) => {
