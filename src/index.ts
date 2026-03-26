@@ -210,10 +210,10 @@ credentialEvents.on('exhausted', () => {
   if (!ollamaFallbackNotified) {
     ollamaFallbackNotified = true;
     logger.warn(
-      'All Claude credentials rate-limited — switching to Ollama fallback mode',
+      'All Claude credentials exhausted — switching to Ollama fallback mode',
     );
     sendToMainGroup(
-      `⚠️ Both Claude API credentials are rate-limited. Switched to Ollama-only mode (${OLLAMA_WARMUP_MODEL || 'gemma3:4b'}). Tool access is suspended until limits reset. I'll automatically switch back when Claude becomes available.`,
+      `⚠️ Claude limits reached — running on Ollama (${OLLAMA_WARMUP_MODEL || 'gemma3:4b'}). Tool use + agent spawning unavailable until limits reset. I'll automatically switch back when Claude is available.`,
     ).catch((err) =>
       logger.warn({ err }, 'Failed to send exhaustion notification'),
     );
