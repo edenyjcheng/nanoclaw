@@ -102,6 +102,8 @@ const startupWarmupPending = new Map<string, boolean>();
 
 const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434';
 const OLLAMA_WARMUP_MODEL = process.env.OLLAMA_WARMUP_MODEL || '';
+// Ollama classifier — disabled by default, enable with CLASSIFIER_ENABLED=true in .env
+const CLASSIFIER_ENABLED = process.env.CLASSIFIER_ENABLED === 'true';
 
 /**
  * Ask a local Ollama model to generate the startup "back online" message.
@@ -243,20 +245,35 @@ credentialEvents.on('recovered', () => {
   }
 });
 
-classifierEvents.on('learned', ({ autoAdded, pendingApproval }: { autoAdded: string[]; pendingApproval: string[] }) => {
-  const lines: string[] = [];
-  if (autoAdded.length > 0) {
-    lines.push(`🧠 *Classifier learned:* Auto-added ${autoAdded.length} keyword(s): ${autoAdded.map((k) => `"${k}"`).join(', ')}`);
-  }
-  if (pendingApproval.length > 0) {
-    lines.push(`⚠️ *Classifier suggestion (low confidence):* ${pendingApproval.map((k) => `"${k}"`).join(', ')} — send "classifier add <phrase>" to approve.`);
-  }
-  if (lines.length > 0) {
-    sendToMainGroup(lines.join('\n')).catch((err) =>
-      logger.warn({ err }, 'Failed to send classifier notification'),
-    );
-  }
-});
+if (CLASSIFIER_ENABLED) {
+  classifierEvents.on(
+    'learned',
+    ({
+      autoAdded,
+      pendingApproval,
+    }: {
+      autoAdded: string[];
+      pendingApproval: string[];
+    }) => {
+    const lines: string[] = [];
+    if (autoAdded.length > 0) {
+      lines.push(
+        `🧠 *Classifier learned:* Auto-added ${autoAdded.length} keyword(s): ${autoAdded.map((k) => `"${k}"`).join(', ')}`,
+      );
+    }
+    if (pendingApproval.length > 0) {
+      lines.push(
+        `⚠️ *Classifier suggestion (low confidence):* ${pendingApproval.map((k) => `"${k}"`).join(', ')} — send "classifier add <phrase>" to approve.`,
+      );
+    }
+      if (lines.length > 0) {
+        sendToMainGroup(lines.join('\n')).catch((err) =>
+          logger.warn({ err }, 'Failed to send classifier notification'),
+        );
+      }
+    },
+  );
+}
 
 export type LlmMode = 'auto' | 'oauth' | 'api-key' | 'ollama';
 
@@ -571,7 +588,8 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
 
   // --- Ollama classifier: pre-classify to route CHAT→Ollama, TASK→Claude ---
   // Only active when Claude credentials are available (not in fallback mode).
-  if (!ollamaFallbackActive) {
+  // Disabled by default — set CLASSIFIER_ENABLED=true in .env to enable.
+  if (CLASSIFIER_ENABLED && !ollamaFallbackActive) {
     const rawText = lastMsg.content.trim();
     const classification = await classifyMessage(rawText);
 
@@ -1038,13 +1056,22 @@ async function recoverInterruptedJobs(
       continue;
     }
 
-    const trackerPath = path.join(groupDir, 'memory', 'docs', 'job-tracker.json');
+    const trackerPath = path.join(
+      groupDir,
+      'memory',
+      'docs',
+      'job-tracker.json',
+    );
     if (!fs.existsSync(trackerPath)) continue;
 
     let tracker: {
       active_jobs: Record<
         string,
-        { task_id?: string; started_at?: string; expected_duration_min?: number }
+        {
+          task_id?: string;
+          started_at?: string;
+          expected_duration_min?: number;
+        }
       >;
       interrupted_jobs: Array<{
         job: string;
@@ -1105,7 +1132,10 @@ async function recoverInterruptedJobs(
             });
             requeued.push(jobName);
           } catch (err) {
-            logger.warn({ err, job: jobName }, 'Job recovery: failed to re-queue');
+            logger.warn(
+              { err, job: jobName },
+              'Job recovery: failed to re-queue',
+            );
           }
         }
       }
@@ -1119,7 +1149,10 @@ async function recoverInterruptedJobs(
         ? `🔄 *System restarted* — recovered ${requeued.length} interrupted job(s): ${requeued.join(', ')}. Re-queuing now.`
         : `🔄 *System restarted* — ${jobNames.length} interrupted job(s) found: ${jobNames.join(', ')}. Could not re-queue (task IDs not stored).`;
 
-    logger.info({ group: group.name, jobNames, requeued }, 'Job recovery: processed interrupted jobs');
+    logger.info(
+      { group: group.name, jobNames, requeued },
+      'Job recovery: processed interrupted jobs',
+    );
     sendNotification(chatJid, msg).catch((err) =>
       logger.warn({ err }, 'Failed to send job recovery notification'),
     );
