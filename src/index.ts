@@ -18,6 +18,7 @@ import {
   startCredentialProxy,
   credentialEvents,
   setForcedAuthMode,
+  resetRecoveryState,
 } from './credential-proxy.js';
 import {
   addToQueue,
@@ -246,16 +247,19 @@ export function setLlmMode(mode: LlmMode): void {
   switch (mode) {
     case 'auto':
       setForcedAuthMode(null);
+      resetRecoveryState();
       ollamaFallbackActive = false;
       ollamaFallbackNotified = false;
       break;
     case 'oauth':
       setForcedAuthMode('oauth');
+      resetRecoveryState();
       ollamaFallbackActive = false;
       ollamaFallbackNotified = false;
       break;
     case 'api-key':
       setForcedAuthMode('api-key');
+      resetRecoveryState();
       ollamaFallbackActive = false;
       ollamaFallbackNotified = false;
       break;
@@ -641,6 +645,34 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
         { group: group.name },
         'Agent error after output was sent, skipping cursor rollback to prevent duplicates',
       );
+      return true;
+    }
+    // Credential exhaustion triggered mid-request — route to Ollama immediately
+    // instead of rolling back and waiting for the next loop iteration.
+    if (ollamaFallbackActive) {
+      logger.info(
+        { group: group.name },
+        'Credential exhaustion detected mid-request — routing to Ollama immediately',
+      );
+      const model = OLLAMA_WARMUP_MODEL || 'gemma3:4b';
+      const modeNotice = `⚠️ *Conversation Mode* — Claude API unavailable. Responding via Ollama (${model}). No tool access.\n\n`;
+      await channel.setTyping?.(chatJid, true);
+      const response = await callOllamaChat(prompt);
+      await channel.setTyping?.(chatJid, false);
+      lastOllamaPrompt.set(chatJid, { prompt, summary: extractSummary(prompt) });
+      if (response) {
+        await channel.sendMessage(
+          chatJid,
+          modeNotice + response + `\n\n_Reply_ \`queue\` _to save this task for Claude._`,
+        );
+      } else {
+        await channel.sendMessage(
+          chatJid,
+          `⚠️ *Conversation Mode* — Claude API unavailable and Ollama also failed to respond. Please try again later.\n\n_Reply_ \`queue\` _to save this for Claude._`,
+        );
+      }
+      // Cursor is already advanced — no rollback needed
+      saveState();
       return true;
     }
     // Roll back cursor so retries can re-process these messages

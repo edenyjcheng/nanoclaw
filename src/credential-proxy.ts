@@ -40,7 +40,11 @@ function persistExhaustedState(): void {
 }
 
 function clearPersistedExhaustedState(): void {
-  try { fs.unlinkSync(EXHAUSTION_STATE_FILE); } catch { /* ignore */ }
+  try {
+    fs.unlinkSync(EXHAUSTION_STATE_FILE);
+  } catch {
+    /* ignore */
+  }
 }
 
 /**
@@ -57,28 +61,50 @@ let credentialsExhausted = false;
  * so the next real user message retries Claude instead of staying in Ollama mode.
  * Uses exponential backoff — no synthetic API calls, zero extra cost.
  * Backoff schedule (minutes): 1 → 5 → 15 → 30 (capped).
+ * When the API returns a hard quota reset timestamp, that exact time is used instead.
  */
 export const RECOVERY_BACKOFF_MS = [1, 5, 15, 30].map((m) => m * 60 * 1000);
 let recoveryTimer: ReturnType<typeof setTimeout> | null = null;
 let recoveryAttempt = 0;
 
-function scheduleRecovery(): void {
-  if (recoveryTimer) clearTimeout(recoveryTimer);
-  const delay =
-    RECOVERY_BACKOFF_MS[
-      Math.min(recoveryAttempt, RECOVERY_BACKOFF_MS.length - 1)
-    ];
-  recoveryAttempt++;
-  logger.info(
-    { attempt: recoveryAttempt, delayMs: delay },
-    'Scheduling auto-recovery probe — will retry Claude on next message',
+/**
+ * Parse a hard-quota reset timestamp from Anthropic error bodies like:
+ * "You will regain access on 2026-04-01 at 00:00 UTC."
+ * Returns the Date if found and in the future, otherwise undefined.
+ */
+function parseResetDate(body: string): Date | undefined {
+  const m = body.match(
+    /regain access on (\d{4}-\d{2}-\d{2}) at (\d{2}:\d{2}) UTC/,
   );
+  if (!m) return undefined;
+  const d = new Date(`${m[1]}T${m[2]}:00Z`);
+  return isNaN(d.getTime()) || d.getTime() <= Date.now() ? undefined : d;
+}
+
+function scheduleRecovery(resetAt?: Date): void {
+  if (recoveryTimer) clearTimeout(recoveryTimer);
+  let delay: number;
+  if (resetAt) {
+    // Hard quota with known reset time — wait until then, plus a small buffer.
+    delay = Math.max(resetAt.getTime() - Date.now() + 5_000, 0);
+    logger.info(
+      { resetAt: resetAt.toISOString(), delayMs: delay },
+      'Hard quota limit — scheduling recovery at known reset time',
+    );
+  } else {
+    delay =
+      RECOVERY_BACKOFF_MS[
+        Math.min(recoveryAttempt, RECOVERY_BACKOFF_MS.length - 1)
+      ];
+    recoveryAttempt++;
+    logger.info(
+      { attempt: recoveryAttempt, delayMs: delay },
+      'Scheduling auto-recovery probe — will retry Claude on next message',
+    );
+  }
   recoveryTimer = setTimeout(() => {
     recoveryTimer = null;
-    logger.info(
-      { attempt: recoveryAttempt },
-      'Auto-recovery window elapsed — resetting exhaustion flag',
-    );
+    logger.info('Auto-recovery window elapsed — resetting exhaustion flag');
     // Reset without a real API call. The next organic request will verify.
     credentialsExhausted = false;
     clearPersistedExhaustedState();
@@ -98,20 +124,21 @@ export function setForcedAuthMode(mode: AuthMode | null): void {
   logger.info({ mode: mode ?? 'auto' }, 'LLM auth mode set');
 }
 
-/** Reset all recovery state. Exposed for tests only. */
+/** Reset all recovery state. Clears in-memory flags, the backoff timer, and the persisted exhaustion file. */
 export function resetRecoveryState(): void {
   if (recoveryTimer) clearTimeout(recoveryTimer);
   recoveryTimer = null;
   recoveryAttempt = 0;
   credentialsExhausted = false;
+  clearPersistedExhaustedState();
 }
 
-function markExhausted(): void {
+function markExhausted(resetAt?: Date): void {
   if (!credentialsExhausted) {
     credentialsExhausted = true;
     persistExhaustedState();
     credentialEvents.emit('exhausted');
-    scheduleRecovery();
+    scheduleRecovery(resetAt);
   }
 }
 
@@ -220,22 +247,38 @@ export function startCredentialProxy(
       fallbackHeaders['content-length'] = fallbackBody.length;
 
       const retry = makeRequest(
-        { ...upstreamOpts, path: url, method, headers: fallbackHeaders } as RequestOptions,
+        {
+          ...upstreamOpts,
+          path: url,
+          method,
+          headers: fallbackHeaders,
+        } as RequestOptions,
         (retryRes: IncomingMessage) => {
-          if (retryRes.statusCode === 400 || retryRes.statusCode === 429 || retryRes.statusCode === 401) {
+          if (
+            retryRes.statusCode === 400 ||
+            retryRes.statusCode === 429 ||
+            retryRes.statusCode === 401
+          ) {
             const retryChunks: Buffer[] = [];
             retryRes.on('data', (c: Buffer) => retryChunks.push(c));
             retryRes.on('end', () => {
               const retryBodyText = Buffer.concat(retryChunks).toString('utf8');
-              if (isQuotaExhausted(retryRes.statusCode!, retryBodyText) || retryRes.statusCode === 401) {
+              if (
+                isQuotaExhausted(retryRes.statusCode!, retryBodyText) ||
+                retryRes.statusCode === 401
+              ) {
                 logger.error(
                   { url, status: retryRes.statusCode },
                   'API key also exhausted — switching to Ollama fallback',
                 );
-                markExhausted();
+                markExhausted(parseResetDate(retryBodyText));
               } else {
                 logger.warn(
-                  { url, status: retryRes.statusCode, body: retryBodyText.slice(0, 200) },
+                  {
+                    url,
+                    status: retryRes.statusCode,
+                    body: retryBodyText.slice(0, 200),
+                  },
                   'API key returned non-quota error — forwarding without state change',
                 );
               }
@@ -243,7 +286,10 @@ export function startCredentialProxy(
               clientRes.end(Buffer.concat(retryChunks));
             });
           } else {
-            logger.info({ url, status: retryRes.statusCode }, 'API key fallback succeeded');
+            logger.info(
+              { url, status: retryRes.statusCode },
+              'API key fallback succeeded',
+            );
             markRecovered();
             clientRes.writeHead(retryRes.statusCode!, retryRes.headers);
             retryRes.pipe(clientRes);
@@ -252,7 +298,10 @@ export function startCredentialProxy(
       );
       retry.on('error', (err) => {
         logger.error({ err, url }, 'API key fallback request error');
-        if (!clientRes.headersSent) { clientRes.writeHead(502); clientRes.end('Bad Gateway'); }
+        if (!clientRes.headersSent) {
+          clientRes.writeHead(502);
+          clientRes.end('Bad Gateway');
+        }
       });
       retry.write(fallbackBody);
       retry.end();
@@ -261,17 +310,30 @@ export function startCredentialProxy(
     const upstream = makeRequest(
       { ...upstreamOpts, path: url, method, headers } as RequestOptions,
       (upRes: IncomingMessage) => {
-        if (upRes.statusCode === 401 && canFallback && secrets.ANTHROPIC_API_KEY) {
+        if (
+          upRes.statusCode === 401 &&
+          canFallback &&
+          secrets.ANTHROPIC_API_KEY
+        ) {
           // Auth error — drain and retry with API key
           upRes.resume();
-          logger.warn({ url, status: 401 }, 'OAuth auth error, retrying with API key');
+          logger.warn(
+            { url, status: 401 },
+            'OAuth auth error, retrying with API key',
+          );
           doApiKeyFallback(body);
         } else if (upRes.statusCode === 401) {
           // Auth error with no API key to fall back to — escalate to Ollama
           upRes.resume();
-          logger.error({ url }, 'OAuth auth error and no API key configured — switching to Ollama fallback');
+          logger.error(
+            { url },
+            'OAuth auth error and no API key configured — switching to Ollama fallback',
+          );
           markExhausted();
-          if (!clientRes.headersSent) { clientRes.writeHead(503); clientRes.end('Service Unavailable'); }
+          if (!clientRes.headersSent) {
+            clientRes.writeHead(503);
+            clientRes.end('Service Unavailable');
+          }
         } else if (upRes.statusCode === 400 || upRes.statusCode === 429) {
           // Buffer body to detect quota-exhaustion message.
           const upChunks: Buffer[] = [];
@@ -280,11 +342,14 @@ export function startCredentialProxy(
             const upBodyText = Buffer.concat(upChunks).toString('utf8');
             if (isQuotaExhausted(upRes.statusCode!, upBodyText)) {
               // Quota hit — try API key next (same Sonnet model), then Ollama
-              logger.warn({ url, status: upRes.statusCode }, 'OAuth quota exhausted, trying API key');
+              logger.warn(
+                { url, status: upRes.statusCode },
+                'OAuth quota exhausted, trying API key',
+              );
               if (canFallback && secrets.ANTHROPIC_API_KEY) {
                 doApiKeyFallback(body);
               } else {
-                markExhausted();
+                markExhausted(parseResetDate(upBodyText));
                 clientRes.writeHead(upRes.statusCode!, upRes.headers);
                 clientRes.end(Buffer.concat(upChunks));
               }
@@ -304,7 +369,10 @@ export function startCredentialProxy(
     );
     upstream.on('error', (err) => {
       logger.error({ err, url }, 'Credential proxy upstream error');
-      if (!clientRes.headersSent) { clientRes.writeHead(502); clientRes.end('Bad Gateway'); }
+      if (!clientRes.headersSent) {
+        clientRes.writeHead(502);
+        clientRes.end('Bad Gateway');
+      }
     });
     upstream.write(body);
     upstream.end();
@@ -355,7 +423,14 @@ export function startCredentialProxy(
           // Allow API key fallback on inference calls when key is available and not force-overridden
           const canFallback =
             isInferenceCall && !!secrets.ANTHROPIC_API_KEY && !forcedAuthMode;
-          forwardRequest(req.method!, req.url!, headers, body, res, canFallback);
+          forwardRequest(
+            req.method!,
+            req.url!,
+            headers,
+            body,
+            res,
+            canFallback,
+          );
         }
       });
     });
@@ -368,7 +443,9 @@ export function startCredentialProxy(
       // Restore exhaustion state persisted by a previous session (e.g. after a crash).
       // Emits event so index.ts activates Ollama fallback mode immediately on startup.
       if (fs.existsSync(EXHAUSTION_STATE_FILE)) {
-        logger.warn('Persisted full-exhaustion state found — restoring Ollama fallback mode');
+        logger.warn(
+          'Persisted full-exhaustion state found — restoring Ollama fallback mode',
+        );
         markExhausted();
       }
       resolve(server);
