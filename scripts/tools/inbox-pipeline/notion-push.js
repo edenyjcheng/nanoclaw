@@ -350,7 +350,19 @@ async function cmdPush(token) {
   const skipped = events.length - newEvents.length;
   if (skipped > 0) console.log(`Skipping ${skipped} already-pushed item(s).`);
 
-  const toProcess = limit ? newEvents.slice(0, limit) : newEvents;
+  // Dedup by msg_id within batch: if multiple events share the same msg_id, keep only the first
+  const seenBatchMsgIds = new Set();
+  const limitedEvents = limit ? newEvents.slice(0, limit) : newEvents;
+  const toProcess = limitedEvents.filter(e => {
+    const mid = e.source?.msg_id;
+    if (!mid) return true;
+    if (seenBatchMsgIds.has(mid)) {
+      logLine(`NOTION_PUSH_DEDUP | title=${(e.title || '').slice(0, 50)} | msg_id=${mid} | reason=batch_duplicate`);
+      return false;
+    }
+    seenBatchMsgIds.add(mid);
+    return true;
+  });
   if (toProcess.length === 0) {
     console.log('No new events to push — all already in archive or Notion.');
     return;
@@ -362,10 +374,25 @@ async function cmdPush(token) {
   // Fetch active (Pending + Approved) rows once for duplicate detection
   const activePages = dryRun ? [] : await fetchActivePagesForDedup(token);
 
-  let pushed = 0, merged = 0, failed = 0;
+  // Build set of Gmail Msg IDs already in Notion — skip events whose email was already pushed
+  const notionMsgIds = new Set(
+    activePages
+      .map(p => p.properties['Gmail Msg ID']?.rich_text?.[0]?.plain_text)
+      .filter(Boolean)
+  );
+
+  let pushed = 0, merged = 0, failed = 0, msgIdSkipped = 0;
   const pushedEvents = [];
 
   for (const event of toProcess) {
+    const msgId = event.source?.msg_id;
+    // Skip if this Gmail Msg ID already exists in Notion (re-scan or multi-event dedup)
+    if (msgId && notionMsgIds.has(msgId)) {
+      logLine(`NOTION_PUSH_SKIP | title=${(event.title || '').slice(0, 50)} | msg_id=${msgId} | reason=msg_id_in_notion`);
+      pushedEvents.push(event); // move to archive so it won't reappear in pending
+      msgIdSkipped++;
+      continue;
+    }
     const duplicate = findDuplicate(event, activePages);
     if (duplicate) {
       const result = await mergeEvent(event, duplicate, token, index);
@@ -397,7 +424,7 @@ async function cmdPush(token) {
     saveArchive(archive);
   }
 
-  logLine(`NOTION_PUSH_END | pushed=${pushed} | merged=${merged} | failed=${failed}`);
+  logLine(`NOTION_PUSH_END | pushed=${pushed} | merged=${merged} | failed=${failed} | msg_id_skipped=${msgIdSkipped}`);
   if (!dryRun && (pushed > 0 || merged > 0)) {
     if (pushed > 0) console.log(`\n${pushed} item(s) added to Notion and moved to archive.`);
     if (merged > 0) console.log(`${merged} duplicate(s) merged into existing Notion rows.`);

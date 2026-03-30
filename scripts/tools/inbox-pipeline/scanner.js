@@ -18,6 +18,7 @@
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
+import { execFileSync } from 'child_process';
 import { google } from 'googleapis';
 import os from 'os';
 import Anthropic from '@anthropic-ai/sdk';
@@ -55,7 +56,9 @@ const CONFIG_FILE = path.join(GMAIL_DIR, 'config.json');
 const PENDING_FILE = path.join(GMAIL_DIR, 'events-pending.json');
 const ALERTS_FILE  = path.join(GMAIL_DIR, 'alerts-pending.json');
 const SCAN_LOG = path.join(LOGS_DIR, 'gmail-scan.log');
-const GUIDE_FILE = path.join(GMAIL_DIR, 'scanner-guide.md');
+const GUIDE_FILE       = path.join(GMAIL_DIR, 'scanner-guide.md');
+const JOB_STATUS_FILE  = path.join(MEMORY_DIR, 'job-status.json');
+const JOB_TRACKER_FILE = path.join(MEMORY_DIR, 'job-tracker.json');
 
 // --- CLI args ---
 const args = process.argv.slice(2);
@@ -486,7 +489,26 @@ async function scanAccount(account, key, scannedIds, dryRun, guide) {
 
     if (events.length > 0) {
       extracted++;
-      for (const event of events) {
+      // If multiple events extracted from same email, keep only the most specific
+      // (earliest future date; fallback to first if no dates available)
+      let eventsToKeep = events;
+      if (events.length > 1) {
+        const todayStr = new Date().toISOString().split('T')[0];
+        const withDates = events.filter(e => e.date);
+        const future = withDates.filter(e => String(e.date) >= todayStr);
+        if (future.length > 0) {
+          future.sort((a, b) => String(a.date).localeCompare(String(b.date)));
+          eventsToKeep = [future[0]];
+        } else if (withDates.length > 0) {
+          withDates.sort((a, b) => String(b.date).localeCompare(String(a.date)));
+          eventsToKeep = [withDates[0]];
+        } else {
+          eventsToKeep = [events[0]];
+        }
+        logLine(`MSG | account=${account.name} | msg_id=${msgId} | action=multi_event_dedup | kept=1 of ${events.length}`);
+      }
+
+      for (const event of eventsToKeep) {
         // Confidence flag: prepend warning to Notes if model confidence < 0.7
         const confidence = typeof event.confidence === 'number' ? event.confidence : 1.0;
         if (confidence < 0.7) {
@@ -523,21 +545,11 @@ async function scanAccount(account, key, scannedIds, dryRun, guide) {
 
         extractedEvents.push({ ...event, source });
       }
-      logLine(`MSG | account=${account.name} | msg_id=${msgId} | subject=${subject.slice(0, 60)} | action=extracted | events=${events.length}`);
+      logLine(`MSG | account=${account.name} | msg_id=${msgId} | subject=${subject.slice(0, 60)} | action=extracted | events=${eventsToKeep.length}`);
     } else {
       logLine(`MSG | account=${account.name} | msg_id=${msgId} | subject=${subject.slice(0, 60)} | action=no_events`);
     }
-
-    // Write alerts as events too (type=Alert) for Notion record keeping
-    for (const alert of emailAlerts) {
-      extractedEvents.push({
-        title: `[${alert.category}] ${alert.subject.slice(0, 80)}`,
-        date: null,
-        type: 'Alert',
-        notes: alert.summary,
-        source,
-      });
-    }
+    // Alert rows are for Telegram notifications only — do NOT add to extractedEvents/Notion
 
     scannedIds.add(msgId);
     alertsFound.push(...emailAlerts);
@@ -567,6 +579,38 @@ function formatReview(events) {
   return lines.join('\n');
 }
 
+// --- Job state tracking helpers ---
+
+// Returns the job-status key matching current ET hour
+function getCurrentScanKey() {
+  const hourET = parseInt(
+    new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour: '2-digit', hour12: false }).format(new Date()),
+    10
+  );
+  if (hourET >= 8  && hourET < 10) return 'gmail_scan_830';
+  if (hourET >= 12 && hourET < 14) return 'gmail_scan_1pm';
+  if (hourET >= 17 && hourET < 19) return 'gmail_scan_530';
+  return 'gmail_scan_manual';
+}
+
+function writeJobStatus(key, status) {
+  const existing = fs.existsSync(JOB_STATUS_FILE)
+    ? JSON.parse(fs.readFileSync(JOB_STATUS_FILE, 'utf8'))
+    : {};
+  const etStr = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    hour12: false,
+  }).format(new Date());
+  existing[key] = { last_run: new Date().toISOString(), last_run_et: etStr, last_status: status };
+  fs.writeFileSync(JOB_STATUS_FILE, JSON.stringify(existing, null, 2), 'utf8');
+}
+
+function writeJobTracker(activeJobs) {
+  fs.writeFileSync(JOB_TRACKER_FILE, JSON.stringify({ active_jobs: activeJobs }, null, 2), 'utf8');
+}
+
 // --- Main ---
 async function main() {
   const config = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
@@ -587,6 +631,9 @@ async function main() {
 
   if (dryRun) console.log('[DRY RUN] No files will be written.\n');
 
+  // Job tracker: mark scan as active before starting
+  if (!dryRun) writeJobTracker(['gmail_scan']);
+
   const allEvents = [];
   const allAlerts = [];
   for (const account of accounts) {
@@ -595,10 +642,27 @@ async function main() {
     allAlerts.push(...alerts);
   }
 
-  // Write pending events (includes Alert-type entries for Notion record keeping)
+  // Write pending events
   if (!dryRun) {
     fs.writeFileSync(PENDING_FILE, JSON.stringify(allEvents, null, 2), 'utf8');
     console.log(`\nPending events saved: ${PENDING_FILE}`);
+  }
+
+  // Auto-push: if new events were extracted, trigger notion-push.js immediately
+  // (no wait for Phase C). Failures are logged but do NOT crash the scan.
+  if (!dryRun && allEvents.length > 0) {
+    const pushScript = path.join(__dirname, 'notion-push.js');
+    try {
+      execFileSync(process.execPath, [pushScript], {
+        env: { ...process.env, TZ: 'America/New_York' },
+        stdio: 'pipe',
+        timeout: 60000,
+      });
+      logLine(`NOTION_AUTOPUSH | events=${allEvents.length} | status=ok`);
+    } catch (err) {
+      const errMsg = (err.stderr?.toString() || err.message || '').slice(0, 200);
+      logLine(`NOTION_AUTOPUSH | events=${allEvents.length} | status=error | error=${errMsg}`);
+    }
   }
 
   // Write alerts-pending.json for the agent to send as Telegram heads-up
@@ -614,6 +678,14 @@ async function main() {
   } else if (!dryRun) {
     // Clear stale alerts file if no alerts this run
     if (fs.existsSync(ALERTS_FILE)) fs.writeFileSync(ALERTS_FILE, '[]', 'utf8');
+  }
+
+  // Job tracking: write status and clear active tracker after all accounts done
+  if (!dryRun) {
+    const scanKey = getCurrentScanKey();
+    writeJobStatus(scanKey, 'ok');
+    writeJobTracker([]);
+    logLine(`JOB_STATUS | key=${scanKey} | status=ok | file=${JOB_STATUS_FILE}`);
   }
 
   // Print review format
