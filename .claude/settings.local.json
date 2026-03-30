@@ -225,7 +225,14 @@
       "Bash(node -e \"require\\(''./scripts/update-token-prompts.js''\\)\")",
       "Bash(cmd /c start /B C:\\\\workspace\\\\claude\\\\nanoclaw\\\\start-nanoclaw.bat)",
       "Bash(cmd /c \"taskkill /F /PID 12112\" 2>&1)",
-      "Bash(powershell -Command \"Stop-Process -Id 12112 -Force\" 2>&1)"
+      "Bash(powershell -Command \"Stop-Process -Id 12112 -Force\" 2>&1)",
+      "Bash(BASEDIR=\"C:/workspace/claude/nanoclaw/groups/telegram_main/ipc-claudecode\")",
+      "Bash(mv \"$BASEDIR/requests/20260324-2231-learning-agent-comment-fix.md\" \"$BASEDIR/responses/20260324-2231-learning-agent-comment-fix.md\")",
+      "Bash(mv \"$BASEDIR/requests/20260325-0007-coordinator-role-claude-md.md\" \"$BASEDIR/responses/20260325-0007-coordinator-role-claude-md.md\")",
+      "Bash(mv \"$BASEDIR/requests/20260325-0011-pending-code-changes.md\" \"$BASEDIR/responses/20260325-0011-pending-code-changes.md\")",
+      "Bash(mv \"$BASEDIR/requests/20260325-1108-add-api-key-to-env.md\" \"$BASEDIR/responses/20260325-1108-add-api-key-to-env.md\")",
+      "Bash(mv \"$BASEDIR/requests/20260325-1711-haiku-fallback-main-agent.md\" \"$BASEDIR/responses/20260325-1711-haiku-fallback-main-agent.md\")",
+      "Bash(mv \"$BASEDIR/requests/20260326-1020-revert-haiku-fallback.md\" \"$BASEDIR/responses/20260326-1020-revert-haiku-fallback.md\")"
     ]
   }
 }

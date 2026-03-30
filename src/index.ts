@@ -255,17 +255,17 @@ if (CLASSIFIER_ENABLED) {
       autoAdded: string[];
       pendingApproval: string[];
     }) => {
-    const lines: string[] = [];
-    if (autoAdded.length > 0) {
-      lines.push(
-        `🧠 *Classifier learned:* Auto-added ${autoAdded.length} keyword(s): ${autoAdded.map((k) => `"${k}"`).join(', ')}`,
-      );
-    }
-    if (pendingApproval.length > 0) {
-      lines.push(
-        `⚠️ *Classifier suggestion (low confidence):* ${pendingApproval.map((k) => `"${k}"`).join(', ')} — send "classifier add <phrase>" to approve.`,
-      );
-    }
+      const lines: string[] = [];
+      if (autoAdded.length > 0) {
+        lines.push(
+          `🧠 *Classifier learned:* Auto-added ${autoAdded.length} keyword(s): ${autoAdded.map((k) => `"${k}"`).join(', ')}`,
+        );
+      }
+      if (pendingApproval.length > 0) {
+        lines.push(
+          `⚠️ *Classifier suggestion (low confidence):* ${pendingApproval.map((k) => `"${k}"`).join(', ')} — send "classifier add <phrase>" to approve.`,
+        );
+      }
       if (lines.length > 0) {
         sendToMainGroup(lines.join('\n')).catch((err) =>
           logger.warn({ err }, 'Failed to send classifier notification'),

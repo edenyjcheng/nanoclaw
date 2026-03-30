@@ -8,9 +8,13 @@ import { logger } from './logger.js';
 const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434';
 const CLASSIFIER_MODEL = process.env.OLLAMA_CLASSIFY_MODEL || 'gemma3:4b';
 const CLASSIFIER_DATA_DIR = path.resolve(
-  process.env.CLASSIFIER_DATA_DIR || path.join(process.cwd(), 'data/classifier'),
+  process.env.CLASSIFIER_DATA_DIR ||
+    path.join(process.cwd(), 'data/classifier'),
 );
-const KEYWORDS_PATH = path.join(CLASSIFIER_DATA_DIR, 'classifier-keywords.json');
+const KEYWORDS_PATH = path.join(
+  CLASSIFIER_DATA_DIR,
+  'classifier-keywords.json',
+);
 const REROUTE_LOG_PATH = path.join(CLASSIFIER_DATA_DIR, 'reroute-log.json');
 
 export interface RerouteEntry {
@@ -75,7 +79,10 @@ async function ollamaClassify(text: string): Promise<'CHAT' | 'TASK'> {
     const first = data.response.trim().slice(0, 10).toUpperCase();
     return first.startsWith('CHAT') ? 'CHAT' : 'TASK';
   } catch (err) {
-    logger.warn({ err }, 'Classifier: Ollama classify failed, defaulting to TASK');
+    logger.warn(
+      { err },
+      'Classifier: Ollama classify failed, defaulting to TASK',
+    );
     return 'TASK';
   }
 }
@@ -97,7 +104,7 @@ const SNIFF_PHRASES = [
   "i can't access",
   "i'm not able to",
   "i don't have the ability",
-  "i cannot check",
+  'i cannot check',
   "i can't check",
 ];
 
@@ -120,7 +127,10 @@ export function logReroute(entry: RerouteEntry): void {
       if (attempt < 2) {
         setTimeout(() => writeWithRetry(attempt + 1), 50);
       } else {
-        logger.warn({ err }, 'Classifier: failed to write reroute log after 2 retries');
+        logger.warn(
+          { err },
+          'Classifier: failed to write reroute log after 2 retries',
+        );
       }
     }
   };
@@ -154,7 +164,10 @@ async function scheduleLearningAgent(
   const LEARNING_MODEL = 'deepseek-r1:8b';
 
   const messages = unprocessed
-    .map((e) => `Message: "${e.originalMessage}" | Sniff trigger: "${e.sniffTrigger}"`)
+    .map(
+      (e) =>
+        `Message: "${e.originalMessage}" | Sniff trigger: "${e.sniffTrigger}"`,
+    )
     .join('\n');
 
   const learningPrompt = `You are analyzing misclassified messages from a chat assistant. These messages were sent to Ollama (chat model) but Ollama could not handle them because they required tool access. Analyze the patterns and extract keywords or short phrases that would have identified these as TASK messages requiring tools.
@@ -187,7 +200,9 @@ Reply ONLY with a JSON array, no explanation. Format:
   if (!res.ok) throw new Error(`Ollama learning HTTP ${res.status}`);
   const data = (await res.json()) as { response: string };
 
-  const cleaned = data.response.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+  const cleaned = data.response
+    .replace(/<think>[\s\S]*?<\/think>/gi, '')
+    .trim();
   const jsonMatch = cleaned.match(/\[[\s\S]*\]/);
   if (!jsonMatch) throw new Error('No JSON array in learning response');
 
