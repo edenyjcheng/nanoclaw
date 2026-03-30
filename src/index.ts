@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 
@@ -43,6 +44,7 @@ import {
   ensureContainerRuntimeRunning,
 } from './container-runtime.js';
 import {
+  createTask,
   getAllChats,
   getAllRegisteredGroups,
   getAllSessions,
@@ -52,6 +54,7 @@ import {
   getMessagesSince,
   getNewMessages,
   getRouterState,
+  getTaskById,
   initDatabase,
   setRegisteredGroup,
   setRouterState,
@@ -74,6 +77,13 @@ import {
   loadSenderAllowlist,
   shouldDropMessage,
 } from './sender-allowlist.js';
+import {
+  checkAndTriggerLearningAgent,
+  classifierEvents,
+  classifyMessage,
+  logReroute,
+  sniffResponse,
+} from './ollama-classifier.js';
 import { startSchedulerLoop } from './task-scheduler.js';
 import { Channel, NewMessage, RegisteredGroup } from './types.js';
 import { logger } from './logger.js';
@@ -229,6 +239,21 @@ credentialEvents.on('recovered', () => {
     // Notify and show queue if any items are pending
     presentQueueOnRecovery().catch((err) =>
       logger.warn({ err }, 'Failed to present queue on recovery'),
+    );
+  }
+});
+
+classifierEvents.on('learned', ({ autoAdded, pendingApproval }: { autoAdded: string[]; pendingApproval: string[] }) => {
+  const lines: string[] = [];
+  if (autoAdded.length > 0) {
+    lines.push(`🧠 *Classifier learned:* Auto-added ${autoAdded.length} keyword(s): ${autoAdded.map((k) => `"${k}"`).join(', ')}`);
+  }
+  if (pendingApproval.length > 0) {
+    lines.push(`⚠️ *Classifier suggestion (low confidence):* ${pendingApproval.map((k) => `"${k}"`).join(', ')} — send "classifier add <phrase>" to approve.`);
+  }
+  if (lines.length > 0) {
+    sendToMainGroup(lines.join('\n')).catch((err) =>
+      logger.warn({ err }, 'Failed to send classifier notification'),
     );
   }
 });
@@ -544,6 +569,58 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
     return true;
   }
 
+  // --- Ollama classifier: pre-classify to route CHAT→Ollama, TASK→Claude ---
+  // Only active when Claude credentials are available (not in fallback mode).
+  if (!ollamaFallbackActive) {
+    const rawText = lastMsg.content.trim();
+    const classification = await classifyMessage(rawText);
+
+    if (classification === 'CHAT') {
+      logger.info(
+        { group: group.name, classification },
+        'Classifier: CHAT — routing to Ollama',
+      );
+      await channel.setTyping?.(chatJid, true);
+      const ollamaResponse = await callOllamaChat(prompt);
+      await channel.setTyping?.(chatJid, false);
+
+      if (ollamaResponse === null) {
+        // Ollama unavailable — fall through to Claude container
+        logger.warn(
+          { group: group.name },
+          'Classifier: Ollama chat failed, falling through to Claude',
+        );
+      } else {
+        // Layer 3: response sniff
+        const sniffHit = sniffResponse(ollamaResponse);
+        if (sniffHit) {
+          logger.info(
+            { group: group.name, sniffHit },
+            'Classifier: Layer 3 sniff triggered, re-routing to Claude',
+          );
+          logReroute({
+            id: crypto.randomUUID(),
+            timestamp: new Date().toISOString(),
+            originalMessage: rawText,
+            ollamaResponse,
+            sniffTrigger: sniffHit,
+            chatJid,
+            processed: false,
+          });
+          checkAndTriggerLearningAgent(group.folder);
+          // Fall through to Claude container
+        } else {
+          // Clean CHAT response — send to user and done
+          await channel.sendMessage(chatJid, ollamaResponse);
+          lastAgentTimestamp[chatJid] = lastMsg.timestamp;
+          saveState();
+          return true;
+        }
+      }
+    }
+    // classification === 'TASK' or Ollama unavailable or sniff hit → fall through to Claude
+  }
+
   // --- Ollama fallback mode: answer directly without spawning a container ---
   if (ollamaFallbackActive) {
     logger.info(
@@ -659,11 +736,16 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
       await channel.setTyping?.(chatJid, true);
       const response = await callOllamaChat(prompt);
       await channel.setTyping?.(chatJid, false);
-      lastOllamaPrompt.set(chatJid, { prompt, summary: extractSummary(prompt) });
+      lastOllamaPrompt.set(chatJid, {
+        prompt,
+        summary: extractSummary(prompt),
+      });
       if (response) {
         await channel.sendMessage(
           chatJid,
-          modeNotice + response + `\n\n_Reply_ \`queue\` _to save this task for Claude._`,
+          modeNotice +
+            response +
+            `\n\n_Reply_ \`queue\` _to save this task for Claude._`,
         );
       } else {
         await channel.sendMessage(
@@ -940,6 +1022,110 @@ function startupWarmup(): void {
   logger.info({ chatJid }, 'Startup warmup enqueued');
 }
 
+/**
+ * Startup job recovery: check for jobs that were interrupted by a crash.
+ * Reads each group's job-tracker.json, moves active_jobs to interrupted_jobs,
+ * schedules one-time re-runs (2 min from now), and sends a Telegram notification.
+ */
+async function recoverInterruptedJobs(
+  sendNotification: (jid: string, text: string) => Promise<void>,
+): Promise<void> {
+  for (const [chatJid, group] of Object.entries(registeredGroups)) {
+    let groupDir: string;
+    try {
+      groupDir = resolveGroupFolderPath(group.folder);
+    } catch {
+      continue;
+    }
+
+    const trackerPath = path.join(groupDir, 'memory', 'docs', 'job-tracker.json');
+    if (!fs.existsSync(trackerPath)) continue;
+
+    let tracker: {
+      active_jobs: Record<
+        string,
+        { task_id?: string; started_at?: string; expected_duration_min?: number }
+      >;
+      interrupted_jobs: Array<{
+        job: string;
+        task_id: string | null;
+        started_at?: string;
+        reason: string;
+        recovered_at: string;
+      }>;
+      last_startup_check: string | null;
+    };
+    try {
+      tracker = JSON.parse(fs.readFileSync(trackerPath, 'utf8'));
+    } catch {
+      continue;
+    }
+
+    const activeJobs = tracker.active_jobs || {};
+    const jobNames = Object.keys(activeJobs);
+
+    const now = new Date().toISOString();
+    tracker.last_startup_check = now;
+
+    if (jobNames.length === 0) {
+      fs.writeFileSync(trackerPath, JSON.stringify(tracker, null, 2));
+      continue;
+    }
+
+    const requeued: string[] = [];
+    tracker.interrupted_jobs = tracker.interrupted_jobs || [];
+
+    for (const [jobName, jobInfo] of Object.entries(activeJobs)) {
+      tracker.interrupted_jobs.push({
+        job: jobName,
+        task_id: jobInfo.task_id || null,
+        started_at: jobInfo.started_at,
+        reason: 'crash_recovery',
+        recovered_at: now,
+      });
+
+      const taskId = jobInfo.task_id;
+      if (taskId) {
+        const originalTask = getTaskById(taskId);
+        if (originalTask?.status === 'active') {
+          const recoveryId = `recovery-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+          const runAt = new Date(Date.now() + 2 * 60 * 1000).toISOString();
+          try {
+            createTask({
+              id: recoveryId,
+              group_folder: originalTask.group_folder,
+              chat_jid: originalTask.chat_jid,
+              prompt: originalTask.prompt,
+              schedule_type: 'once',
+              schedule_value: runAt,
+              context_mode: originalTask.context_mode || 'isolated',
+              next_run: runAt,
+              status: 'active',
+              created_at: now,
+            });
+            requeued.push(jobName);
+          } catch (err) {
+            logger.warn({ err, job: jobName }, 'Job recovery: failed to re-queue');
+          }
+        }
+      }
+    }
+
+    tracker.active_jobs = {};
+    fs.writeFileSync(trackerPath, JSON.stringify(tracker, null, 2));
+
+    const msg =
+      requeued.length > 0
+        ? `🔄 *System restarted* — recovered ${requeued.length} interrupted job(s): ${requeued.join(', ')}. Re-queuing now.`
+        : `🔄 *System restarted* — ${jobNames.length} interrupted job(s) found: ${jobNames.join(', ')}. Could not re-queue (task IDs not stored).`;
+
+    logger.info({ group: group.name, jobNames, requeued }, 'Job recovery: processed interrupted jobs');
+    sendNotification(chatJid, msg).catch((err) =>
+      logger.warn({ err }, 'Failed to send job recovery notification'),
+    );
+  }
+}
+
 async function main(): Promise<void> {
   ensureContainerSystemRunning();
   initDatabase();
@@ -1066,6 +1252,12 @@ async function main(): Promise<void> {
     logger.fatal('No channels connected');
     process.exit(1);
   }
+
+  // Startup job recovery: re-queue any jobs interrupted by a previous crash
+  await recoverInterruptedJobs(async (jid, text) => {
+    const channel = findChannel(channels, jid);
+    if (channel) await channel.sendMessage(jid, formatOutbound(text));
+  });
 
   // Start subsystems (independently of connection handler)
   startSchedulerLoop({
