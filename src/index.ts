@@ -245,6 +245,76 @@ credentialEvents.on('recovered', () => {
   }
 });
 
+// Log real token counts captured by the credential proxy SSE tap.
+// Writes to token-usage-YYYY-MM-DD.json in the main group's docs folder.
+function logProxyTokenUsage(job: string, tokens: number): void {
+  try {
+    const mainEntry = Object.entries(registeredGroups).find(([, g]) => g.isMain);
+    if (!mainEntry) return;
+    const groupDir = resolveGroupFolderPath(mainEntry[1].folder);
+    const docsDir = path.join(groupDir, 'memory', 'docs');
+    const dateStr = new Intl.DateTimeFormat('en-US', {
+      timeZone: TIMEZONE,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    })
+      .format(new Date())
+      .replace(/(\d+)\/(\d+)\/(\d+)/, '$3-$1-$2');
+    const filePath = path.join(docsDir, `token-usage-${dateStr}.json`);
+    let data: {
+      date: string;
+      claude: { total: number; by_job: Record<string, number> };
+      ollama: { total: number; by_job: Record<string, number> };
+    };
+    try {
+      data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    } catch {
+      data = {
+        date: dateStr,
+        claude: { total: 0, by_job: {} },
+        ollama: { total: 0, by_job: {} },
+      };
+    }
+    data.claude.total += tokens;
+    data.claude.by_job[job] = (data.claude.by_job[job] || 0) + tokens;
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+    logger.debug({ job, tokens }, 'Token usage logged');
+  } catch (err) {
+    logger.warn({ err }, 'Failed to log token usage');
+  }
+}
+
+credentialEvents.on(
+  'usage',
+  ({ total }: { inputTokens: number; outputTokens: number; total: number }) => {
+    if (total <= 0) return;
+    // Determine active job from any group's job-tracker.json
+    let jobName = 'unknown';
+    for (const group of Object.values(registeredGroups)) {
+      try {
+        const groupDir = resolveGroupFolderPath(group.folder);
+        const trackerPath = path.join(
+          groupDir,
+          'memory',
+          'docs',
+          'job-tracker.json',
+        );
+        if (!fs.existsSync(trackerPath)) continue;
+        const tracker = JSON.parse(fs.readFileSync(trackerPath, 'utf8'));
+        const activeKeys = Object.keys(tracker.active_jobs || {});
+        if (activeKeys.length > 0) {
+          jobName = activeKeys[0];
+          break;
+        }
+      } catch {
+        /* continue */
+      }
+    }
+    logProxyTokenUsage(jobName, total);
+  },
+);
+
 if (CLASSIFIER_ENABLED) {
   classifierEvents.on(
     'learned',

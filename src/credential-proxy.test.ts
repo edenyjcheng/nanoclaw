@@ -2,7 +2,9 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import http from 'http';
 import type { AddressInfo } from 'net';
 
-const mockEnv: Record<string, string> = {};
+// vi.mock is hoisted above variable declarations, so mockEnv must be declared
+// with vi.hoisted to be accessible inside the factory.
+const mockEnv = vi.hoisted(() => ({}) as Record<string, string>);
 vi.mock('./env.js', () => ({
   readEnvFile: vi.fn(() => ({ ...mockEnv })),
 }));
@@ -201,6 +203,153 @@ describe('credential-proxy', () => {
 
     expect(res.statusCode).toBe(502);
     expect(res.body).toBe('Bad Gateway');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// SSE token-usage tap
+// ---------------------------------------------------------------------------
+describe('credential-proxy SSE usage tap', () => {
+  let proxyServer: http.Server;
+  let upstreamServer: http.Server;
+  let proxyPort: number;
+
+  // Craft a minimal Anthropic SSE response with known token counts
+  const SSE_BODY = [
+    'data: {"type":"message_start","message":{"id":"msg_test","usage":{"input_tokens":42,"cache_creation_input_tokens":0,"cache_read_input_tokens":0}}}',
+    '',
+    'data: {"type":"content_block_start","index":0,"content_block":{"type":"text","text":""}}',
+    '',
+    'data: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"hello"}}',
+    '',
+    'data: {"type":"message_delta","delta":{"stop_reason":"end_turn","stop_sequence":null},"usage":{"output_tokens":7}}',
+    '',
+    'data: {"type":"message_stop"}',
+    '',
+  ].join('\n');
+
+  beforeEach(async () => {
+    upstreamServer = http.createServer((_req, res) => {
+      res.writeHead(200, {
+        'content-type': 'text/event-stream',
+        'transfer-encoding': 'chunked',
+      });
+      res.end(SSE_BODY);
+    });
+    await new Promise<void>((resolve) =>
+      upstreamServer.listen(0, '127.0.0.1', resolve),
+    );
+    const upstreamPort = (upstreamServer.address() as AddressInfo).port;
+    mockEnv['ANTHROPIC_BASE_URL'] = `http://127.0.0.1:${upstreamPort}`;
+    mockEnv['ANTHROPIC_API_KEY'] = 'sk-ant-test';
+    proxyServer = await startCredentialProxy(0);
+    proxyPort = (proxyServer.address() as AddressInfo).port;
+  });
+
+  afterEach(async () => {
+    resetRecoveryState();
+    setForcedAuthMode(null);
+    await new Promise<void>((r) => proxyServer?.close(() => r()));
+    await new Promise<void>((r) => upstreamServer?.close(() => r()));
+    for (const key of Object.keys(mockEnv)) delete mockEnv[key];
+  });
+
+  it('emits usage event with correct input + output tokens from SSE response', async () => {
+    setForcedAuthMode('api-key');
+
+    const usagePromise = new Promise<{
+      inputTokens: number;
+      outputTokens: number;
+      total: number;
+    }>((resolve) => {
+      credentialEvents.once('usage', resolve);
+    });
+
+    const res = await makeRequest(
+      proxyPort,
+      {
+        method: 'POST',
+        path: '/v1/messages',
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': 'placeholder',
+        },
+      },
+      '{}',
+    );
+
+    expect(res.statusCode).toBe(200);
+
+    const usage = await usagePromise;
+    expect(usage.inputTokens).toBe(42);
+    expect(usage.outputTokens).toBe(7);
+    expect(usage.total).toBe(49);
+  });
+
+  it('body passes through unchanged to client', async () => {
+    setForcedAuthMode('api-key');
+
+    // Consume the usage event so it doesn't leak between tests
+    credentialEvents.once('usage', () => {});
+
+    const res = await makeRequest(
+      proxyPort,
+      {
+        method: 'POST',
+        path: '/v1/messages',
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': 'placeholder',
+        },
+      },
+      '{}',
+    );
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toBe(SSE_BODY);
+  });
+
+  it('does not emit usage event for non-SSE responses (no token events)', async () => {
+    // Swap upstream to return plain JSON (no SSE events)
+    await new Promise<void>((r) => upstreamServer.close(() => r()));
+    const plainServer = http.createServer((_req, res) => {
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end('{"id":"msg_plain"}');
+    });
+    await new Promise<void>((resolve) =>
+      plainServer.listen(0, '127.0.0.1', resolve),
+    );
+    const plainPort = (plainServer.address() as AddressInfo).port;
+    mockEnv['ANTHROPIC_BASE_URL'] = `http://127.0.0.1:${plainPort}`;
+
+    await new Promise<void>((r) => proxyServer.close(() => r()));
+    proxyServer = await startCredentialProxy(0);
+    proxyPort = (proxyServer.address() as AddressInfo).port;
+    setForcedAuthMode('api-key');
+
+    let usageFired = false;
+    credentialEvents.once('usage', () => {
+      usageFired = true;
+    });
+
+    await makeRequest(
+      proxyPort,
+      {
+        method: 'POST',
+        path: '/v1/messages',
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': 'placeholder',
+        },
+      },
+      '{}',
+    );
+
+    // Give the flush callback a tick to fire
+    await new Promise((r) => setTimeout(r, 10));
+    expect(usageFired).toBe(false);
+
+    await new Promise<void>((r) => plainServer.close(() => r()));
   });
 });
 

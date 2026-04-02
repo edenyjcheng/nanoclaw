@@ -17,6 +17,7 @@ import { createServer, Server } from 'http';
 import { request as httpsRequest } from 'https';
 import { request as httpRequest, IncomingMessage, RequestOptions } from 'http';
 import { ServerResponse } from 'http';
+import { Transform } from 'stream';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
@@ -178,6 +179,55 @@ export interface ProxyConfig {
   authMode: AuthMode;
 }
 
+/**
+ * Pipe an Anthropic SSE response to the client while tapping usage data.
+ * Parses `message_start` (input tokens) and `message_delta` (output tokens)
+ * events from the stream and emits 'usage' on credentialEvents at end.
+ * Data passes through unchanged with no added latency.
+ */
+function pipeThroughSseTap(
+  source: IncomingMessage,
+  dest: ServerResponse,
+): void {
+  let partial = '';
+  let inputTokens = 0;
+  let outputTokens = 0;
+
+  function parseSseLine(line: string): void {
+    if (!line.startsWith('data: ')) return;
+    try {
+      const ev = JSON.parse(line.slice(6));
+      if (ev.type === 'message_start' && ev.message?.usage) {
+        inputTokens += ev.message.usage.input_tokens ?? 0;
+      } else if (ev.type === 'message_delta' && ev.usage) {
+        outputTokens += ev.usage.output_tokens ?? 0;
+      }
+    } catch {
+      /* non-JSON SSE line (e.g. [DONE]) */
+    }
+  }
+
+  const tap = new Transform({
+    transform(chunk: Buffer, _enc, cb) {
+      partial += chunk.toString('utf8');
+      const lines = partial.split('\n');
+      partial = lines.pop() ?? '';
+      for (const line of lines) parseSseLine(line);
+      cb(null, chunk);
+    },
+    flush(cb) {
+      parseSseLine(partial);
+      const total = inputTokens + outputTokens;
+      if (total > 0) {
+        credentialEvents.emit('usage', { inputTokens, outputTokens, total });
+      }
+      cb();
+    },
+  });
+
+  source.pipe(tap).pipe(dest);
+}
+
 export function startCredentialProxy(
   port: number,
   host = '127.0.0.1',
@@ -292,7 +342,7 @@ export function startCredentialProxy(
             );
             markRecovered();
             clientRes.writeHead(retryRes.statusCode!, retryRes.headers);
-            retryRes.pipe(clientRes);
+            pipeThroughSseTap(retryRes, clientRes);
           }
         },
       );
@@ -360,10 +410,10 @@ export function startCredentialProxy(
             }
           });
         } else {
-          // Success — stream directly to client
+          // Success — stream to client, tapping usage data from SSE
           markRecovered();
           clientRes.writeHead(upRes.statusCode!, upRes.headers);
-          upRes.pipe(clientRes);
+          pipeThroughSseTap(upRes, clientRes);
         }
       },
     );
