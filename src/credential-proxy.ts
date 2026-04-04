@@ -551,11 +551,20 @@ export function applyCredentialProxyEnv(
   hostGateway: string,
   proxyPort: number,
 ): void {
-  args.push('-e', `ANTHROPIC_BASE_URL=http://${hostGateway}:${proxyPort}`);
   const authMode = detectAuthMode();
   if (authMode === 'api-key') {
+    // API key mode: route through proxy so containers never see the real key.
+    // Proxy replaces the placeholder with the real key on each request.
+    args.push('-e', `ANTHROPIC_BASE_URL=http://${hostGateway}:${proxyPort}`);
     args.push('-e', 'ANTHROPIC_API_KEY=placeholder');
   } else {
-    args.push('-e', 'CLAUDE_CODE_OAUTH_TOKEN=placeholder');
+    // OAuth mode: give the container the real token and let Claude Code CLI
+    // handle the token exchange natively. api.anthropic.com does NOT accept
+    // OAuth tokens directly — Claude Code exchanges them at its own endpoint.
+    // Routing through the proxy breaks this exchange flow.
+    const token = readClaudeCliToken();
+    if (token) {
+      args.push('-e', `CLAUDE_CODE_OAUTH_TOKEN=${token}`);
+    }
   }
 }
