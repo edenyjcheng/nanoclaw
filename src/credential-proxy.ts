@@ -409,6 +409,29 @@ export function startCredentialProxy(
               clientRes.end(Buffer.concat(upChunks));
             }
           });
+        } else if (
+          upRes.statusCode! >= 500 &&
+          canFallback &&
+          secrets.ANTHROPIC_API_KEY
+        ) {
+          // Server error (502/503/etc.) — OAuth service may be down, try API key
+          upRes.resume();
+          logger.warn(
+            { url, status: upRes.statusCode },
+            'OAuth server error, retrying with API key',
+          );
+          doApiKeyFallback(body);
+        } else if (upRes.statusCode! >= 500) {
+          // Server error with no API key fallback — pass through
+          upRes.resume();
+          logger.error(
+            { url, status: upRes.statusCode },
+            'OAuth server error and no API key configured',
+          );
+          if (!clientRes.headersSent) {
+            clientRes.writeHead(upRes.statusCode!);
+            clientRes.end('Service Unavailable');
+          }
         } else {
           // Success — stream to client, tapping usage data from SSE
           markRecovered();
@@ -419,7 +442,10 @@ export function startCredentialProxy(
     );
     upstream.on('error', (err) => {
       logger.error({ err, url }, 'Credential proxy upstream error');
-      if (!clientRes.headersSent) {
+      if (canFallback && secrets.ANTHROPIC_API_KEY && !clientRes.headersSent) {
+        logger.warn({ url }, 'OAuth connection failed, retrying with API key');
+        doApiKeyFallback(body);
+      } else if (!clientRes.headersSent) {
         clientRes.writeHead(502);
         clientRes.end('Bad Gateway');
       }

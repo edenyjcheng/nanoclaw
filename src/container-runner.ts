@@ -10,6 +10,7 @@ import {
   CONTAINER_IMAGE,
   CONTAINER_MAX_OUTPUT_SIZE,
   CONTAINER_TIMEOUT,
+  CREDENTIAL_PROXY_PORT,
   DATA_DIR,
   GROUPS_DIR,
   IDLE_TIMEOUT,
@@ -19,11 +20,13 @@ import {
 import { resolveGroupFolderPath, resolveGroupIpcPath } from './group-folder.js';
 import { logger } from './logger.js';
 import {
+  CONTAINER_HOST_GATEWAY,
   CONTAINER_RUNTIME_BIN,
   hostGatewayArgs,
   readonlyMountArgs,
   stopContainer,
 } from './container-runtime.js';
+import { detectAuthMode } from './credential-proxy.js';
 import { OneCLI } from '@onecli-sh/sdk';
 import { validateAdditionalMounts } from './mount-security.js';
 import { RegisteredGroup } from './types.js';
@@ -260,19 +263,21 @@ async function buildContainerArgs(
   // Pass host timezone so container's local time matches the user's
   args.push('-e', `TZ=${TIMEZONE}`);
 
-  // OneCLI gateway handles credential injection — containers never see real secrets.
-  // The gateway intercepts HTTPS traffic and injects API keys or OAuth tokens.
-  const onecliApplied = await onecli.applyContainerConfig(args, {
-    addHostMapping: false, // Nanoclaw already handles host gateway
-    agent: agentIdentifier,
-  });
-  if (onecliApplied) {
-    logger.info({ containerName }, 'OneCLI gateway config applied');
+  // Route API traffic through the credential proxy (containers never see real secrets)
+  args.push(
+    '-e',
+    `ANTHROPIC_BASE_URL=http://${CONTAINER_HOST_GATEWAY}:${CREDENTIAL_PROXY_PORT}`,
+  );
+
+  // Mirror the host's auth method with a placeholder value.
+  // API key mode: SDK sends x-api-key, proxy replaces with real key.
+  // OAuth mode:   SDK exchanges placeholder token for temp API key,
+  //               proxy injects real OAuth token on that exchange request.
+  const authMode = detectAuthMode();
+  if (authMode === 'api-key') {
+    args.push('-e', 'ANTHROPIC_API_KEY=placeholder');
   } else {
-    logger.warn(
-      { containerName },
-      'OneCLI gateway not reachable — container will have no credentials',
-    );
+    args.push('-e', 'CLAUDE_CODE_OAUTH_TOKEN=placeholder');
   }
 
   // Attach to docker-compose network if configured (enables MCP sidecar container name resolution)
