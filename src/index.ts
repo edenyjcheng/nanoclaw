@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
@@ -6,6 +7,8 @@ import { OneCLI } from '@onecli-sh/sdk';
 
 import {
   ASSISTANT_NAME,
+  CREDENTIAL_PROXY_PORT,
+  DATA_DIR,
   DEFAULT_TRIGGER,
   getTriggerPattern,
   GROUPS_DIR,
@@ -90,6 +93,57 @@ import { logger } from './logger.js';
 
 // Re-export for backwards compatibility during refactor
 export { escapeXml, formatMessages } from './router.js';
+
+// --- PID file guard: prevent duplicate NanoClaw instances ---
+const PID_FILE = path.join(DATA_DIR, 'nanoclaw.pid');
+
+function acquirePidLock(): void {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+
+  if (fs.existsSync(PID_FILE)) {
+    const oldPid = parseInt(fs.readFileSync(PID_FILE, 'utf8').trim(), 10);
+    if (oldPid && oldPid !== process.pid) {
+      // Check if the old process is still running
+      try {
+        process.kill(oldPid, 0); // signal 0 = existence check
+        logger.warn(
+          { oldPid },
+          'Found existing NanoClaw process — killing to prevent duplicates',
+        );
+        process.kill(oldPid, 'SIGTERM');
+        // Brief wait for graceful exit before we proceed
+        const deadline = Date.now() + 3000;
+        while (Date.now() < deadline) {
+          try {
+            process.kill(oldPid, 0);
+          } catch {
+            break; // process exited
+          }
+          // busy-wait in small increments (sync startup path, only runs once)
+          const waitUntil = Date.now() + 200;
+          while (Date.now() < waitUntil) {
+            /* spin */
+          }
+        }
+      } catch {
+        // process doesn't exist — stale PID file, safe to overwrite
+      }
+    }
+  }
+
+  fs.writeFileSync(PID_FILE, String(process.pid));
+}
+
+function releasePidLock(): void {
+  try {
+    const stored = fs.readFileSync(PID_FILE, 'utf8').trim();
+    if (stored === String(process.pid)) {
+      fs.unlinkSync(PID_FILE);
+    }
+  } catch {
+    /* ignore */
+  }
+}
 
 let lastTimestamp = '';
 let sessions: Record<string, string> = {};
@@ -209,7 +263,13 @@ async function callOllamaChat(prompt: string): Promise<string | null> {
       signal: AbortSignal.timeout(60000),
     });
     if (!res.ok) throw new Error(`Ollama HTTP ${res.status}`);
-    const data = (await res.json()) as { message?: { content: string } };
+    const data = (await res.json()) as {
+      message?: { content: string };
+      prompt_eval_count?: number;
+      eval_count?: number;
+    };
+    const tokens = (data.prompt_eval_count ?? 0) + (data.eval_count ?? 0);
+    logOllamaTokenUsage(tokens, model);
     return data.message?.content?.trim() || null;
   } catch (err) {
     logger.warn({ err }, 'Ollama chat failed');
@@ -249,7 +309,9 @@ credentialEvents.on('recovered', () => {
 // Writes to token-usage-YYYY-MM-DD.json in the main group's docs folder.
 function logProxyTokenUsage(job: string, tokens: number): void {
   try {
-    const mainEntry = Object.entries(registeredGroups).find(([, g]) => g.isMain);
+    const mainEntry = Object.entries(registeredGroups).find(
+      ([, g]) => g.isMain,
+    );
     if (!mainEntry) return;
     const groupDir = resolveGroupFolderPath(mainEntry[1].folder);
     const docsDir = path.join(groupDir, 'memory', 'docs');
@@ -282,6 +344,67 @@ function logProxyTokenUsage(job: string, tokens: number): void {
     logger.debug({ job, tokens }, 'Token usage logged');
   } catch (err) {
     logger.warn({ err }, 'Failed to log token usage');
+  }
+}
+
+function logOllamaTokenUsage(tokens: number, model: string): void {
+  if (tokens <= 0) return;
+  try {
+    const mainEntry = Object.entries(registeredGroups).find(
+      ([, g]) => g.isMain,
+    );
+    if (!mainEntry) return;
+    const groupDir = resolveGroupFolderPath(mainEntry[1].folder);
+    const docsDir = path.join(groupDir, 'memory', 'docs');
+    const dateStr = new Intl.DateTimeFormat('en-US', {
+      timeZone: TIMEZONE,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    })
+      .format(new Date())
+      .replace(/(\d+)\/(\d+)\/(\d+)/, '$3-$1-$2');
+    const filePath = path.join(docsDir, `token-usage-${dateStr}.json`);
+    let data: {
+      date: string;
+      claude: { total: number; by_job: Record<string, number> };
+      ollama: { total: number; by_job: Record<string, number> };
+    };
+    try {
+      data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    } catch {
+      data = {
+        date: dateStr,
+        claude: { total: 0, by_job: {} },
+        ollama: { total: 0, by_job: {} },
+      };
+    }
+    let jobName = 'unknown';
+    for (const group of Object.values(registeredGroups)) {
+      try {
+        const trackerPath = path.join(
+          resolveGroupFolderPath(group.folder),
+          'memory',
+          'docs',
+          'job-tracker.json',
+        );
+        if (!fs.existsSync(trackerPath)) continue;
+        const tracker = JSON.parse(fs.readFileSync(trackerPath, 'utf8'));
+        const activeKeys = Object.keys(tracker.active_jobs || {});
+        if (activeKeys.length > 0) {
+          jobName = activeKeys[0];
+          break;
+        }
+      } catch {
+        /* continue */
+      }
+    }
+    data.ollama.total += tokens;
+    data.ollama.by_job[jobName] = (data.ollama.by_job[jobName] || 0) + tokens;
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+    logger.debug({ jobName, tokens, model }, 'Ollama token usage logged');
+  } catch (err) {
+    logger.warn({ err }, 'Failed to log Ollama token usage');
   }
 }
 
@@ -1230,6 +1353,7 @@ async function recoverInterruptedJobs(
 }
 
 async function main(): Promise<void> {
+  acquirePidLock();
   ensureContainerSystemRunning();
   initDatabase();
   logger.info('Database initialized');
@@ -1246,6 +1370,8 @@ async function main(): Promise<void> {
   // Graceful shutdown handlers
   const shutdown = async (signal: string) => {
     logger.info({ signal }, 'Shutdown signal received');
+    releasePidLock();
+    proxyServer.close();
     await queue.shutdown(10000);
     for (const ch of channels) await ch.disconnect();
     process.exit(0);

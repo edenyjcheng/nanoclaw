@@ -235,7 +235,9 @@
       "Bash(mv \"$BASEDIR/requests/20260326-1020-revert-haiku-fallback.md\" \"$BASEDIR/responses/20260326-1020-revert-haiku-fallback.md\")",
       "Bash(grep -n \"job.tracker\\\\|job-tracker\\\\|active_jobs\" groups/telegram_main/memory/docs/*.json groups/telegram_main/memory/docs/*.js)",
       "Bash(head -20 ls groups/telegram_main/memory/docs/job-tracker*)",
-      "Bash(node -e \"const d=require\\(''''fs''''\\).readFileSync\\(''''/dev/stdin'''',''''utf8''''\\); const j=JSON.parse\\(d\\); console.log\\(j.models?.map\\(m=>m.name\\).join\\(''''\\\\n''''\\) || ''''no models''''\\)\")"
+      "Bash(node -e \"const d=require\\(''''fs''''\\).readFileSync\\(''''/dev/stdin'''',''''utf8''''\\); const j=JSON.parse\\(d\\); console.log\\(j.models?.map\\(m=>m.name\\).join\\(''''\\\\n''''\\) || ''''no models''''\\)\")",
+      "Bash(git checkout:*)",
+      "Bash(GIT_EDITOR=true git rebase --continue)"
     ]
   }
 }

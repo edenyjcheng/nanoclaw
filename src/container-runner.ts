@@ -174,6 +174,24 @@ function buildVolumeMounts(
     readonly: false,
   });
 
+  // Mount per-group .claude.json for persistent MCP server configuration.
+  // Claude Code reads MCP servers from ~/.claude.json (not from ~/.claude/settings.json).
+  // Without this mount the file lives outside the bind-mounted .claude/ directory
+  // and is destroyed when the ephemeral container exits.
+  const dotClaudeJsonFile = path.join(
+    DATA_DIR,
+    'sessions',
+    group.folder,
+    '.claude.json',
+  );
+  if (fs.existsSync(dotClaudeJsonFile)) {
+    mounts.push({
+      hostPath: dotClaudeJsonFile,
+      containerPath: '/home/node/.claude.json',
+      readonly: false,
+    });
+  }
+
   // Per-group IPC namespace: each group gets its own IPC directory
   // This prevents cross-group privilege escalation via IPC
   const groupIpcDir = resolveGroupIpcPath(group.folder);
@@ -255,6 +273,12 @@ async function buildContainerArgs(
       { containerName },
       'OneCLI gateway not reachable — container will have no credentials',
     );
+  }
+
+  // Attach to docker-compose network if configured (enables MCP sidecar container name resolution)
+  const dockerNetwork = process.env.DOCKER_NETWORK;
+  if (dockerNetwork) {
+    args.push('--network', dockerNetwork);
   }
 
   // Runtime-specific args for host gateway resolution
