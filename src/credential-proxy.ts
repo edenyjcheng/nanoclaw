@@ -540,3 +540,22 @@ export function detectAuthMode(): AuthMode {
   const secrets = readEnvFile(['ANTHROPIC_API_KEY']);
   return secrets.ANTHROPIC_API_KEY ? 'api-key' : 'oauth';
 }
+
+/**
+ * Append container env args that route API traffic through the credential proxy.
+ * Call this from container-runner.ts instead of inline credential injection —
+ * keeps all proxy logic in one file and reduces rebase conflict surface.
+ */
+export function applyCredentialProxyEnv(
+  args: string[],
+  hostGateway: string,
+  proxyPort: number,
+): void {
+  args.push('-e', `ANTHROPIC_BASE_URL=http://${hostGateway}:${proxyPort}`);
+  const authMode = detectAuthMode();
+  if (authMode === 'api-key') {
+    args.push('-e', 'ANTHROPIC_API_KEY=placeholder');
+  } else {
+    args.push('-e', 'CLAUDE_CODE_OAUTH_TOKEN=placeholder');
+  }
+}
