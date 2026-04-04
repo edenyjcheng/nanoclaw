@@ -236,8 +236,31 @@
       "Bash(grep -n \"job.tracker\\\\|job-tracker\\\\|active_jobs\" groups/telegram_main/memory/docs/*.json groups/telegram_main/memory/docs/*.js)",
       "Bash(head -20 ls groups/telegram_main/memory/docs/job-tracker*)",
       "Bash(node -e \"const d=require\\(''''fs''''\\).readFileSync\\(''''/dev/stdin'''',''''utf8''''\\); const j=JSON.parse\\(d\\); console.log\\(j.models?.map\\(m=>m.name\\).join\\(''''\\\\n''''\\) || ''''no models''''\\)\")",
-      "Bash(git checkout:*)",
-      "Bash(GIT_EDITOR=true git rebase --continue)"
+      "Bash(docker-compose up:*)",
+      "Bash(docker-compose ps:*)",
+      "Bash(docker-compose down:*)",
+      "Bash(docker network:*)",
+      "Bash(powershell -Command \"Get-Process node -ErrorAction SilentlyContinue | Select-Object Id, CPU, WorkingSet, StartTime, CommandLine | Format-List\")",
+      "Bash(powershell -Command \"Get-Process -Name 'node*' -ErrorAction SilentlyContinue | Format-Table Id, ProcessName, CPU -AutoSize\")",
+      "Bash(powershell:*)",
+      "Bash(cmd.exe:*)",
+      "Bash(echo \"Started PID: $!\")",
+      "Bash(echo \"PID: $!\")",
+      "Bash(docker compose:*)",
+      "Bash(python:*)",
+      "Bash(grep -o 'https://accounts.google.com[^\"\\\\\\\\n]*')",
+      "Bash(claude mcp:*)",
+      "Bash(kill 19192)",
+      "Bash(npm start:*)",
+      "Bash(echo \"NanoClaw restart initiated \\(PID: $!\\)\")",
+      "Bash(WMIC PROCESS WHERE \"CommandLine LIKE '%nanoclaw%' AND NOT CommandLine LIKE '%wmic%'\" GET ProcessId,CommandLine)",
+      "Bash(WMIC PROCESS WHERE \"CommandLine LIKE '%node%dist/index%'\" GET ProcessId,CreationDate)",
+      "Bash(WMIC PROCESS:*)",
+      "Bash(docker exec:*)",
+      "Bash(kill %1)",
+      "Bash(xargs grep:*)",
+      "Bash(git status:*)",
+      "Bash(git checkout:*)"
     ]
   }
 }
