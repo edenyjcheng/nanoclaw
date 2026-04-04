@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { execSync } from 'child_process';
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
@@ -110,9 +111,24 @@ function acquirePidLock(): void {
           { oldPid },
           'Found existing NanoClaw process — killing to prevent duplicates',
         );
-        process.kill(oldPid, 'SIGTERM');
+        // On Windows, SIGTERM doesn't reliably kill cmd.exe/npm wrappers.
+        // Use taskkill /T to kill the process tree.
+        if (process.platform === 'win32') {
+          try {
+            execSync(`taskkill /PID ${oldPid} /T /F`, { stdio: 'pipe' });
+          } catch {
+            // taskkill may fail if already exiting
+            try {
+              process.kill(oldPid, 'SIGTERM');
+            } catch {
+              /* already dead */
+            }
+          }
+        } else {
+          process.kill(oldPid, 'SIGTERM');
+        }
         // Brief wait for graceful exit before we proceed
-        const deadline = Date.now() + 3000;
+        const deadline = Date.now() + 5000;
         while (Date.now() < deadline) {
           try {
             process.kill(oldPid, 0);
