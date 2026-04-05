@@ -2,7 +2,7 @@
  * Container Runner for NanoClaw
  * Spawns agent execution in containers and handles IPC
  */
-import { ChildProcess, spawn } from 'child_process';
+import { ChildProcess, execSync, spawn } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 
@@ -312,7 +312,31 @@ export async function runContainerAgent(
 
   const mounts = buildVolumeMounts(group, input.isMain);
   const safeName = group.folder.replace(/[^a-zA-Z0-9-]/g, '-');
-  const containerName = `nanoclaw-${safeName}-${Date.now()}`;
+  // Use a fixed name per group so Docker enforces single-container-per-group.
+  // The --rm flag removes the container on exit, freeing the name for the next run.
+  // If a stale container holds the name, we force-remove it first.
+  const containerName = `nanoclaw-${safeName}`;
+
+  // Kill ALL containers matching this group — both fixed-name (current) and
+  // timestamp-named (from previous NanoClaw processes whose docker-run completed
+  // after the process was killed, escaping cleanupOrphans).
+  try {
+    const stale = execSync(
+      `${CONTAINER_RUNTIME_BIN} ps -aq --filter "name=nanoclaw-${safeName}"`,
+      { stdio: ['pipe', 'pipe', 'pipe'], encoding: 'utf-8', timeout: 5000 },
+    ).trim();
+    if (stale) {
+      const ids = stale.split('\n').filter(Boolean);
+      logger.warn(
+        { group: group.name, orphanCount: ids.length },
+        'Killing stale containers for group before spawning new one',
+      );
+      execSync(
+        `${CONTAINER_RUNTIME_BIN} rm -f ${ids.join(' ')}`,
+        { stdio: 'pipe', timeout: 10000 },
+      );
+    }
+  } catch { /* ignore cleanup errors */ }
   // Main group uses the default OneCLI agent; others use their own agent.
   const agentIdentifier = input.isMain
     ? undefined

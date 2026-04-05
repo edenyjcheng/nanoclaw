@@ -27,7 +27,7 @@ services:
     volumes:
       - ./data/gworkspace-creds:/home/app/.google_workspace_mcp/credentials
     ports:
-      - "3005:3005"
+      - "127.0.0.1:3005:3005"
     restart: unless-stopped
     networks:
       - cortana-net
@@ -37,6 +37,53 @@ services:
       timeout: 10s
       retries: 3
       start_period: 15s
+
+  qdrant:
+    image: qdrant/qdrant
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6333:6333"
+      - "127.0.0.1:6334:6334"
+    volumes:
+      - qdrant_storage:/qdrant/storage
+    networks:
+      - cortana-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  mem0-mcp:
+    build:
+      context: C:/workspace/claude/mem0/openmemory/api
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8765:8765"
+    volumes:
+      - mem0_data:/usr/src/openmemory/data
+    environment:
+      - USER=yung
+      - QDRANT_URL=http://qdrant:6333
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - DATABASE_URL=sqlite:///./data/openmemory.db
+      - OPENAI_API_KEY=
+    env_file:
+      - C:/workspace/claude/mem0/openmemory/api/.env
+    depends_on:
+      - qdrant
+    networks:
+      - cortana-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8765/healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  qdrant_storage:
+  mem0_data:
 
 networks:
   cortana-net:

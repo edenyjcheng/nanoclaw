@@ -1,6 +1,5 @@
 import 'dotenv/config';
 import { execSync } from 'child_process';
-import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 
@@ -82,11 +81,7 @@ import {
   shouldDropMessage,
 } from './sender-allowlist.js';
 import {
-  checkAndTriggerLearningAgent,
   classifierEvents,
-  classifyMessage,
-  logReroute,
-  sniffResponse,
 } from './ollama-classifier.js';
 import { startSchedulerLoop } from './task-scheduler.js';
 import { Channel, NewMessage, RegisteredGroup } from './types.js';
@@ -795,58 +790,12 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
     return true;
   }
 
-  // --- Ollama classifier: pre-classify to route CHAT→Ollama, TASK→Claude ---
-  // Only active when Claude credentials are available (not in fallback mode).
-  // Disabled by default — set CLASSIFIER_ENABLED=true in .env to enable.
-  if (CLASSIFIER_ENABLED && !ollamaFallbackActive) {
-    const rawText = lastMsg.content.trim();
-    const classification = await classifyMessage(rawText);
-
-    if (classification === 'CHAT') {
-      logger.info(
-        { group: group.name, classification },
-        'Classifier: CHAT — routing to Ollama',
-      );
-      await channel.setTyping?.(chatJid, true);
-      const ollamaResponse = await callOllamaChat(prompt);
-      await channel.setTyping?.(chatJid, false);
-
-      if (ollamaResponse === null) {
-        // Ollama unavailable — fall through to Claude container
-        logger.warn(
-          { group: group.name },
-          'Classifier: Ollama chat failed, falling through to Claude',
-        );
-      } else {
-        // Layer 3: response sniff
-        const sniffHit = sniffResponse(ollamaResponse);
-        if (sniffHit) {
-          logger.info(
-            { group: group.name, sniffHit },
-            'Classifier: Layer 3 sniff triggered, re-routing to Claude',
-          );
-          logReroute({
-            id: crypto.randomUUID(),
-            timestamp: new Date().toISOString(),
-            originalMessage: rawText,
-            ollamaResponse,
-            sniffTrigger: sniffHit,
-            chatJid,
-            processed: false,
-          });
-          checkAndTriggerLearningAgent(group.folder);
-          // Fall through to Claude container
-        } else {
-          // Clean CHAT response — send to user and done
-          await channel.sendMessage(chatJid, ollamaResponse);
-          lastAgentTimestamp[chatJid] = lastMsg.timestamp;
-          saveState();
-          return true;
-        }
-      }
-    }
-    // classification === 'TASK' or Ollama unavailable or sniff hit → fall through to Claude
-  }
+  // --- Agent-runner-first (Option A): skip Ollama classifier entirely ---
+  // All messages route to the container agent. Ollama is only used as a
+  // fallback when the agent runner is unavailable or errors out.
+  // The classifier code has been removed to prevent double-response:
+  // previously, CHAT-classified messages got an Ollama reply AND the
+  // container agent could also respond via mcp__nanoclaw__send_message.
 
   // --- Ollama fallback mode: answer directly without spawning a container ---
   if (ollamaFallbackActive) {
@@ -951,45 +900,38 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
       );
       return true;
     }
-    // Credential exhaustion triggered mid-request — route to Ollama immediately
-    // instead of rolling back and waiting for the next loop iteration.
-    if (ollamaFallbackActive) {
-      logger.info(
-        { group: group.name },
-        'Credential exhaustion detected mid-request — routing to Ollama immediately',
+    // Agent-runner-first (Option A): container failed — try Ollama as fallback.
+    // This covers credential exhaustion, container crashes, and any other error.
+    logger.info(
+      { group: group.name, ollamaFallbackActive },
+      'Agent runner failed — falling back to Ollama',
+    );
+    const model = OLLAMA_WARMUP_MODEL || 'gemma3:4b';
+    const modeNotice = `⚠️ *Conversation Mode* — Agent runner unavailable. Responding via Ollama (${model}). No tool access.\n\n`;
+    await channel.setTyping?.(chatJid, true);
+    const response = await callOllamaChat(prompt);
+    await channel.setTyping?.(chatJid, false);
+    lastOllamaPrompt.set(chatJid, {
+      prompt,
+      summary: extractSummary(prompt),
+    });
+    if (response) {
+      await channel.sendMessage(
+        chatJid,
+        modeNotice +
+          response +
+          `\n\n_Reply_ \`queue\` _to save this task for Claude._`,
       );
-      const model = OLLAMA_WARMUP_MODEL || 'gemma3:4b';
-      const modeNotice = `⚠️ *Conversation Mode* — Claude API unavailable. Responding via Ollama (${model}). No tool access.\n\n`;
-      await channel.setTyping?.(chatJid, true);
-      const response = await callOllamaChat(prompt);
-      await channel.setTyping?.(chatJid, false);
-      lastOllamaPrompt.set(chatJid, {
-        prompt,
-        summary: extractSummary(prompt),
-      });
-      if (response) {
-        await channel.sendMessage(
-          chatJid,
-          modeNotice +
-            response +
-            `\n\n_Reply_ \`queue\` _to save this task for Claude._`,
-        );
-      } else {
-        await channel.sendMessage(
-          chatJid,
-          `⚠️ *Conversation Mode* — Claude API unavailable and Ollama also failed to respond. Please try again later.\n\n_Reply_ \`queue\` _to save this for Claude._`,
-        );
-      }
       // Cursor is already advanced — no rollback needed
       saveState();
       return true;
     }
-    // Roll back cursor so retries can re-process these messages
+    // Both agent runner and Ollama failed — roll back cursor for retry
     lastAgentTimestamp[chatJid] = previousCursor;
     saveState();
     logger.warn(
       { group: group.name },
-      'Agent error, rolled back message cursor for retry',
+      'Both agent runner and Ollama failed, rolled back cursor for retry',
     );
     return false;
   }
@@ -1371,6 +1313,30 @@ async function recoverInterruptedJobs(
 async function main(): Promise<void> {
   acquirePidLock();
   ensureContainerSystemRunning();
+
+  // Periodic orphan cleanup: on Windows, ghost containers appear from various
+  // sources (in-flight docker-run from killed processes, scheduled tasks, etc).
+  // This background loop kills any untracked nanoclaw containers every 10 seconds.
+  setInterval(() => {
+    try {
+      const registered = queue.getActiveContainerNames();
+      const output = execSync(
+        `docker ps --filter name=nanoclaw- --format "{{.Names}}"`,
+        { stdio: ['pipe', 'pipe', 'pipe'], encoding: 'utf-8', timeout: 5000 },
+      ).trim();
+      if (!output) return;
+      const running = output.split('\n').filter(Boolean);
+      const orphans = running.filter((n) => !registered.has(n));
+      if (orphans.length > 0) {
+        logger.warn({ orphans }, 'Killing untracked ghost containers');
+        for (const name of orphans) {
+          try {
+            execSync(`docker rm -f ${name}`, { stdio: 'pipe', timeout: 5000 });
+          } catch { /* already gone */ }
+        }
+      }
+    } catch { /* ignore */ }
+  }, 10000);
   initDatabase();
   logger.info('Database initialized');
   loadState();

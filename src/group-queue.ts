@@ -358,6 +358,18 @@ export class GroupQueue {
     }
   }
 
+  /**
+   * Return the set of container names currently tracked by the queue.
+   * Used by the orphan killer to distinguish legitimate containers from ghosts.
+   */
+  getActiveContainerNames(): Set<string> {
+    const names = new Set<string>();
+    for (const [, state] of this.groups) {
+      if (state.containerName) names.add(state.containerName);
+    }
+    return names;
+  }
+
   async shutdown(_gracePeriodMs: number): Promise<void> {
     this.shuttingDown = true;
 
