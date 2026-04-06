@@ -59,6 +59,7 @@ import {
   getRouterState,
   getTaskById,
   initDatabase,
+  updateTask,
   setRegisteredGroup,
   setRouterState,
   setSession,
@@ -1417,6 +1418,58 @@ async function main(): Promise<void> {
       if (trimmed === '/remote-control' || trimmed === '/remote-control-end') {
         handleRemoteControl(trimmed, chatJid, msg).catch((err) =>
           logger.error({ err, chatJid }, 'Remote control command error'),
+        );
+        return;
+      }
+
+      // Kill switch — main group only
+      if (trimmed.startsWith('/kill')) {
+        const group = registeredGroups[chatJid];
+        if (!group?.isMain) return; // Silently ignore from non-main groups
+
+        const reply = async (text: string) => {
+          const ch = findChannel(channels, chatJid);
+          if (ch) await ch.sendMessage(chatJid, text);
+        };
+
+        const arg = trimmed.slice(5).trim(); // text after "/kill"
+
+        if (arg === 'all') {
+          const killed = queue.killAll();
+          if (killed.length === 0) {
+            reply('No active containers to kill.').catch(() => {});
+          } else {
+            const lines = killed.map(
+              (k) =>
+                `• ${k.containerName}${k.taskId ? ` (task: ${k.taskId})` : ''}`,
+            );
+            for (const k of killed) {
+              if (k.taskId) updateTask(k.taskId, { status: 'paused' });
+            }
+            reply(
+              `Killed ${killed.length} container(s):\n${lines.join('\n')}`,
+            ).catch(() => {});
+          }
+        } else if (arg && arg.startsWith('task-')) {
+          // Pause a specific task by ID
+          updateTask(arg, { status: 'paused' });
+          reply(`Paused task: ${arg}`).catch(() => {});
+        } else {
+          // Kill active container for this group
+          const result = queue.killGroup(chatJid);
+          if (!result) {
+            reply('No active container for this group.').catch(() => {});
+          } else {
+            if (result.taskId) updateTask(result.taskId, { status: 'paused' });
+            reply(
+              `Killed container: ${result.containerName}${result.taskId ? `\nPaused task: ${result.taskId}` : ''}`,
+            ).catch(() => {});
+          }
+        }
+
+        logger.info(
+          { chatJid, command: trimmed },
+          'Kill switch command executed',
         );
         return;
       }

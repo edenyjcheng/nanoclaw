@@ -2,6 +2,7 @@ import { ChildProcess } from 'child_process';
 import { CronExpressionParser } from 'cron-parser';
 import fs from 'fs';
 
+import path from 'path';
 import { ASSISTANT_NAME, SCHEDULER_POLL_INTERVAL, TIMEZONE } from './config.js';
 import {
   ContainerOutput,
@@ -73,6 +74,84 @@ export interface SchedulerDependencies {
     groupFolder: string,
   ) => void;
   sendMessage: (jid: string, text: string) => Promise<void>;
+}
+
+/**
+ * Derive a human-readable job name from a task's prompt or ID.
+ * Looks for known job names embedded in the prompt (e.g. "gmail_scan_830",
+ * "morning_briefing"), falls back to a slug of the task ID.
+ */
+function deriveJobName(task: ScheduledTask): string {
+  const knownNames = [
+    'gmail_scan_830',
+    'gmail_scan_1pm',
+    'gmail_scan_530',
+    'morning_briefing',
+    'tomorrow_preview',
+    'journey_update',
+    'learning_agent',
+    'phase_c',
+    'dao_agent',
+    'notion_agent',
+    'mem0_agent',
+    'dashboard_sync',
+  ];
+  const prompt = task.prompt.toLowerCase();
+  for (const name of knownNames) {
+    if (prompt.includes(name.replace(/_/g, '_'))) return name;
+  }
+  // Check for descriptive patterns in the prompt
+  if (prompt.includes('approval queue runner')) return 'phase_c';
+  if (prompt.includes('kendo schedule')) return 'kendo_schedule';
+  if (prompt.includes('rebase sync reminder')) return 'rebase_reminder';
+  // Fallback: slug from task ID suffix
+  const suffix = task.id.replace(/^task-\d+-/, '');
+  return suffix || task.id.slice(-12);
+}
+
+/**
+ * Register a job as active in the group's job-tracker.json.
+ * Called before runContainerAgent so token tracking can identify the job.
+ */
+function registerActiveJob(
+  groupDir: string,
+  jobName: string,
+  taskId: string,
+): void {
+  const trackerPath = path.join(groupDir, 'memory', 'docs', 'job-tracker.json');
+  try {
+    let tracker = { active_jobs: {} as Record<string, unknown> };
+    if (fs.existsSync(trackerPath)) {
+      tracker = JSON.parse(fs.readFileSync(trackerPath, 'utf8'));
+      if (!tracker.active_jobs) tracker.active_jobs = {};
+    }
+    tracker.active_jobs[jobName] = {
+      task_id: taskId,
+      started_at: new Date().toISOString(),
+      expected_duration_min: 5,
+    };
+    fs.writeFileSync(trackerPath, JSON.stringify(tracker, null, 2));
+  } catch (err) {
+    logger.warn({ err, jobName }, 'Failed to register active job');
+  }
+}
+
+/**
+ * Remove a job from active_jobs in the group's job-tracker.json.
+ * Called after task completes (success or error).
+ */
+function deregisterActiveJob(groupDir: string, jobName: string): void {
+  const trackerPath = path.join(groupDir, 'memory', 'docs', 'job-tracker.json');
+  try {
+    if (!fs.existsSync(trackerPath)) return;
+    const tracker = JSON.parse(fs.readFileSync(trackerPath, 'utf8'));
+    if (tracker.active_jobs) {
+      delete tracker.active_jobs[jobName];
+    }
+    fs.writeFileSync(trackerPath, JSON.stringify(tracker, null, 2));
+  } catch (err) {
+    logger.warn({ err, jobName }, 'Failed to deregister active job');
+  }
 }
 
 async function runTask(
@@ -147,6 +226,10 @@ async function runTask(
     })),
   );
 
+  // Register active job for token tracking
+  const jobName = deriveJobName(task);
+  registerActiveJob(groupDir, jobName, task.id);
+
   let result: string | null = null;
   let error: string | null = null;
 
@@ -219,6 +302,9 @@ async function runTask(
     error = err instanceof Error ? err.message : String(err);
     logger.error({ taskId: task.id, error }, 'Task failed');
   }
+
+  // Deregister active job after completion
+  deregisterActiveJob(groupDir, jobName);
 
   const durationMs = Date.now() - startTime;
 

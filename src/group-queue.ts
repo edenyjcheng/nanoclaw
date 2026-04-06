@@ -370,6 +370,56 @@ export class GroupQueue {
     return names;
   }
 
+  /**
+   * Kill the active container for a specific group JID.
+   * Returns info about what was killed, or null if nothing was active.
+   */
+  killGroup(groupJid: string): {
+    containerName: string;
+    taskId: string | null;
+  } | null {
+    const state = this.groups.get(groupJid);
+    if (!state || !state.active) return null;
+
+    const containerName = state.containerName;
+    const taskId = state.runningTaskId;
+
+    if (state.process && !state.process.killed) {
+      state.process.kill('SIGKILL');
+    }
+
+    return containerName ? { containerName, taskId } : null;
+  }
+
+  /**
+   * Kill all active containers across all groups.
+   * Returns a list of what was killed.
+   */
+  killAll(): Array<{
+    groupJid: string;
+    containerName: string;
+    taskId: string | null;
+  }> {
+    const killed: Array<{
+      groupJid: string;
+      containerName: string;
+      taskId: string | null;
+    }> = [];
+    for (const [jid, state] of this.groups) {
+      if (state.active && state.process && !state.process.killed) {
+        if (state.containerName) {
+          killed.push({
+            groupJid: jid,
+            containerName: state.containerName,
+            taskId: state.runningTaskId,
+          });
+        }
+        state.process.kill('SIGKILL');
+      }
+    }
+    return killed;
+  }
+
   async shutdown(_gracePeriodMs: number): Promise<void> {
     this.shuttingDown = true;
 
