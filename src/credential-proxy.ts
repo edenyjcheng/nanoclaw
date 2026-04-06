@@ -558,13 +558,15 @@ export function applyCredentialProxyEnv(
     args.push('-e', `ANTHROPIC_BASE_URL=http://${hostGateway}:${proxyPort}`);
     args.push('-e', 'ANTHROPIC_API_KEY=placeholder');
   } else {
-    // OAuth mode: give the container the real token and let Claude Code CLI
-    // handle the token exchange natively. api.anthropic.com does NOT accept
-    // OAuth tokens directly — Claude Code exchanges them at its own endpoint.
-    // Routing through the proxy breaks this exchange flow.
+    // OAuth mode: the Claude Agent SDK does its own token exchange using
+    // CLAUDE_CODE_OAUTH_TOKEN — this must be a real token, not a placeholder.
+    // Read it fresh at spawn time from ~/.claude/.credentials.json so we get
+    // the latest token (Claude Code CLI keeps this file refreshed).
+    // Post-exchange API calls go through the proxy for fallback handling.
     const token = readClaudeCliToken();
     if (token) {
       args.push('-e', `CLAUDE_CODE_OAUTH_TOKEN=${token}`);
     }
+    args.push('-e', `ANTHROPIC_BASE_URL=http://${hostGateway}:${proxyPort}`);
   }
 }

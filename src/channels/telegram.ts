@@ -217,7 +217,7 @@ export class TelegramChannel implements Channel {
         const imgBuf = await imgRes.arrayBuffer();
         const base64 = Buffer.from(imgBuf).toString('base64');
         const ollamaHost =
-          process.env.OLLAMA_HOST || 'http://host.docker.internal:11434';
+          process.env.OLLAMA_HOST || 'http://localhost:11434';
         const prompt = caption || 'Describe this image in detail.';
         const ollamaRes = await fetch(`${ollamaHost}/api/chat`, {
           method: 'POST',
