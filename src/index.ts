@@ -80,9 +80,7 @@ import {
   loadSenderAllowlist,
   shouldDropMessage,
 } from './sender-allowlist.js';
-import {
-  classifierEvents,
-} from './ollama-classifier.js';
+import { classifierEvents } from './ollama-classifier.js';
 import { startSchedulerLoop } from './task-scheduler.js';
 import { Channel, NewMessage, RegisteredGroup } from './types.js';
 import { logger } from './logger.js';
@@ -1332,10 +1330,14 @@ async function main(): Promise<void> {
         for (const name of orphans) {
           try {
             execSync(`docker rm -f ${name}`, { stdio: 'pipe', timeout: 5000 });
-          } catch { /* already gone */ }
+          } catch {
+            /* already gone */
+          }
         }
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }, 10000);
   initDatabase();
   logger.info('Database initialized');

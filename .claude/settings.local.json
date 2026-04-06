@@ -287,7 +287,10 @@
       "Bash(python3 -c \"import sys,json; [print\\(f['name']\\) for f in json.load\\(sys.stdin\\)]\")",
       "Bash(git clone:*)",
       "Bash(openssl rand:*)",
-      "Bash(echo \"---EXIT:$?\")"
+      "Bash(echo \"---EXIT:$?\")",
+      "Bash(gh issue:*)",
+      "Read(//workspace/group/ipc-claudecode/**)",
+      "Read(//c/workspace/**)"
     ]
   }
 }

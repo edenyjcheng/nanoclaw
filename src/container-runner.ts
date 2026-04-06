@@ -331,12 +331,14 @@ export async function runContainerAgent(
         { group: group.name, orphanCount: ids.length },
         'Killing stale containers for group before spawning new one',
       );
-      execSync(
-        `${CONTAINER_RUNTIME_BIN} rm -f ${ids.join(' ')}`,
-        { stdio: 'pipe', timeout: 10000 },
-      );
+      execSync(`${CONTAINER_RUNTIME_BIN} rm -f ${ids.join(' ')}`, {
+        stdio: 'pipe',
+        timeout: 10000,
+      });
     }
-  } catch { /* ignore cleanup errors */ }
+  } catch {
+    /* ignore cleanup errors */
+  }
   // Main group uses the default OneCLI agent; others use their own agent.
   const agentIdentifier = input.isMain
     ? undefined

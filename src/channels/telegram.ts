@@ -199,7 +199,47 @@ export class TelegramChannel implements Channel {
       });
     };
 
-    this.bot.on('message:photo', (ctx) => storeNonText(ctx, '[Photo]'));
+    this.bot.on('message:photo', async (ctx) => {
+      const caption = ctx.message.caption || '';
+      try {
+        const photos = ctx.message.photo;
+        const fileId = photos[photos.length - 1].file_id;
+        const token = process.env.TELEGRAM_BOT_TOKEN || '';
+        const fileRes = await fetch(
+          `https://api.telegram.org/bot${token}/getFile?file_id=${fileId}`,
+        );
+        const fileData = (await fileRes.json()) as any;
+        const filePath = fileData?.result?.file_path;
+        if (!filePath) throw new Error('No file path from Telegram');
+        const imgRes = await fetch(
+          `https://api.telegram.org/file/bot${token}/${filePath}`,
+        );
+        const imgBuf = await imgRes.arrayBuffer();
+        const base64 = Buffer.from(imgBuf).toString('base64');
+        const ollamaHost =
+          process.env.OLLAMA_HOST || 'http://host.docker.internal:11434';
+        const prompt = caption || 'Describe this image in detail.';
+        const ollamaRes = await fetch(`${ollamaHost}/api/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'qwen3-vl:8b',
+            messages: [{ role: 'user', content: prompt, images: [base64] }],
+            stream: false,
+          }),
+        });
+        const ollamaData = (await ollamaRes.json()) as any;
+        const description =
+          ollamaData?.message?.content || '[Photo: could not analyze]';
+        storeNonText(ctx, `[Photo: ${description}]`);
+      } catch (err: any) {
+        logger.warn(
+          { err: err.message },
+          'Vision analysis failed, using placeholder',
+        );
+        storeNonText(ctx, '[Photo]');
+      }
+    });
     this.bot.on('message:video', (ctx) => storeNonText(ctx, '[Video]'));
     this.bot.on('message:voice', (ctx) => storeNonText(ctx, '[Voice message]'));
     this.bot.on('message:audio', (ctx) => storeNonText(ctx, '[Audio]'));
