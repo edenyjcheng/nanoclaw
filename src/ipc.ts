@@ -586,69 +586,6 @@ export async function processTaskIpc(
       break;
     }
 
-    case 'classifier_add_keyword': {
-      const keyword = String(data.keyword || '').trim();
-      const replyJid = String(data.chatJid || '');
-      if (!keyword) {
-        logger.warn('classifier_add_keyword: empty keyword, ignoring');
-        break;
-      }
-      const kwPath = path.join(
-        process.cwd(),
-        'data',
-        'classifier',
-        'classifier-keywords.json',
-      );
-      try {
-        const raw = fs.readFileSync(kwPath, 'utf8');
-        const kwFile = JSON.parse(raw) as {
-          version: number;
-          updated: string;
-          keywords: string[];
-        };
-        const existing = new Set(
-          kwFile.keywords.map((k: string) => k.toLowerCase()),
-        );
-        if (!existing.has(keyword.toLowerCase())) {
-          kwFile.keywords.push(keyword);
-          kwFile.updated = new Date().toISOString().slice(0, 10);
-          kwFile.version += 1;
-          fs.writeFileSync(kwPath, JSON.stringify(kwFile, null, 2));
-          // Invalidate the in-memory cache
-          try {
-            const { invalidateKeywordCache } =
-              await import('./ollama-classifier.js');
-            invalidateKeywordCache();
-          } catch {
-            // Module not loaded — cache will refresh on next classify call
-          }
-          if (replyJid)
-            await deps.sendMessage(
-              replyJid,
-              `✅ Classifier keyword added: "${keyword}"`,
-            );
-          logger.info({ keyword }, 'Classifier keyword added via IPC');
-        } else {
-          if (replyJid)
-            await deps.sendMessage(
-              replyJid,
-              `ℹ️ Classifier keyword already present: "${keyword}"`,
-            );
-        }
-      } catch (err) {
-        logger.warn(
-          { err, keyword },
-          'classifier_add_keyword: failed to update keywords file',
-        );
-        if (replyJid)
-          await deps.sendMessage(
-            replyJid,
-            `⚠️ Failed to add classifier keyword: ${err instanceof Error ? err.message : String(err)}`,
-          );
-      }
-      break;
-    }
-
     default:
       logger.warn({ type: data.type }, 'Unknown IPC task type');
   }

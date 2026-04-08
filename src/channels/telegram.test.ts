@@ -156,6 +156,7 @@ function createMediaCtx(overrides: {
       ...(overrides.extra || {}),
     },
     me: { username: 'andy_ai_bot' },
+    reply: vi.fn(),
   };
 }
 

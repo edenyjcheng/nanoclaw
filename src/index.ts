@@ -81,7 +81,7 @@ import {
   loadSenderAllowlist,
   shouldDropMessage,
 } from './sender-allowlist.js';
-import { classifierEvents } from './ollama-classifier.js';
+
 import { startSchedulerLoop } from './task-scheduler.js';
 import { Channel, NewMessage, RegisteredGroup } from './types.js';
 import { logger } from './logger.js';
@@ -166,8 +166,7 @@ const startupWarmupPending = new Map<string, boolean>();
 
 const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434';
 const OLLAMA_WARMUP_MODEL = process.env.OLLAMA_WARMUP_MODEL || '';
-// Ollama classifier — disabled by default, enable with CLASSIFIER_ENABLED=true in .env
-const CLASSIFIER_ENABLED = process.env.CLASSIFIER_ENABLED === 'true';
+
 
 /**
  * Ask a local Ollama model to generate the startup "back online" message.
@@ -440,35 +439,6 @@ credentialEvents.on(
   },
 );
 
-if (CLASSIFIER_ENABLED) {
-  classifierEvents.on(
-    'learned',
-    ({
-      autoAdded,
-      pendingApproval,
-    }: {
-      autoAdded: string[];
-      pendingApproval: string[];
-    }) => {
-      const lines: string[] = [];
-      if (autoAdded.length > 0) {
-        lines.push(
-          `🧠 *Classifier learned:* Auto-added ${autoAdded.length} keyword(s): ${autoAdded.map((k) => `"${k}"`).join(', ')}`,
-        );
-      }
-      if (pendingApproval.length > 0) {
-        lines.push(
-          `⚠️ *Classifier suggestion (low confidence):* ${pendingApproval.map((k) => `"${k}"`).join(', ')} — send "classifier add <phrase>" to approve.`,
-        );
-      }
-      if (lines.length > 0) {
-        sendToMainGroup(lines.join('\n')).catch((err) =>
-          logger.warn({ err }, 'Failed to send classifier notification'),
-        );
-      }
-    },
-  );
-}
 
 export type LlmMode = 'auto' | 'oauth' | 'api-key' | 'ollama';
 
