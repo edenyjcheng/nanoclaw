@@ -4,6 +4,7 @@ import { Api, Bot } from 'grammy';
 import { ASSISTANT_NAME, TRIGGER_PATTERN } from '../config.js';
 import { readEnvFile } from '../env.js';
 import { logger } from '../logger.js';
+import { MODELS } from '../ollama-config.js';
 import { registerChannel, ChannelOpts } from './registry.js';
 import {
   Channel,
@@ -222,7 +223,7 @@ export class TelegramChannel implements Channel {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model: 'qwen3-vl:8b',
+            model: MODELS.vision,
             messages: [{ role: 'user', content: prompt, images: [base64] }],
             stream: false,
           }),
@@ -238,7 +239,7 @@ export class TelegramChannel implements Channel {
         );
         storeNonText(ctx, '[Photo]');
         await ctx.reply(
-          `⚠️ Vision analysis failed: ${err.message}\nMake sure Ollama is running with qwen3-vl:8b loaded.`,
+          `⚠️ Vision analysis failed: ${err.message}\nMake sure Ollama is running with ${MODELS.vision} loaded.`,
         );
       }
     });

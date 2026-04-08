@@ -18,6 +18,7 @@ import {
   POLL_INTERVAL,
   TIMEZONE,
 } from './config.js';
+import { MODELS } from './ollama-config.js';
 import {
   startCredentialProxy,
   credentialEvents,
@@ -165,7 +166,7 @@ let messageLoopRunning = false;
 const startupWarmupPending = new Map<string, boolean>();
 
 const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434';
-const OLLAMA_WARMUP_MODEL = process.env.OLLAMA_WARMUP_MODEL || '';
+const OLLAMA_WARMUP_MODEL = process.env.OLLAMA_WARMUP_MODEL || MODELS.chat;
 
 /**
  * Ask a local Ollama model to generate the startup "back online" message.
@@ -263,7 +264,7 @@ async function presentQueueOnRecovery(): Promise<void> {
 }
 
 async function callOllamaChat(prompt: string): Promise<string | null> {
-  const model = OLLAMA_WARMUP_MODEL || 'gemma3:4b';
+  const model = OLLAMA_WARMUP_MODEL;
   try {
     const res = await fetch(`${OLLAMA_HOST}/api/chat`, {
       method: 'POST',
@@ -301,7 +302,7 @@ credentialEvents.on('exhausted', () => {
       'All Claude credentials exhausted — switching to Ollama fallback mode',
     );
     sendToMainGroup(
-      `⚠️ Claude limits reached — running on Ollama (${OLLAMA_WARMUP_MODEL || 'gemma3:4b'}). Tool use + agent spawning unavailable until limits reset. I'll automatically switch back when Claude is available.`,
+      `⚠️ Claude limits reached — running on Ollama (${OLLAMA_WARMUP_MODEL}). Tool use + agent spawning unavailable until limits reset. I'll automatically switch back when Claude is available.`,
     ).catch((err) =>
       logger.warn({ err }, 'Failed to send exhaustion notification'),
     );
@@ -840,7 +841,7 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
       { group: group.name },
       'Ollama fallback mode: routing to Ollama directly',
     );
-    const model = OLLAMA_WARMUP_MODEL || 'gemma3:4b';
+    const model = OLLAMA_WARMUP_MODEL;
     const modeNotice = `⚠️ *Conversation Mode* — Claude API unavailable. Responding via Ollama (${model}). No tool access.\n\n`;
     await channel.setTyping?.(chatJid, true);
     const response = await callOllamaChat(prompt);
@@ -943,7 +944,7 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
       { group: group.name, ollamaFallbackActive },
       'Agent runner failed — falling back to Ollama',
     );
-    const model = OLLAMA_WARMUP_MODEL || 'gemma3:4b';
+    const model = OLLAMA_WARMUP_MODEL;
     const modeNotice = `⚠️ *Conversation Mode* — Agent runner unavailable. Responding via Ollama (${model}). No tool access.\n\n`;
     await channel.setTyping?.(chatJid, true);
     const response = await callOllamaChat(prompt);
