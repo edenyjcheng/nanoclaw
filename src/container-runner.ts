@@ -267,6 +267,11 @@ async function buildContainerArgs(
   // All proxy logic lives in credential-proxy.ts to minimize rebase conflict surface.
   applyCredentialProxyEnv(args, CONTAINER_HOST_GATEWAY, CREDENTIAL_PROXY_PORT);
 
+  // Pass Ollama host so containers can delegate to local models (coordinator routing)
+  const ollamaHost =
+    process.env.OLLAMA_HOST || `http://${CONTAINER_HOST_GATEWAY}:11434`;
+  args.push('-e', `OLLAMA_HOST=${ollamaHost}`);
+
   // Attach to docker-compose network if configured (enables MCP sidecar container name resolution)
   const dockerNetwork = process.env.DOCKER_NETWORK;
   if (dockerNetwork) {

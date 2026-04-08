@@ -167,7 +167,6 @@ const startupWarmupPending = new Map<string, boolean>();
 const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434';
 const OLLAMA_WARMUP_MODEL = process.env.OLLAMA_WARMUP_MODEL || '';
 
-
 /**
  * Ask a local Ollama model to generate the startup "back online" message.
  * Falls back to a static string if Ollama is unavailable or has no models.
@@ -196,7 +195,13 @@ async function ollamaWarmupMessage(assistantName: string): Promise<string> {
       }),
     });
     if (!res.ok) throw new Error(`generate ${res.status}`);
-    const data = (await res.json()) as { response: string };
+    const data = (await res.json()) as {
+      response: string;
+      prompt_eval_count?: number;
+      eval_count?: number;
+    };
+    const tokens = (data.prompt_eval_count ?? 0) + (data.eval_count ?? 0);
+    if (tokens > 0) logOllamaTokenUsage(tokens, model);
     return data.response.trim();
   } catch (err) {
     logger.warn({ err }, 'Ollama warmup failed, using static message');
@@ -282,6 +287,7 @@ async function callOllamaChat(prompt: string): Promise<string | null> {
     return data.message?.content?.trim() || null;
   } catch (err) {
     logger.warn({ err }, 'Ollama chat failed');
+    logOllamaFallback(model, 'error');
     return null;
   }
 }
@@ -409,6 +415,45 @@ function logOllamaTokenUsage(tokens: number, model: string): void {
   }
 }
 
+/** Log an Ollama fallback event (model failed, Claude handled instead). */
+function logOllamaFallback(
+  model: string,
+  reason: 'timeout' | 'error' | 'empty',
+): void {
+  try {
+    const mainEntry = Object.entries(registeredGroups).find(
+      ([, g]) => g.isMain,
+    );
+    if (!mainEntry) return;
+    const groupDir = resolveGroupFolderPath(mainEntry[1].folder);
+    const docsDir = path.join(groupDir, 'memory', 'docs');
+    const filePath = path.join(docsDir, 'ollama-fallback-log.json');
+    let entries: Array<{
+      event: string;
+      model: string;
+      reason: string;
+      timestamp: string;
+    }>;
+    try {
+      entries = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    } catch {
+      entries = [];
+    }
+    entries.push({
+      event: 'ollama_fallback',
+      model,
+      reason,
+      timestamp: new Date().toISOString(),
+    });
+    // Keep last 200 entries
+    if (entries.length > 200) entries = entries.slice(-200);
+    fs.writeFileSync(filePath, JSON.stringify(entries, null, 2));
+    logger.info({ model, reason }, 'Ollama fallback logged');
+  } catch (err) {
+    logger.warn({ err }, 'Failed to log Ollama fallback');
+  }
+}
+
 credentialEvents.on(
   'usage',
   ({ total }: { inputTokens: number; outputTokens: number; total: number }) => {
@@ -438,7 +483,6 @@ credentialEvents.on(
     logProxyTokenUsage(jobName, total);
   },
 );
-
 
 export type LlmMode = 'auto' | 'oauth' | 'api-key' | 'ollama';
 
