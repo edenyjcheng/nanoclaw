@@ -557,6 +557,25 @@ function loadState(): void {
   }
   sessions = getAllSessions();
   registeredGroups = getAllRegisteredGroups();
+
+  // Ensure memory queue files exist for all registered groups (Memory Agent writes here)
+  for (const group of Object.values(registeredGroups)) {
+    try {
+      const groupDir = resolveGroupFolderPath(group.folder);
+      fs.mkdirSync(path.join(groupDir, 'memory'), { recursive: true });
+      const triggerQ = path.join(groupDir, 'memory', 'mem0-trigger-queue.json');
+      const mem0Q = path.join(groupDir, 'memory', 'mem0-queue.json');
+      if (!fs.existsSync(triggerQ)) {
+        fs.writeFileSync(triggerQ, JSON.stringify([], null, 2));
+      }
+      if (!fs.existsSync(mem0Q)) {
+        fs.writeFileSync(mem0Q, JSON.stringify([], null, 2));
+      }
+    } catch {
+      // Best-effort — group folder may not exist yet
+    }
+  }
+
   logger.info(
     { groupCount: Object.keys(registeredGroups).length },
     'State loaded',
@@ -607,7 +626,11 @@ function registerGroup(jid: string, group: RegisteredGroup): void {
   // Create group folder and memory queue files
   fs.mkdirSync(path.join(groupDir, 'logs'), { recursive: true });
   fs.mkdirSync(path.join(groupDir, 'memory'), { recursive: true });
-  const triggerQueuePath = path.join(groupDir, 'memory', 'mem0-trigger-queue.json');
+  const triggerQueuePath = path.join(
+    groupDir,
+    'memory',
+    'mem0-trigger-queue.json',
+  );
   const mem0QueuePath = path.join(groupDir, 'memory', 'mem0-queue.json');
   if (!fs.existsSync(triggerQueuePath)) {
     fs.writeFileSync(triggerQueuePath, JSON.stringify([], null, 2));
