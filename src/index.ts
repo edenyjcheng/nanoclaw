@@ -389,25 +389,17 @@ function logOllamaTokenUsage(tokens: number, model: string): void {
         ollama: { total: 0, by_job: {} },
       };
     }
-    let jobName = 'unknown';
-    for (const group of Object.values(registeredGroups)) {
-      try {
-        const trackerPath = path.join(
-          resolveGroupFolderPath(group.folder),
-          'memory',
-          'docs',
-          'job-tracker.json',
-        );
-        if (!fs.existsSync(trackerPath)) continue;
+    // G1+G2: single-path job lookup (matches agent-runner logic); default 'conversation' not 'unknown'
+    let jobName = 'conversation';
+    try {
+      const trackerPath = path.join(docsDir, 'job-tracker.json');
+      if (fs.existsSync(trackerPath)) {
         const tracker = JSON.parse(fs.readFileSync(trackerPath, 'utf8'));
         const activeKeys = Object.keys(tracker.active_jobs || {});
-        if (activeKeys.length > 0) {
-          jobName = activeKeys[0];
-          break;
-        }
-      } catch {
-        /* continue */
+        if (activeKeys.length > 0) jobName = activeKeys[0];
       }
+    } catch {
+      /* keep default */
     }
     data.ollama.total += tokens;
     data.ollama.by_job[jobName] = (data.ollama.by_job[jobName] || 0) + tokens;
