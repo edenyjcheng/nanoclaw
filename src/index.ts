@@ -604,8 +604,17 @@ function registerGroup(jid: string, group: RegisteredGroup): void {
   registeredGroups[jid] = group;
   setRegisteredGroup(jid, group);
 
-  // Create group folder
+  // Create group folder and memory queue files
   fs.mkdirSync(path.join(groupDir, 'logs'), { recursive: true });
+  fs.mkdirSync(path.join(groupDir, 'memory'), { recursive: true });
+  const triggerQueuePath = path.join(groupDir, 'memory', 'mem0-trigger-queue.json');
+  const mem0QueuePath = path.join(groupDir, 'memory', 'mem0-queue.json');
+  if (!fs.existsSync(triggerQueuePath)) {
+    fs.writeFileSync(triggerQueuePath, JSON.stringify([], null, 2));
+  }
+  if (!fs.existsSync(mem0QueuePath)) {
+    fs.writeFileSync(mem0QueuePath, JSON.stringify([], null, 2));
+  }
 
   // Copy CLAUDE.md template into the new group folder so agents have
   // identity and instructions from the first run.  (Fixes #1391)
