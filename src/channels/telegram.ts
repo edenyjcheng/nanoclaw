@@ -216,8 +216,7 @@ export class TelegramChannel implements Channel {
         );
         const imgBuf = await imgRes.arrayBuffer();
         const base64 = Buffer.from(imgBuf).toString('base64');
-        const ollamaHost =
-          process.env.OLLAMA_HOST || 'http://localhost:11434';
+        const ollamaHost = process.env.OLLAMA_HOST || 'http://localhost:11434';
         const prompt = caption || 'Describe this image in detail.';
         const ollamaRes = await fetch(`${ollamaHost}/api/chat`, {
           method: 'POST',
@@ -238,6 +237,9 @@ export class TelegramChannel implements Channel {
           'Vision analysis failed, using placeholder',
         );
         storeNonText(ctx, '[Photo]');
+        await ctx.reply(
+          `⚠️ Vision analysis failed: ${err.message}\nMake sure Ollama is running with qwen3-vl:8b loaded.`,
+        );
       }
     });
     this.bot.on('message:video', (ctx) => storeNonText(ctx, '[Video]'));

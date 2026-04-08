@@ -157,20 +157,166 @@ function markRecovered(): void {
   }
 }
 
-/**
- * Read the current OAuth access token from ~/.claude/.credentials.json.
- * Claude Code CLI keeps this file up-to-date with fresh tokens automatically.
- * Returns undefined if the file is missing or unparseable.
- */
-function readClaudeCliToken(): string | undefined {
+// ---------------------------------------------------------------------------
+// OAuth token management — proactive refresh keeps Cortana alive all day.
+// ---------------------------------------------------------------------------
+
+const CLAUDE_TOKEN_URL = 'https://platform.claude.com/v1/oauth/token';
+const CLAUDE_CLIENT_ID = '9d1c250a-e61b-44d9-88ed-5944d1962f5e';
+/** Refresh when less than 2 hours remain (well before the ~24 h expiry). */
+const REFRESH_MARGIN_MS = 2 * 60 * 60 * 1000;
+/** Re-check expiry every 30 minutes. */
+const REFRESH_CHECK_INTERVAL_MS = 30 * 60 * 1000;
+
+let refreshTimer: ReturnType<typeof setInterval> | null = null;
+
+interface ClaudeOAuthCreds {
+  accessToken?: string;
+  refreshToken?: string;
+  expiresAt?: number;
+  scopes?: string[];
+  subscriptionType?: string;
+  rateLimitTier?: string;
+}
+
+function credFilePath(): string {
+  return path.join(os.homedir(), '.claude', '.credentials.json');
+}
+
+function readClaudeCliCreds(): ClaudeOAuthCreds | undefined {
   try {
-    const credFile = path.join(os.homedir(), '.claude', '.credentials.json');
-    const raw = fs.readFileSync(credFile, 'utf-8');
+    const raw = fs.readFileSync(credFilePath(), 'utf-8');
     const creds = JSON.parse(raw);
-    return creds?.claudeAiOauth?.accessToken as string | undefined;
+    return creds?.claudeAiOauth as ClaudeOAuthCreds | undefined;
   } catch {
     return undefined;
   }
+}
+
+/**
+ * Read the current OAuth access token from ~/.claude/.credentials.json.
+ * Returns undefined if the file is missing or unparseable.
+ */
+function readClaudeCliToken(): string | undefined {
+  return readClaudeCliCreds()?.accessToken;
+}
+
+/**
+ * Use the refresh token to obtain a new access token from Claude's OAuth
+ * endpoint and persist it back to ~/.claude/.credentials.json.
+ */
+async function refreshOAuthToken(): Promise<boolean> {
+  const oauthCreds = readClaudeCliCreds();
+  if (!oauthCreds?.refreshToken) {
+    logger.warn('No refresh token available — cannot auto-refresh');
+    return false;
+  }
+
+  const body = new URLSearchParams({
+    grant_type: 'refresh_token',
+    client_id: CLAUDE_CLIENT_ID,
+    refresh_token: oauthCreds.refreshToken,
+  }).toString();
+
+  return new Promise((resolve) => {
+    const req = httpsRequest(
+      {
+        hostname: 'platform.claude.com',
+        port: 443,
+        path: '/v1/oauth/token',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Length': Buffer.byteLength(body),
+        },
+      },
+      (res) => {
+        const chunks: Buffer[] = [];
+        res.on('data', (c: Buffer) => chunks.push(c));
+        res.on('end', () => {
+          try {
+            const data = JSON.parse(Buffer.concat(chunks).toString('utf8'));
+            if (!data.access_token) {
+              logger.error(
+                { status: res.statusCode, body: JSON.stringify(data).slice(0, 300) },
+                'OAuth refresh failed — no access_token in response',
+              );
+              resolve(false);
+              return;
+            }
+
+            // Update credentials file
+            const raw = fs.readFileSync(credFilePath(), 'utf-8');
+            const creds = JSON.parse(raw);
+            creds.claudeAiOauth.accessToken = data.access_token;
+            if (data.refresh_token) {
+              creds.claudeAiOauth.refreshToken = data.refresh_token;
+            }
+            if (data.expires_in) {
+              creds.claudeAiOauth.expiresAt =
+                Date.now() + data.expires_in * 1000;
+            }
+            fs.writeFileSync(credFilePath(), JSON.stringify(creds, null, 2));
+
+            const ttlMin = data.expires_in
+              ? Math.round(data.expires_in / 60)
+              : '?';
+            logger.info(
+              { ttlMinutes: ttlMin },
+              'OAuth token refreshed successfully',
+            );
+            resolve(true);
+          } catch (err) {
+            logger.error({ err }, 'Failed to parse OAuth refresh response');
+            resolve(false);
+          }
+        });
+      },
+    );
+    req.on('error', (err) => {
+      logger.error({ err }, 'OAuth refresh request failed');
+      resolve(false);
+    });
+    req.write(body);
+    req.end();
+  });
+}
+
+/**
+ * Check token freshness and refresh proactively if it will expire soon.
+ * Called on a recurring timer so NanoClaw stays authenticated all day.
+ */
+async function checkAndRefreshToken(): Promise<void> {
+  const oauthCreds = readClaudeCliCreds();
+  if (!oauthCreds?.expiresAt || !oauthCreds?.refreshToken) return;
+
+  const remaining = oauthCreds.expiresAt - Date.now();
+  if (remaining > REFRESH_MARGIN_MS) return; // plenty of time left
+
+  const remainMin = Math.round(remaining / 60000);
+  logger.info(
+    { remainingMinutes: remainMin },
+    'OAuth token expiring soon — refreshing proactively',
+  );
+
+  const ok = await refreshOAuthToken();
+  if (ok) {
+    // If we were in exhaustion due to 401, recover now
+    markRecovered();
+  }
+}
+
+/** Start the background refresh timer. Safe to call multiple times. */
+export function startTokenRefreshTimer(): void {
+  if (refreshTimer) return;
+  // Run once immediately, then on interval
+  checkAndRefreshToken();
+  refreshTimer = setInterval(checkAndRefreshToken, REFRESH_CHECK_INTERVAL_MS);
+  refreshTimer.unref(); // don't prevent process exit
+  logger.info(
+    { intervalMinutes: REFRESH_CHECK_INTERVAL_MS / 60000 },
+    'OAuth token refresh timer started',
+  );
 }
 
 export type AuthMode = 'api-key' | 'oauth';
@@ -373,17 +519,35 @@ export function startCredentialProxy(
           );
           doApiKeyFallback(body);
         } else if (upRes.statusCode === 401) {
-          // Auth error with no API key to fall back to — escalate to Ollama
+          // Auth error — try refreshing the token before giving up
           upRes.resume();
-          logger.error(
+          logger.warn(
             { url },
-            'OAuth auth error and no API key configured — switching to Ollama fallback',
+            'OAuth 401 — attempting immediate token refresh',
           );
-          markExhausted();
-          if (!clientRes.headersSent) {
-            clientRes.writeHead(503);
-            clientRes.end('Service Unavailable');
-          }
+          refreshOAuthToken().then((ok) => {
+            if (ok) {
+              // Token refreshed — retry the original request with new token
+              const newToken = readClaudeCliToken();
+              if (newToken) {
+                const retryHeaders = { ...headers };
+                delete retryHeaders['authorization'];
+                retryHeaders['authorization'] = `Bearer ${newToken}`;
+                forwardRequest(method, url, retryHeaders, body, clientRes, false);
+                return;
+              }
+            }
+            // Refresh failed — escalate to Ollama
+            logger.error(
+              { url },
+              'OAuth refresh failed and no API key configured — switching to Ollama fallback',
+            );
+            markExhausted();
+            if (!clientRes.headersSent) {
+              clientRes.writeHead(503);
+              clientRes.end('Service Unavailable');
+            }
+          });
         } else if (upRes.statusCode === 400 || upRes.statusCode === 429) {
           // Buffer body to detect quota-exhaustion message.
           const upChunks: Buffer[] = [];
@@ -524,6 +688,8 @@ export function startCredentialProxy(
         );
         markExhausted();
       }
+      // Start proactive token refresh so Cortana stays alive all day
+      if (authMode === 'oauth') startTokenRefreshTimer();
       resolve(server);
     });
 
