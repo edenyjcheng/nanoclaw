@@ -238,7 +238,10 @@ async function refreshOAuthToken(): Promise<boolean> {
             const data = JSON.parse(Buffer.concat(chunks).toString('utf8'));
             if (!data.access_token) {
               logger.error(
-                { status: res.statusCode, body: JSON.stringify(data).slice(0, 300) },
+                {
+                  status: res.statusCode,
+                  body: JSON.stringify(data).slice(0, 300),
+                },
                 'OAuth refresh failed — no access_token in response',
               );
               resolve(false);
@@ -533,7 +536,14 @@ export function startCredentialProxy(
                 const retryHeaders = { ...headers };
                 delete retryHeaders['authorization'];
                 retryHeaders['authorization'] = `Bearer ${newToken}`;
-                forwardRequest(method, url, retryHeaders, body, clientRes, false);
+                forwardRequest(
+                  method,
+                  url,
+                  retryHeaders,
+                  body,
+                  clientRes,
+                  false,
+                );
                 return;
               }
             }
