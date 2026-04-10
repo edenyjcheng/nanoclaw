@@ -118,7 +118,7 @@ function registerActiveJob(
   jobName: string,
   taskId: string,
 ): void {
-  const trackerPath = path.join(groupDir, 'memory', 'docs', 'job-tracker.json');
+  const trackerPath = path.join(groupDir, 'memory', 'job-tracker.json');
   try {
     let tracker = { active_jobs: {} as Record<string, unknown> };
     if (fs.existsSync(trackerPath)) {
@@ -141,7 +141,7 @@ function registerActiveJob(
  * Called after task completes (success or error).
  */
 function deregisterActiveJob(groupDir: string, jobName: string): void {
-  const trackerPath = path.join(groupDir, 'memory', 'docs', 'job-tracker.json');
+  const trackerPath = path.join(groupDir, 'memory', 'job-tracker.json');
   try {
     if (!fs.existsSync(trackerPath)) return;
     const tracker = JSON.parse(fs.readFileSync(trackerPath, 'utf8'));

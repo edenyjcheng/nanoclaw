@@ -40,7 +40,12 @@ function findConfigPath(): string {
   // Scan groups for the first ollama-config.json
   try {
     for (const entry of fs.readdirSync(GROUPS_DIR)) {
-      const candidate = path.join(GROUPS_DIR, entry, 'memory', 'ollama-config.json');
+      const candidate = path.join(
+        GROUPS_DIR,
+        entry,
+        'memory',
+        'ollama-config.json',
+      );
       if (fs.existsSync(candidate)) return candidate;
     }
   } catch {

@@ -330,7 +330,8 @@ function logProxyTokenUsage(job: string, tokens: number): void {
     );
     if (!mainEntry) return;
     const groupDir = resolveGroupFolderPath(mainEntry[1].folder);
-    const docsDir = path.join(groupDir, 'memory', 'docs');
+    const docsDir = path.join(groupDir, 'logs', 'token-usage');
+    fs.mkdirSync(docsDir, { recursive: true });
     const dateStr = new Intl.DateTimeFormat('en-US', {
       timeZone: TIMEZONE,
       year: 'numeric',
@@ -371,7 +372,8 @@ function logOllamaTokenUsage(tokens: number, model: string): void {
     );
     if (!mainEntry) return;
     const groupDir = resolveGroupFolderPath(mainEntry[1].folder);
-    const docsDir = path.join(groupDir, 'memory', 'docs');
+    const docsDir = path.join(groupDir, 'logs', 'token-usage');
+    fs.mkdirSync(docsDir, { recursive: true });
     const dateStr = new Intl.DateTimeFormat('en-US', {
       timeZone: TIMEZONE,
       year: 'numeric',
@@ -398,7 +400,7 @@ function logOllamaTokenUsage(tokens: number, model: string): void {
     // G1+G2: single-path job lookup (matches agent-runner logic); default 'conversation' not 'unknown'
     let jobName = 'conversation';
     try {
-      const trackerPath = path.join(docsDir, 'job-tracker.json');
+      const trackerPath = path.join(groupDir, 'memory', 'job-tracker.json');
       if (fs.existsSync(trackerPath)) {
         const tracker = JSON.parse(fs.readFileSync(trackerPath, 'utf8'));
         const activeKeys = Object.keys(tracker.active_jobs || {});
@@ -427,8 +429,8 @@ function logOllamaFallback(
     );
     if (!mainEntry) return;
     const groupDir = resolveGroupFolderPath(mainEntry[1].folder);
-    const docsDir = path.join(groupDir, 'memory', 'docs');
-    const filePath = path.join(docsDir, 'ollama-fallback-log.json');
+    const logsDir = path.join(groupDir, 'logs');
+    const filePath = path.join(logsDir, 'ollama-fallback-log.json');
     let entries: Array<{
       event: string;
       model: string;
@@ -467,7 +469,6 @@ credentialEvents.on(
         const trackerPath = path.join(
           groupDir,
           'memory',
-          'docs',
           'job-tracker.json',
         );
         if (!fs.existsSync(trackerPath)) continue;
@@ -1248,7 +1249,6 @@ async function recoverInterruptedJobs(
     const trackerPath = path.join(
       groupDir,
       'memory',
-      'docs',
       'job-tracker.json',
     );
     if (!fs.existsSync(trackerPath)) continue;

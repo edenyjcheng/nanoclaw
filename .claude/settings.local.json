@@ -290,7 +290,19 @@
       "Bash(echo \"---EXIT:$?\")",
       "Bash(gh issue:*)",
       "Read(//workspace/group/ipc-claudecode/**)",
-      "Read(//c/workspace/**)"
+      "Read(//c/workspace/**)",
+      "Bash(npx -y better-sqlite3-cli store/messages.db \"SELECT task_id, group_jid, schedule FROM scheduled_tasks ORDER BY task_id\")",
+      "Bash(npx better-sqlite3-cli:*)",
+      "Bash(where claude:*)",
+      "Bash(npm list:*)",
+      "Bash(npm root:*)",
+      "Read(//c/workspace/claude/nanoclaw/$\\(npm root -g\\)/**)",
+      "Bash(git rm:*)",
+      "Bash(echo \"Started NanoClaw, PID: $!\")",
+      "Bash(echo \"Started, PID: $!\")",
+      "Bash(echo \"NanoClaw restarted \\(PID: $!\\)\")",
+      "Bash(docker restart nanoclaw-telegram-main:*)",
+      "Bash(pm2 jlist:*)"
     ]
   }
 }
