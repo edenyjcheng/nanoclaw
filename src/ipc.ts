@@ -1,4 +1,3 @@
-import { spawn } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 
@@ -7,9 +6,106 @@ import { CronExpressionParser } from 'cron-parser';
 import { DATA_DIR, GROUPS_DIR, IPC_POLL_INTERVAL, TIMEZONE } from './config.js';
 import { AvailableGroup } from './container-runner.js';
 import { createTask, deleteTask, getTaskById, updateTask } from './db.js';
+import { readEnvFile } from './env.js';
 import { isValidGroupFolder } from './group-folder.js';
 import { logger } from './logger.js';
 import { RegisteredGroup } from './types.js';
+
+// --- Google Workspace MCP client ---
+// Calls the manage_event tool on the Google Workspace MCP server (Streamable HTTP).
+// Replaces the legacy gcal-event-writer.js script.
+
+const GWORKSPACE_MCP_URL =
+  process.env.GWORKSPACE_MCP_URL || 'http://localhost:3005/mcp';
+
+function getGWorkspaceMcpToken(): string {
+  return (
+    process.env.GOOGLE_MCP_AUTH_TOKEN ||
+    readEnvFile(['GOOGLE_MCP_AUTH_TOKEN']).GOOGLE_MCP_AUTH_TOKEN ||
+    ''
+  );
+}
+
+interface McpToolResult {
+  content: Array<{ type: string; text: string }>;
+  isError?: boolean;
+}
+
+/**
+ * Call a tool on the Google Workspace MCP server via Streamable HTTP.
+ * Handles session initialization and SSE response parsing.
+ */
+async function callGWorkspaceMcpTool(
+  toolName: string,
+  args: Record<string, unknown>,
+): Promise<McpToolResult> {
+  const token = getGWorkspaceMcpToken();
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    Accept: 'application/json, text/event-stream',
+  };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  // Step 1: Initialize session
+  const initRes = await fetch(GWORKSPACE_MCP_URL, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      method: 'initialize',
+      params: {
+        protocolVersion: '2025-03-26',
+        capabilities: {},
+        clientInfo: { name: 'nanoclaw-host', version: '1.0.0' },
+      },
+      id: 1,
+    }),
+    signal: AbortSignal.timeout(15000),
+  });
+
+  const sessionId = initRes.headers.get('mcp-session-id');
+  if (!sessionId) {
+    // Try parsing error from body
+    const body = await initRes.text();
+    throw new Error(`MCP session init failed (no session ID): ${body.slice(0, 200)}`);
+  }
+
+  // Consume init response body
+  await initRes.text();
+
+  // Step 2: Call the tool
+  const callHeaders = { ...headers, 'Mcp-Session-Id': sessionId };
+  const callRes = await fetch(GWORKSPACE_MCP_URL, {
+    method: 'POST',
+    headers: callHeaders,
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      method: 'tools/call',
+      params: { name: toolName, arguments: args },
+      id: 2,
+    }),
+    signal: AbortSignal.timeout(30000),
+  });
+
+  const callBody = await callRes.text();
+
+  // Parse SSE response: extract "data: {...}" line
+  const dataMatch = callBody.match(/^data:\s*(.+)$/m);
+  if (!dataMatch) {
+    throw new Error(`MCP tool call returned no data: ${callBody.slice(0, 300)}`);
+  }
+
+  const parsed = JSON.parse(dataMatch[1]) as {
+    result?: McpToolResult;
+    error?: { message: string };
+  };
+
+  if (parsed.error) {
+    throw new Error(`MCP tool error: ${parsed.error.message}`);
+  }
+
+  return parsed.result || { content: [{ type: 'text', text: 'No result' }] };
+}
 
 export interface IpcDeps {
   sendMessage: (jid: string, text: string) => Promise<void>;
@@ -503,86 +599,81 @@ export async function processTaskIpc(
       break;
 
     case 'gcal_write_event': {
-      // Run gcal-event-writer.js on the host with the provided event details.
-      // Parses EVENT_CREATED from stdout and sends confirmation to the user.
-      const scriptPath = path.join(
-        process.cwd(),
-        'scripts',
-        'tools',
-        'inbox-pipeline',
-        'gcal-event-writer.js',
-      );
-      const gcalArgs = [
-        '--title',
-        String(data.title),
-        '--start',
-        String(data.start),
-      ];
-      if (data.end) gcalArgs.push('--end', String(data.end));
-      if (data.account) gcalArgs.push('--account', String(data.account));
-      if (data.calendar) gcalArgs.push('--calendar', String(data.calendar));
-      if (data.location) gcalArgs.push('--location', String(data.location));
-      if (data.description)
-        gcalArgs.push('--description', String(data.description));
-      if (data.notionPageId)
-        gcalArgs.push('--notion-page-id', String(data.notionPageId));
+      // Call manage_event on the Google Workspace MCP server.
+      const chatJid = String(data.chatJid || '');
+      const userEmail =
+        process.env.GOOGLE_USER_EMAIL || 'edencheng@gmail.com';
 
-      const groupFolder = String(data.groupFolder || sourceGroup);
-      const groupDir = path.join(GROUPS_DIR, groupFolder);
+      // Default end = start + 1 hour if not provided
+      let endTime = data.end ? String(data.end) : undefined;
+      if (!endTime && data.start) {
+        const startDate = new Date(String(data.start));
+        if (!isNaN(startDate.getTime())) {
+          startDate.setHours(startDate.getHours() + 1);
+          endTime = startDate.toISOString();
+        }
+      }
+
+      const mcpArgs: Record<string, unknown> = {
+        user_google_email: userEmail,
+        action: 'create',
+        summary: String(data.title),
+        start_time: String(data.start),
+        end_time: endTime,
+        timezone: TIMEZONE,
+      };
+      if (data.calendar)
+        mcpArgs.calendar_id = String(data.calendar);
+      if (data.location) mcpArgs.location = String(data.location);
+      if (data.description) mcpArgs.description = String(data.description);
 
       logger.info(
-        { title: data.title, start: data.start },
-        'Running gcal-event-writer.js',
+        { title: data.title, start: data.start, calendar: data.calendar },
+        'Creating calendar event via Google Workspace MCP',
       );
 
-      const proc = spawn('node', [scriptPath, ...gcalArgs], {
-        env: { ...process.env, NANOCLAW_GROUP_DIR: groupDir },
-      });
+      callGWorkspaceMcpTool('manage_event', mcpArgs)
+        .then(async (result) => {
+          const text =
+            result.content
+              ?.map((c) => c.text)
+              .join('\n')
+              .trim() || '';
 
-      let stdout = '';
-      let stderr = '';
-      proc.stdout.on('data', (chunk: Buffer) => {
-        stdout += chunk.toString();
-      });
-      proc.stderr.on('data', (chunk: Buffer) => {
-        stderr += chunk.toString();
-      });
-
-      proc.on('close', async (code) => {
-        const chatJid = String(data.chatJid || '');
-        if (code === 0) {
-          const match = stdout.match(/EVENT_CREATED:\s*(\{.+\})/);
-          if (match) {
-            try {
-              const result = JSON.parse(match[1]) as {
-                eventId: string;
-                htmlLink: string;
-              };
-              const msg = `✅ *${data.title}* added to calendar!\n${result.htmlLink}`;
-              if (chatJid) await deps.sendMessage(chatJid, msg).catch(() => {});
-            } catch {
-              if (chatJid)
-                await deps
-                  .sendMessage(
-                    chatJid,
-                    `✅ Event "${data.title}" added to calendar.`,
-                  )
-                  .catch(() => {});
-            }
+          if (result.isError) {
+            logger.error({ text }, 'MCP manage_event returned error');
+            if (chatJid)
+              await deps
+                .sendMessage(
+                  chatJid,
+                  `❌ Failed to add event to calendar: ${text.slice(0, 300)}`,
+                )
+                .catch(() => {});
+            return;
           }
-        } else {
-          logger.error({ code, stderr }, 'gcal-event-writer.js failed');
-          const errLine =
-            stderr.split('\n').find((l) => l.trim()) || 'Unknown error';
+
+          logger.info({ text: text.slice(0, 200) }, 'Calendar event created');
+          // Extract event link from MCP response if present
+          const linkMatch = text.match(
+            /https:\/\/www\.google\.com\/calendar\/event\?eid=[^\s)]+|https:\/\/calendar\.google\.com\/[^\s)]+/,
+          );
+          const msg = linkMatch
+            ? `✅ *${data.title}* added to calendar!\n${linkMatch[0]}`
+            : `✅ *${data.title}* added to calendar.`;
+          if (chatJid) await deps.sendMessage(chatJid, msg).catch(() => {});
+        })
+        .catch(async (err: unknown) => {
+          logger.error({ err }, 'MCP manage_event call failed');
+          const errMsg =
+            err instanceof Error ? err.message : String(err);
           if (chatJid)
             await deps
               .sendMessage(
                 chatJid,
-                `❌ Failed to add event to calendar: ${errLine}`,
+                `❌ Failed to add event to calendar: ${errMsg.slice(0, 300)}`,
               )
               .catch(() => {});
-        }
-      });
+        });
       break;
     }
 

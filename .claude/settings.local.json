@@ -302,7 +302,10 @@
       "Bash(echo \"Started, PID: $!\")",
       "Bash(echo \"NanoClaw restarted \\(PID: $!\\)\")",
       "Bash(docker restart nanoclaw-telegram-main:*)",
-      "Bash(pm2 jlist:*)"
+      "Bash(pm2 jlist:*)",
+      "Bash(find . -name \"*.json\" -exec grep -l \"GoogleWorkspace\" {} \\\\;)",
+      "Bash([[ \"$SIGNAL_TS\" > \"$LAST_RUN_TS\" ]])",
+      "Bash(npx -y better-sqlite3-cli store/messages.db \"SELECT task_id, schedule, status, prompt FROM scheduled_tasks WHERE group_jid='tg:7620573381' ORDER BY task_id\")"
     ]
   }
 }

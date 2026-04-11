@@ -466,11 +466,7 @@ credentialEvents.on(
     for (const group of Object.values(registeredGroups)) {
       try {
         const groupDir = resolveGroupFolderPath(group.folder);
-        const trackerPath = path.join(
-          groupDir,
-          'memory',
-          'job-tracker.json',
-        );
+        const trackerPath = path.join(groupDir, 'memory', 'job-tracker.json');
         if (!fs.existsSync(trackerPath)) continue;
         const tracker = JSON.parse(fs.readFileSync(trackerPath, 'utf8'));
         const activeKeys = Object.keys(tracker.active_jobs || {});
@@ -1246,11 +1242,7 @@ async function recoverInterruptedJobs(
       continue;
     }
 
-    const trackerPath = path.join(
-      groupDir,
-      'memory',
-      'job-tracker.json',
-    );
+    const trackerPath = path.join(groupDir, 'memory', 'job-tracker.json');
     if (!fs.existsSync(trackerPath)) continue;
 
     let tracker: {

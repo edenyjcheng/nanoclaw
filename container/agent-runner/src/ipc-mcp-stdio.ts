@@ -678,7 +678,7 @@ server.tool(
   'add_to_calendar',
   `Add an event directly to Google Calendar. Use when the user asks to add, schedule, or book something on their calendar.
 
-The host runs gcal-event-writer.js and sends a confirmation message with the calendar link when done.
+Creates the event via Google Workspace MCP (manage_event) and sends a confirmation message with the calendar link.
 End time defaults to start + 1 hour if not provided.
 
 Examples of user requests that should use this tool:
