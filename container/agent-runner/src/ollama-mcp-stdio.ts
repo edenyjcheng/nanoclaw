@@ -181,6 +181,24 @@ server.tool(
 
       return { content: [{ type: 'text' as const, text: data.response + meta }] };
     } catch (err) {
+      log(`Generate error: ${err instanceof Error ? err.message : String(err)}`);
+      writeStatus('error', err instanceof Error ? err.message : String(err));
+
+      // Log ollama_fallback event for monitoring
+      try {
+        const fallbackLogPath = path.join(GROUP_DOCS_DIR, 'ollama-fallback-log.json');
+        let entries: object[] = [];
+        try { entries = JSON.parse(fs.readFileSync(fallbackLogPath, 'utf8')); } catch { /* new file */ }
+        entries.push({
+          event: 'ollama_fallback',
+          model: args.model,
+          reason: 'error',
+          timestamp: new Date().toISOString(),
+        });
+        fs.mkdirSync(GROUP_DOCS_DIR, { recursive: true });
+        fs.writeFileSync(fallbackLogPath, JSON.stringify(entries, null, 2));
+      } catch { /* best-effort */ }
+
       return {
         content: [{ type: 'text' as const, text: `Failed to call Ollama: ${err instanceof Error ? err.message : String(err)}` }],
         isError: true,

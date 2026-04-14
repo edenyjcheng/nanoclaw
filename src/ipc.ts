@@ -67,7 +67,9 @@ async function callGWorkspaceMcpTool(
   if (!sessionId) {
     // Try parsing error from body
     const body = await initRes.text();
-    throw new Error(`MCP session init failed (no session ID): ${body.slice(0, 200)}`);
+    throw new Error(
+      `MCP session init failed (no session ID): ${body.slice(0, 200)}`,
+    );
   }
 
   // Consume init response body
@@ -92,7 +94,9 @@ async function callGWorkspaceMcpTool(
   // Parse SSE response: extract "data: {...}" line
   const dataMatch = callBody.match(/^data:\s*(.+)$/m);
   if (!dataMatch) {
-    throw new Error(`MCP tool call returned no data: ${callBody.slice(0, 300)}`);
+    throw new Error(
+      `MCP tool call returned no data: ${callBody.slice(0, 300)}`,
+    );
   }
 
   const parsed = JSON.parse(dataMatch[1]) as {
@@ -601,8 +605,7 @@ export async function processTaskIpc(
     case 'gcal_write_event': {
       // Call manage_event on the Google Workspace MCP server.
       const chatJid = String(data.chatJid || '');
-      const userEmail =
-        process.env.GOOGLE_USER_EMAIL || 'edencheng@gmail.com';
+      const userEmail = process.env.GOOGLE_USER_EMAIL || 'edencheng@gmail.com';
 
       // Default end = start + 1 hour if not provided
       let endTime = data.end ? String(data.end) : undefined;
@@ -622,8 +625,28 @@ export async function processTaskIpc(
         end_time: endTime,
         timezone: TIMEZONE,
       };
-      if (data.calendar)
-        mcpArgs.calendar_id = String(data.calendar);
+      if (data.calendar) {
+        // Resolve display name → actual calendar ID via gcal-config.json
+        let calendarId = String(data.calendar);
+        try {
+          const gcalConfigPath = path.join(
+            GROUPS_DIR,
+            String(data.groupFolder || sourceGroup),
+            'memory',
+            'tools',
+            'inbox-pipeline',
+            'gcal-config.json',
+          );
+          const gcalConfig = JSON.parse(fs.readFileSync(gcalConfigPath, 'utf8'));
+          const match = (
+            gcalConfig.calendars as Array<{ name: string; calendar_id: string }>
+          ).find((c) => c.name.toLowerCase() === calendarId.toLowerCase());
+          if (match) calendarId = match.calendar_id;
+        } catch {
+          // If config unreadable, fall through with raw value
+        }
+        mcpArgs.calendar_id = calendarId;
+      }
       if (data.location) mcpArgs.location = String(data.location);
       if (data.description) mcpArgs.description = String(data.description);
 
@@ -664,8 +687,7 @@ export async function processTaskIpc(
         })
         .catch(async (err: unknown) => {
           logger.error({ err }, 'MCP manage_event call failed');
-          const errMsg =
-            err instanceof Error ? err.message : String(err);
+          const errMsg = err instanceof Error ? err.message : String(err);
           if (chatJid)
             await deps
               .sendMessage(

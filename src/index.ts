@@ -285,10 +285,16 @@ async function callOllamaChat(prompt: string): Promise<string | null> {
     };
     const tokens = (data.prompt_eval_count ?? 0) + (data.eval_count ?? 0);
     logOllamaTokenUsage(tokens, model);
-    return data.message?.content?.trim() || null;
+    const content = data.message?.content?.trim() || null;
+    if (!content) {
+      logOllamaFallback(model, 'empty');
+    }
+    return content;
   } catch (err) {
-    logger.warn({ err }, 'Ollama chat failed');
-    logOllamaFallback(model, 'error');
+    const reason: 'timeout' | 'error' =
+      err instanceof Error && err.name === 'TimeoutError' ? 'timeout' : 'error';
+    logger.warn({ err, reason }, 'Ollama chat failed');
+    logOllamaFallback(model, reason);
     return null;
   }
 }

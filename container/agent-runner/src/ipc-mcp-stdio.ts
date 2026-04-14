@@ -280,6 +280,79 @@ server.tool(
 );
 
 server.tool(
+  'read_task_prompt',
+  'Read the full, untruncated prompt (and script, if any) of a scheduled task by ID. Read-only — use before update_task to avoid overwriting logic you cannot see.',
+  {
+    task_id: z.string().describe('The task ID to read (e.g. "task-1774307661101-nzqfxp")'),
+  },
+  async (args) => {
+    const tasksFile = path.join(IPC_DIR, 'current_tasks.json');
+
+    try {
+      if (!fs.existsSync(tasksFile)) {
+        return {
+          content: [{ type: 'text' as const, text: 'No scheduled tasks found.' }],
+          isError: true,
+        };
+      }
+
+      const allTasks = JSON.parse(fs.readFileSync(tasksFile, 'utf-8')) as Array<{
+        id: string;
+        groupFolder: string;
+        prompt: string;
+        script?: string | null;
+        schedule_type: string;
+        schedule_value: string;
+        status: string;
+        next_run: string | null;
+      }>;
+
+      const visible = isMain
+        ? allTasks
+        : allTasks.filter((t) => t.groupFolder === groupFolder);
+
+      const task = visible.find((t) => t.id === args.task_id);
+      if (!task) {
+        return {
+          content: [
+            {
+              type: 'text' as const,
+              text: `Task "${args.task_id}" not found${isMain ? '' : ' in this group'}.`,
+            },
+          ],
+          isError: true,
+        };
+      }
+
+      const payload = {
+        id: task.id,
+        groupFolder: task.groupFolder,
+        schedule_type: task.schedule_type,
+        schedule_value: task.schedule_value,
+        status: task.status,
+        next_run: task.next_run,
+        prompt: task.prompt,
+        script: task.script ?? null,
+      };
+
+      return {
+        content: [{ type: 'text' as const, text: JSON.stringify(payload, null, 2) }],
+      };
+    } catch (err) {
+      return {
+        content: [
+          {
+            type: 'text' as const,
+            text: `Error reading task: ${err instanceof Error ? err.message : String(err)}`,
+          },
+        ],
+        isError: true,
+      };
+    }
+  },
+);
+
+server.tool(
   'pause_task',
   'Pause a scheduled task. It will not run until resumed.',
   { task_id: z.string().describe('The task ID to pause') },
