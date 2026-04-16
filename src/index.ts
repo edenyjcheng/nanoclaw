@@ -370,7 +370,7 @@ function logProxyTokenUsage(job: string, tokens: number): void {
   }
 }
 
-function logOllamaTokenUsage(tokens: number, model: string): void {
+function logOllamaTokenUsage(tokens: number, model: string, jobKey?: string): void {
   if (tokens <= 0) return;
   try {
     const mainEntry = Object.entries(registeredGroups).find(
@@ -403,17 +403,19 @@ function logOllamaTokenUsage(tokens: number, model: string): void {
         ollama: { total: 0, by_job: {} },
       };
     }
-    // G1+G2: single-path job lookup (matches agent-runner logic); default 'conversation' not 'unknown'
-    let jobName = 'conversation';
-    try {
-      const trackerPath = path.join(groupDir, 'memory', 'job-tracker.json');
-      if (fs.existsSync(trackerPath)) {
-        const tracker = JSON.parse(fs.readFileSync(trackerPath, 'utf8'));
-        const activeKeys = Object.keys(tracker.active_jobs || {});
-        if (activeKeys.length > 0) jobName = activeKeys[0];
+    // Use explicit jobKey if provided; otherwise fall back to job-tracker lookup
+    let jobName = jobKey || 'conversation';
+    if (!jobKey) {
+      try {
+        const trackerPath = path.join(groupDir, 'memory', 'job-tracker.json');
+        if (fs.existsSync(trackerPath)) {
+          const tracker = JSON.parse(fs.readFileSync(trackerPath, 'utf8'));
+          const activeKeys = Object.keys(tracker.active_jobs || {});
+          if (activeKeys.length > 0) jobName = activeKeys[0];
+        }
+      } catch {
+        /* keep default */
       }
-    } catch {
-      /* keep default */
     }
     data.ollama.total += tokens;
     data.ollama.by_job[jobName] = (data.ollama.by_job[jobName] || 0) + tokens;
