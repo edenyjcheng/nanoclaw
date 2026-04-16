@@ -28,15 +28,28 @@ import { logger } from './logger.js';
 
 const EXHAUSTION_STATE_FILE = path.join(DATA_DIR, 'credential-exhaustion.json');
 
-function persistExhaustedState(): void {
+function persistExhaustedState(resetAt?: Date): void {
   try {
     fs.mkdirSync(DATA_DIR, { recursive: true });
-    fs.writeFileSync(
-      EXHAUSTION_STATE_FILE,
-      JSON.stringify({ exhaustedAt: Date.now() }),
-    );
+    const payload: { exhaustedAt: number; resetAt?: string } = {
+      exhaustedAt: Date.now(),
+    };
+    if (resetAt) payload.resetAt = resetAt.toISOString();
+    fs.writeFileSync(EXHAUSTION_STATE_FILE, JSON.stringify(payload));
   } catch (err) {
     logger.warn({ err }, 'Failed to persist credential exhaustion state');
+  }
+}
+
+function readPersistedResetAt(): Date | undefined {
+  try {
+    const raw = fs.readFileSync(EXHAUSTION_STATE_FILE, 'utf8');
+    const data = JSON.parse(raw) as { resetAt?: string };
+    if (!data.resetAt) return undefined;
+    const d = new Date(data.resetAt);
+    return isNaN(d.getTime()) ? undefined : d;
+  } catch {
+    return undefined;
   }
 }
 
@@ -137,7 +150,7 @@ export function resetRecoveryState(): void {
 function markExhausted(resetAt?: Date): void {
   if (!credentialsExhausted) {
     credentialsExhausted = true;
-    persistExhaustedState();
+    persistExhaustedState(resetAt);
     credentialEvents.emit('exhausted');
     scheduleRecovery(resetAt);
   }
@@ -693,10 +706,26 @@ export function startCredentialProxy(
       // Restore exhaustion state persisted by a previous session (e.g. after a crash).
       // Emits event so index.ts activates Ollama fallback mode immediately on startup.
       if (fs.existsSync(EXHAUSTION_STATE_FILE)) {
-        logger.warn(
-          'Persisted full-exhaustion state found — restoring Ollama fallback mode',
-        );
-        markExhausted();
+        const persistedResetAt = readPersistedResetAt();
+        if (persistedResetAt && persistedResetAt.getTime() <= Date.now()) {
+          // Hard-quota reset time already passed — clear stale state instead of re-arming a 1-min timer.
+          logger.info(
+            { resetAt: persistedResetAt.toISOString() },
+            'Persisted exhaustion state expired — clearing without re-entering fallback',
+          );
+          clearPersistedExhaustedState();
+        } else {
+          logger.warn(
+            persistedResetAt
+              ? {
+                  resetAt: persistedResetAt.toISOString(),
+                  remainingMs: persistedResetAt.getTime() - Date.now(),
+                }
+              : {},
+            'Persisted full-exhaustion state found — restoring Ollama fallback mode',
+          );
+          markExhausted(persistedResetAt);
+        }
       }
       // Start proactive token refresh so Cortana stays alive all day
       if (authMode === 'oauth') startTokenRefreshTimer();
