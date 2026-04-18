@@ -1,0 +1,9 @@
+# Graphify (file ingestion + knowledge graph extraction)
+# Note: PyPI package name is `graphifyy` (double y) — the CLI binary and
+# module are still named `graphify`. See https://github.com/safishamsi/graphify
+graphifyy
+
+# HTTP client for Graphiti API calls
+requests>=2.31.0
+
+# JSON handling (stdlib) — no extra dep needed

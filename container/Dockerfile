@@ -25,6 +25,9 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y \
     curl \
     git \
     tzdata \
+    python3 \
+    python3-pip \
+    python3-venv \
     && ln -sf /usr/share/zoneinfo/America/New_York /etc/localtime \
     && echo "America/New_York" > /etc/timezone \
     && rm -rf /var/lib/apt/lists/*
@@ -33,6 +36,12 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y \
 ENV AGENT_BROWSER_EXECUTABLE_PATH=/usr/bin/chromium
 ENV PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium
 ENV TZ=America/New_York
+
+# Install Python packages for kb-ingest pipeline
+# Source of truth: scripts/kb-ingest/requirements.txt
+RUN pip3 install --break-system-packages --no-cache-dir \
+    graphifyy \
+    'requests>=2.31.0'
 
 # Install agent-browser and claude-code globally
 RUN npm install -g agent-browser @anthropic-ai/claude-code
