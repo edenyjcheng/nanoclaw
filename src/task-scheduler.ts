@@ -9,6 +9,7 @@ import {
   runContainerAgent,
   writeTasksSnapshot,
 } from './container-runner.js';
+import { captureAgentRunnerUsage } from './index.js';
 import {
   getAllTasks,
   getDueTasks,
@@ -78,14 +79,13 @@ export interface SchedulerDependencies {
 
 /**
  * Derive a human-readable job name from a task's prompt or ID.
- * Looks for known job names embedded in the prompt (e.g. "gmail_scan_830",
+ * Looks for known job names embedded in the prompt (e.g. "gmail_scan_7am",
  * "morning_briefing"), falls back to a slug of the task ID.
  */
 function deriveJobName(task: ScheduledTask): string {
   const knownNames = [
-    'gmail_scan_830',
-    'gmail_scan_1pm',
-    'gmail_scan_530',
+    'gmail_scan_7am',
+    'gmail_scan_7pm',
     'morning_briefing',
     'tomorrow_preview',
     'journey_update',
@@ -268,6 +268,7 @@ async function runTask(
       (proc, containerName) =>
         deps.onProcess(task.chat_jid, proc, containerName, task.group_folder),
       async (streamedOutput: ContainerOutput) => {
+        captureAgentRunnerUsage(task.group_folder, streamedOutput);
         if (streamedOutput.result) {
           result = streamedOutput.result;
           // Forward result to user (sendMessage handles formatting)

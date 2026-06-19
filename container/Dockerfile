@@ -37,11 +37,12 @@ ENV AGENT_BROWSER_EXECUTABLE_PATH=/usr/bin/chromium
 ENV PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium
 ENV TZ=America/New_York
 
-# Install Python packages for kb-ingest pipeline
+# Install Python packages for kb-ingest pipeline + Market Pulse chart generator
 # Source of truth: scripts/kb-ingest/requirements.txt
+# matplotlib is used by groups/*/market-pulse/scripts/generate_chart.py (L8 bridge)
 RUN pip3 install --break-system-packages --no-cache-dir \
-    graphifyy \
-    'requests>=2.31.0'
+    'requests>=2.31.0' \
+    'matplotlib>=3.8'
 
 # Install agent-browser and claude-code globally
 RUN npm install -g agent-browser @anthropic-ai/claude-code

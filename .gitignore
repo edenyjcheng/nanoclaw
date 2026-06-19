@@ -24,6 +24,12 @@ groups/global/*
 
 # Temp files
 .tmp-*
+tmp/
+
+# Build / runtime logs & artifacts
+*.log
+__pycache__/
+*.lock
 
 # OS
 .DS_Store

@@ -637,7 +637,9 @@ export async function processTaskIpc(
             'inbox-pipeline',
             'gcal-config.json',
           );
-          const gcalConfig = JSON.parse(fs.readFileSync(gcalConfigPath, 'utf8'));
+          const gcalConfig = JSON.parse(
+            fs.readFileSync(gcalConfigPath, 'utf8'),
+          );
           const match = (
             gcalConfig.calendars as Array<{ name: string; calendar_id: string }>
           ).find((c) => c.name.toLowerCase() === calendarId.toLowerCase());

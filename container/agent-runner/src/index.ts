@@ -40,6 +40,17 @@ interface ContainerOutput {
   result: string | null;
   newSessionId?: string;
   error?: string;
+  // Token usage extracted from the SDK `result` event. Forwarded to the host
+  // so it can be logged into the daily token-usage file. Mirrors the
+  // SSE-tap shape emitted by credential-proxy.ts so the host can treat both
+  // sources uniformly. Only `input_tokens` + `output_tokens` are counted
+  // (cache reads are free; cache writes are billed separately by Anthropic
+  // and intentionally excluded to stay consistent with the proxy tap).
+  usage?: {
+    inputTokens: number;
+    outputTokens: number;
+    total: number;
+  };
 }
 
 interface SessionEntry {
@@ -536,13 +547,29 @@ async function runQuery(
       resultCount++;
       const textResult =
         'result' in message ? (message as { result?: string }).result : null;
+      const rawUsage = (
+        message as {
+          usage?: {
+            input_tokens?: number;
+            output_tokens?: number;
+          };
+        }
+      ).usage;
+      let usage: ContainerOutput['usage'];
+      if (rawUsage) {
+        const inputTokens = rawUsage.input_tokens ?? 0;
+        const outputTokens = rawUsage.output_tokens ?? 0;
+        const total = inputTokens + outputTokens;
+        if (total > 0) usage = { inputTokens, outputTokens, total };
+      }
       log(
-        `Result #${resultCount}: subtype=${message.subtype}${textResult ? ` text=${textResult.slice(0, 200)}` : ''}`,
+        `Result #${resultCount}: subtype=${message.subtype}${textResult ? ` text=${textResult.slice(0, 200)}` : ''}${usage ? ` usage=${usage.inputTokens}/${usage.outputTokens}` : ''}`,
       );
       writeOutput({
         status: 'success',
         result: textResult || null,
         newSessionId,
+        usage,
       });
     }
   }

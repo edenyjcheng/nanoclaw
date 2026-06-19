@@ -2,7 +2,9 @@ name: cortana-mcp
 
 services:
   notion-mcp:
-    image: mcp/notion
+    build:
+      context: ./container/notion-mcp
+    image: nanoclaw-notion-mcp:latest
     environment:
       - NOTION_TOKEN=${NOTION_TOKEN}
     command: ["--transport", "http", "--port", "3000", "--auth-token", "${NOTION_MCP_AUTH_TOKEN}"]
@@ -48,6 +50,7 @@ services:
       - qdrant_storage:/qdrant/storage
     networks:
       - cortana-net
+      - cortana-db-net
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
       interval: 30s
@@ -74,12 +77,60 @@ services:
       - qdrant
     networks:
       - cortana-net
+      - cortana-kb-net
+      - cortana-db-net
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8765/healthcheck"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 15s
+
+  falkordb:
+    image: falkordb/falkordb:latest
+    restart: unless-stopped
+    volumes:
+      - ./data/kb/falkordb:/data
+    networks:
+      - cortana-db-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "6379", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  graphiti-mcp:
+    image: zepai/knowledge-graph-mcp:standalone
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      - OPENAI_API_KEY=ollama
+      - OPENAI_API_URL=http://host.docker.internal:11434/v1
+      - OPENAI_BASE_URL=http://host.docker.internal:11434/v1
+      - FALKORDB_URI=redis://falkordb:6379
+      - FALKORDB_DATABASE=default_db
+      - GRAPHITI_GROUP_ID=cortanakb
+      - SEMAPHORE_LIMIT=10
+      - CONFIG_PATH=/app/mcp/config/config.yaml
+    volumes:
+      - ./config/graphiti-config.yaml:/app/mcp/config/config.yaml:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      falkordb:
+        condition: service_healthy
+    networks:
+      - cortana-net
+      - cortana-kb-net
+      - cortana-db-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
 volumes:
   qdrant_storage:
@@ -88,3 +139,11 @@ volumes:
 networks:
   cortana-net:
     external: true
+  cortana-kb-net:
+    name: cortana-kb-net
+    internal: true
+    driver: bridge
+  cortana-db-net:
+    name: cortana-db-net
+    internal: true
+    driver: bridge

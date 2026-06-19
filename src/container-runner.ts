@@ -53,6 +53,16 @@ export interface ContainerOutput {
   result: string | null;
   newSessionId?: string;
   error?: string;
+  // Token usage extracted from the SDK `result` event by agent-runner.
+  // Forwarded for daily token-usage logging (see logProxyTokenUsage in
+  // src/index.ts). Only populated in OAuth mode — in API key mode the
+  // credential-proxy SSE tap counts the same traffic and we skip this
+  // path to avoid double-counting.
+  usage?: {
+    inputTokens: number;
+    outputTokens: number;
+    total: number;
+  };
 }
 
 interface VolumeMount {

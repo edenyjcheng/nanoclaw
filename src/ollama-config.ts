@@ -9,27 +9,31 @@ interface OllamaConfig {
     reason: string;
     vision: string;
     memory_agent: string;
+    extraction: string;
   };
   timeouts: {
-    gemma_chat: number;
-    deepseek_reason: number;
-    qwen_vision: number;
+    chat: number;
+    reason: number;
+    vision: number;
     memory_agent: number;
+    extraction: number;
   };
 }
 
 const DEFAULTS: OllamaConfig = {
   models: {
-    chat: 'qwen2.5:7b',
-    reason: 'gemma3:12b',
-    vision: 'gemma3:12b',
-    memory_agent: 'phi4-mini:latest',
+    chat: 'gemma4:12b',
+    reason: 'qwen3:14b',
+    vision: 'gemma4:12b',
+    memory_agent: 'phi4-mini-reasoning:3.8b',
+    extraction: 'granite4.1:8b',
   },
   timeouts: {
-    gemma_chat: 30,
-    deepseek_reason: 90,
-    qwen_vision: 90,
-    memory_agent: 45,
+    chat: 25,
+    reason: 95,
+    vision: 150,
+    memory_agent: 60,
+    extraction: 90,
   },
 };
 
@@ -69,8 +73,24 @@ function loadConfig(): OllamaConfig {
   }
 }
 
-// Loaded once at startup — restart NanoClaw to pick up config changes
-export const ollamaConfig = loadConfig();
+// Hot-reload: re-read config on file change, mutate in-place so existing references stay valid
+const _config = loadConfig();
 
-export const MODELS = ollamaConfig.models;
-export const TIMEOUTS = ollamaConfig.timeouts;
+const configPath = findConfigPath();
+try {
+  fs.watch(configPath, { persistent: false }, (event) => {
+    if (event === 'change') {
+      const fresh = loadConfig();
+      Object.assign(_config.models, fresh.models);
+      Object.assign(_config.timeouts, fresh.timeouts);
+      console.log(`[ollama-config] Reloaded from ${configPath}`);
+    }
+  });
+} catch {
+  // fs.watch not available or path not found — continue with static load
+}
+
+export const ollamaConfig = _config;
+
+export const MODELS = _config.models;
+export const TIMEOUTS = _config.timeouts;

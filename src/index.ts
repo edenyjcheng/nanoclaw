@@ -22,6 +22,7 @@ import { MODELS } from './ollama-config.js';
 import {
   startCredentialProxy,
   credentialEvents,
+  detectAuthMode,
   setForcedAuthMode,
   resetRecoveryState,
 } from './credential-proxy.js';
@@ -370,7 +371,11 @@ function logProxyTokenUsage(job: string, tokens: number): void {
   }
 }
 
-function logOllamaTokenUsage(tokens: number, model: string, jobKey?: string): void {
+function logOllamaTokenUsage(
+  tokens: number,
+  model: string,
+  jobKey?: string,
+): void {
   if (tokens <= 0) return;
   try {
     const mainEntry = Object.entries(registeredGroups).find(
@@ -394,33 +399,83 @@ function logOllamaTokenUsage(tokens: number, model: string, jobKey?: string): vo
       claude: { total: number; by_job: Record<string, number> };
       ollama: { total: number; by_job: Record<string, number> };
     };
-    try {
-      data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-    } catch {
-      data = {
-        date: dateStr,
-        claude: { total: 0, by_job: {} },
-        ollama: { total: 0, by_job: {} },
-      };
-    }
-    // Use explicit jobKey if provided; otherwise fall back to job-tracker lookup
-    let jobName = jobKey || 'conversation';
-    if (!jobKey) {
+    // Cross-process lock — the daily token log is on a bind-mounted path
+    // shared by every NanoClaw container, so concurrent jobs (e.g. mem0_agent
+    // + gmail_scan) were clobbering each other's read-modify-write.
+    const lockPath = filePath + '.lock';
+    const MAX_RETRIES = 20;
+    const RETRY_DELAY_MS = 30;
+    const STALE_LOCK_MS = 10_000;
+    let lockFd: number | null = null;
+    for (let i = 0; i < MAX_RETRIES; i++) {
       try {
-        const trackerPath = path.join(groupDir, 'memory', 'job-tracker.json');
-        if (fs.existsSync(trackerPath)) {
-          const tracker = JSON.parse(fs.readFileSync(trackerPath, 'utf8'));
-          const activeKeys = Object.keys(tracker.active_jobs || {});
-          if (activeKeys.length > 0) jobName = activeKeys[0];
-        }
+        lockFd = fs.openSync(lockPath, 'wx');
+        break;
       } catch {
-        /* keep default */
+        try {
+          const lockStat = fs.statSync(lockPath);
+          if (Date.now() - lockStat.mtimeMs > STALE_LOCK_MS) {
+            try {
+              fs.unlinkSync(lockPath);
+            } catch {
+              /* raced — another process reclaimed it first */
+            }
+            continue;
+          }
+        } catch {
+          /* lock released between our openSync and statSync — retry immediately */
+        }
+        const deadline = Date.now() + RETRY_DELAY_MS;
+        while (Date.now() < deadline) {
+          /* busy wait — blocks the event loop for ≤30ms per attempt */
+        }
       }
     }
-    data.ollama.total += tokens;
-    data.ollama.by_job[jobName] = (data.ollama.by_job[jobName] || 0) + tokens;
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-    logger.debug({ jobName, tokens, model }, 'Ollama token usage logged');
+    if (lockFd === null) {
+      logger.warn(
+        { filePath },
+        'Ollama token log: lock timeout after 600ms, skipping write',
+      );
+      return;
+    }
+    try {
+      fs.closeSync(lockFd);
+      try {
+        data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      } catch {
+        data = {
+          date: dateStr,
+          claude: { total: 0, by_job: {} },
+          ollama: { total: 0, by_job: {} },
+        };
+      }
+      // Use explicit jobKey if provided; otherwise fall back to job-tracker lookup
+      let jobName = jobKey || 'conversation';
+      if (!jobKey) {
+        try {
+          const trackerPath = path.join(groupDir, 'memory', 'job-tracker.json');
+          if (fs.existsSync(trackerPath)) {
+            const tracker = JSON.parse(fs.readFileSync(trackerPath, 'utf8'));
+            const activeKeys = Object.keys(tracker.active_jobs || {});
+            if (activeKeys.length > 0) jobName = activeKeys[0];
+          }
+        } catch {
+          /* keep default */
+        }
+      }
+      data.ollama.total += tokens;
+      data.ollama.by_job[jobName] = (data.ollama.by_job[jobName] || 0) + tokens;
+      const tmpPath = filePath + '.tmp';
+      fs.writeFileSync(tmpPath, JSON.stringify(data, null, 2));
+      fs.renameSync(tmpPath, filePath);
+      logger.debug({ jobName, tokens, model }, 'Ollama token usage logged');
+    } finally {
+      try {
+        fs.unlinkSync(lockPath);
+      } catch {
+        /* already gone */
+      }
+    }
   } catch (err) {
     logger.warn({ err }, 'Failed to log Ollama token usage');
   }
@@ -463,6 +518,119 @@ function logOllamaFallback(
   } catch (err) {
     logger.warn({ err }, 'Failed to log Ollama fallback');
   }
+}
+
+/**
+ * Append one JSONL entry to `<mainGroup>/logs/routing-audit.jsonl` per
+ * interactive coordinator turn. Rotates monthly: on the 1st, the current
+ * file is archived as `routing-audit-YYYY-MM.jsonl` before the new write.
+ * See docs/coordinator/routing-audit-log-design.md (WO-20260414-026/027).
+ */
+function logRoutingAudit(entry: {
+  route:
+    | 'HANDLE'
+    | 'FALLBACK'
+    | 'CHAT'
+    | 'REASONING'
+    | 'VISION'
+    | 'HANDLE+REASONING';
+  model: string;
+  model_name: string;
+  elapsed_ms: number;
+  ollama_ok: boolean | null;
+  fallback_triggered: boolean;
+  notes?: string;
+}): void {
+  try {
+    const mainEntry = Object.entries(registeredGroups).find(
+      ([, g]) => g.isMain,
+    );
+    if (!mainEntry) return;
+    const groupDir = resolveGroupFolderPath(mainEntry[1].folder);
+    const logsDir = path.join(groupDir, 'logs');
+    fs.mkdirSync(logsDir, { recursive: true });
+    const filePath = path.join(logsDir, 'routing-audit.jsonl');
+
+    // Monthly rotation: if the file exists and was last modified in a prior
+    // year/month, archive it before appending.
+    try {
+      if (fs.existsSync(filePath)) {
+        const stat = fs.statSync(filePath);
+        const now = new Date();
+        const mtime = stat.mtime;
+        if (
+          mtime.getUTCFullYear() !== now.getUTCFullYear() ||
+          mtime.getUTCMonth() !== now.getUTCMonth()
+        ) {
+          const y = mtime.getUTCFullYear();
+          const m = String(mtime.getUTCMonth() + 1).padStart(2, '0');
+          const archive = path.join(logsDir, `routing-audit-${y}-${m}.jsonl`);
+          if (!fs.existsSync(archive)) fs.renameSync(filePath, archive);
+        }
+      }
+    } catch {
+      /* rotation best-effort; never block the write */
+    }
+
+    // Resolve gpu_enabled from ollama-config.json at write time.
+    let gpu_enabled = false;
+    try {
+      const cfgPath = path.join(groupDir, 'memory', 'ollama-config.json');
+      if (fs.existsSync(cfgPath)) {
+        const cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
+        gpu_enabled = cfg.gpu_enabled !== false;
+      }
+    } catch {
+      /* leave as false */
+    }
+
+    const line = JSON.stringify({
+      ts: new Date().toISOString(),
+      route: entry.route,
+      model: entry.model,
+      model_name: entry.model_name,
+      gpu_enabled,
+      elapsed_ms: entry.elapsed_ms,
+      ollama_ok: entry.ollama_ok,
+      fallback_triggered: entry.fallback_triggered,
+      mem0_injected: false,
+      mem0_hits: 0,
+      notes: entry.notes || '',
+    });
+    fs.appendFileSync(filePath, line + '\n');
+  } catch (err) {
+    logger.warn({ err }, 'Failed to log routing audit entry');
+  }
+}
+
+/**
+ * Capture token usage forwarded by agent-runner SDK `result` events.
+ * Only fires in OAuth mode — in api-key mode the credential-proxy SSE tap
+ * already emits 'usage' on credentialEvents and we'd double-count.
+ * See IPC 20260520-0952-oauth-token-tracking for context.
+ */
+export function captureAgentRunnerUsage(
+  groupFolder: string,
+  output: ContainerOutput,
+): void {
+  if (!output.usage) return;
+  if (detectAuthMode() !== 'oauth') return;
+  let jobName = 'conversation';
+  try {
+    const trackerPath = path.join(
+      resolveGroupFolderPath(groupFolder),
+      'memory',
+      'job-tracker.json',
+    );
+    if (fs.existsSync(trackerPath)) {
+      const tracker = JSON.parse(fs.readFileSync(trackerPath, 'utf8'));
+      const activeKeys = Object.keys(tracker.active_jobs || {});
+      if (activeKeys.length > 0) jobName = activeKeys[0];
+    }
+  } catch {
+    /* keep default */
+  }
+  logProxyTokenUsage(jobName, output.usage.total);
 }
 
 credentialEvents.on(
@@ -849,7 +1017,20 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
     const model = OLLAMA_WARMUP_MODEL;
     const modeNotice = `⚠️ *Conversation Mode* — Claude API unavailable. Responding via Ollama (${model}). No tool access.\n\n`;
     await channel.setTyping?.(chatJid, true);
+    const ollamaStart = Date.now();
     const response = await callOllamaChat(prompt);
+    const ollamaElapsed = Date.now() - ollamaStart;
+    logRoutingAudit({
+      route: 'FALLBACK',
+      model: 'models.chat',
+      model_name: model,
+      elapsed_ms: ollamaElapsed,
+      ollama_ok: Boolean(response),
+      fallback_triggered: true,
+      notes: response
+        ? 'Claude exhausted — handled by Ollama'
+        : 'Claude exhausted — Ollama also failed',
+    });
     await channel.setTyping?.(chatJid, false);
 
     // Save this prompt so user can reply "queue" to queue it for Claude
@@ -902,6 +1083,7 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
   await channel.setTyping?.(chatJid, true);
   let hadError = false;
   let outputSentToUser = false;
+  const handleStart = Date.now();
 
   const output = await runAgent(group, prompt, chatJid, async (result) => {
     // Streaming output callback — called for each agent result
@@ -933,6 +1115,18 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
   await channel.setTyping?.(chatJid, false);
   if (idleTimer) clearTimeout(idleTimer);
 
+  // Successful HANDLE turn — log routing audit. Error path logs FALLBACK below.
+  if (output !== 'error' && !hadError) {
+    logRoutingAudit({
+      route: 'HANDLE',
+      model: 'claude',
+      model_name: 'claude',
+      elapsed_ms: Date.now() - handleStart,
+      ollama_ok: null,
+      fallback_triggered: false,
+    });
+  }
+
   if (output === 'error' || hadError) {
     // If we already sent output to the user, don't roll back the cursor —
     // the user got their response and re-processing would send duplicates.
@@ -952,7 +1146,20 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
     const model = OLLAMA_WARMUP_MODEL;
     const modeNotice = `⚠️ *Conversation Mode* — Agent runner unavailable. Responding via Ollama (${model}). No tool access.\n\n`;
     await channel.setTyping?.(chatJid, true);
+    const ollamaStart = Date.now();
     const response = await callOllamaChat(prompt);
+    const ollamaElapsed = Date.now() - ollamaStart;
+    logRoutingAudit({
+      route: 'FALLBACK',
+      model: 'models.chat',
+      model_name: model,
+      elapsed_ms: ollamaElapsed,
+      ollama_ok: Boolean(response),
+      fallback_triggered: true,
+      notes: response
+        ? 'Container agent failed — handled by Ollama'
+        : 'Container agent failed — Ollama also failed',
+    });
     await channel.setTyping?.(chatJid, false);
     lastOllamaPrompt.set(chatJid, {
       prompt,
@@ -1024,6 +1231,7 @@ async function runAgent(
           sessions[group.folder] = output.newSessionId;
           setSession(group.folder, output.newSessionId);
         }
+        captureAgentRunnerUsage(group.folder, output);
         await onOutput(output);
       }
     : undefined;
