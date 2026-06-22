@@ -8,8 +8,19 @@
  * must be spread at the top level:
  *     { "bulleted_list_item": { "rich_text": [...] } }
  * The bundled OpenAPI spec declares a `type` body property, so the generic
- * http-client emits `{ "type": {...} }` and Notion replies
+ * http-client emits a top-level `type` and Notion replies
  * "body.type should be not present".
+ *
+ * Two caller conventions both produce that forbidden top-level `type`, so the
+ * patch normalises both:
+ *   1. schema-correct, `type` is an object:
+ *        { type: { bulleted_list_item: {...} } }  -> { bulleted_list_item: {...} }
+ *      (merge the type object up to the top level)
+ *   2. create-style, `type` is a string + a sibling block object (what the
+ *      Health Agent actually sends):
+ *        { type: "bulleted_list_item", bulleted_list_item: {...} }
+ *          -> { bulleted_list_item: {...} }
+ *      (just drop the top-level `type` string; the sibling is already present)
  *
  * The runtime entry point (/usr/local/bin/notion-mcp-server) is an esbuild
  * bundle with minified identifiers — the build/src/*.js files are NOT executed.
@@ -24,6 +35,7 @@
  * drift instead of silently shipping the bug.
  *
  * Ref IPC: groups/telegram_main/ipc-claudecode/requests/20260605-1045-notion-mcp-update-block-fix.md
+ *          groups/telegram_main/ipc-claudecode/requests/20260621-1544-fix-notion-update-block.md
  */
 const fs = require('fs');
 
@@ -63,8 +75,9 @@ const opId = anchorM[2];
 
 const inject =
   `if(${opId}==="update-a-block"&&!${formData}&&${body}&&typeof ${body}=="object"` +
-  `&&${body}.type&&typeof ${body}.type=="object"){` +
-  `let{type:_nbt,..._nrb}=${body};${body}={..._nrb,..._nbt};}/*${MARKER}*/`;
+  `&&${body}.type){` +
+  `let{type:_nbt,..._nrb}=${body};` +
+  `${body}=(_nbt&&typeof _nbt=="object")?{..._nrb,..._nbt}:_nrb;}/*${MARKER}*/`;
 
 src = src.replace(anchorRe, inject + anchorM[0]);
 

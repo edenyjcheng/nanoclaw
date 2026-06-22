@@ -84,6 +84,7 @@ export interface SchedulerDependencies {
  */
 function deriveJobName(task: ScheduledTask): string {
   const knownNames = [
+    'health_agent',
     'gmail_scan_7am',
     'gmail_scan_7pm',
     'morning_briefing',
