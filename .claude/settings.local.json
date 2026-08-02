@@ -353,7 +353,14 @@
       "PowerShell(Get-NetTCPConnection *)",
       "Bash(python3 -c \"import py_compile; py_compile.compile\\(r'scripts/kb-ingest/md-ingest.py', doraise=True\\); print\\('SYNTAX OK'\\)\")",
       "PowerShell(Get-Process *)",
-      "PowerShell(\\(Get-ScheduledTask -TaskName \"NanoClaw\"\\).Principal | Format-List UserId, LogonType, RunLevel; \"---whoami---\"; whoami)"
+      "PowerShell(\\(Get-ScheduledTask -TaskName \"NanoClaw\"\\).Principal | Format-List UserId, LogonType, RunLevel; \"---whoami---\"; whoami)",
+      "Bash(MSYS_NO_PATHCONV=1 docker exec cortana-mcp-notion-mcp-1 node /tmp/test.cjs)",
+      "Bash(rm -f tmp/test-notion-update-block.cjs)",
+      "Bash(MSYS_NO_PATHCONV=1 docker exec cortana-mcp-notion-mcp-1 rm -f /tmp/test.cjs)",
+      "Bash(cp -r .claude/skills/google-workspace-reauth container/skills/)",
+      "Bash(cp -r .claude/skills/google-workspace-reauth data/sessions/telegram_main/.claude/skills/)",
+      "PowerShell(Get-ScheduledTaskInfo *)",
+      "PowerShell(Write-Output \"=== am I elevated? ===\"; \\([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent\\(\\)\\).IsInRole\\([Security.Principal.WindowsBuiltinRole]::Administrator\\); Write-Output \"=== taskkill node 17204 ===\"; $r = & taskkill /F /PID 17204 2>&1; Write-Output $r; Write-Output \"ExitCode: $LASTEXITCODE\"; Write-Output \"=== taskkill wscript 7176 ===\"; $r2 = & taskkill /F /PID 7176 2>&1; Write-Output $r2; Write-Output \"ExitCode: $LASTEXITCODE\")"
     ]
   }
 }
