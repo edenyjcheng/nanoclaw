@@ -360,7 +360,20 @@
       "Bash(cp -r .claude/skills/google-workspace-reauth container/skills/)",
       "Bash(cp -r .claude/skills/google-workspace-reauth data/sessions/telegram_main/.claude/skills/)",
       "PowerShell(Get-ScheduledTaskInfo *)",
-      "PowerShell(Write-Output \"=== am I elevated? ===\"; \\([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent\\(\\)\\).IsInRole\\([Security.Principal.WindowsBuiltinRole]::Administrator\\); Write-Output \"=== taskkill node 17204 ===\"; $r = & taskkill /F /PID 17204 2>&1; Write-Output $r; Write-Output \"ExitCode: $LASTEXITCODE\"; Write-Output \"=== taskkill wscript 7176 ===\"; $r2 = & taskkill /F /PID 7176 2>&1; Write-Output $r2; Write-Output \"ExitCode: $LASTEXITCODE\")"
+      "PowerShell(Write-Output \"=== am I elevated? ===\"; \\([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent\\(\\)\\).IsInRole\\([Security.Principal.WindowsBuiltinRole]::Administrator\\); Write-Output \"=== taskkill node 17204 ===\"; $r = & taskkill /F /PID 17204 2>&1; Write-Output $r; Write-Output \"ExitCode: $LASTEXITCODE\"; Write-Output \"=== taskkill wscript 7176 ===\"; $r2 = & taskkill /F /PID 7176 2>&1; Write-Output $r2; Write-Output \"ExitCode: $LASTEXITCODE\")",
+      "Bash(schtasks //query //fo LIST)",
+      "Bash(ssh -V)",
+      "Bash(ping -n 2 NAS7D955E)",
+      "Bash(ssh-keygen -t ed25519 -C \"cortana-bkk-deploy\" -f ~/.ssh/id_ed25519 -N \"\")",
+      "Bash(ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=8 cortana@NAS7D955E echo ok)",
+      "Bash(ssh -v -o BatchMode=yes -o ConnectTimeout=8 cortana@NAS7D955E echo ok)",
+      "Bash(tty)",
+      "Bash(ssh -o ConnectTimeout=5 -o NumberOfPasswordPrompts=1 cortana@NAS7D955E echo ok)",
+      "Bash(ssh -o BatchMode=yes -o ConnectTimeout=10 cortana@NAS7D955E echo ok)",
+      "Bash(ssh -o BatchMode=yes cortana@NAS7D955E 'docker ps')",
+      "Bash(ssh -o BatchMode=yes cortana@NAS7D955E 'docker compose version')",
+      "Bash(ssh -o BatchMode=yes cortana@NAS7D955E 'docker-compose version')",
+      "Bash(ssh *)"
     ]
   }
 }
