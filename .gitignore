@@ -48,3 +48,8 @@ AGENTS.md
 docs/maintainer-guide.md
 docs/drafts/
 forks.md
+
+# NAS deployment secrets — bot token and vault API key. Template is
+# nas/deploy/.env.example.
+nas/deploy/.env
+nas/deploy/oauth-state.json

@@ -1,0 +1,107 @@
+name: cortana-nanoclaw
+
+# NanoClaw v2 server on NAS (WO-008 Output 1).
+#
+# Socket path verified in Output 0: /var/run/docker.sock is the standard path on
+# this QNAP, so the mount below is correct as the WO wrote it — no host-path
+# substitution needed.
+#
+# The socket is mode 0660 admin:administrators. The image declares no USER, so
+# the process runs as uid 0, which is `admin` on QTS — owner match, read/write.
+# If a USER is ever added to the image, this service needs `group_add: ["0"]`
+# or agent spawns fail with permission denied despite a correct mount.
+
+services:
+  nanoclaw:
+    image: nanoclaw:latest
+    container_name: nanoclaw
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - TZ=America/New_York
+    volumes:
+      # Absolute NAS host paths. These must match the image WORKDIR
+      # (/share/nanoclaw) — NanoClaw builds agent-container mount sources from
+      # process.cwd(), and under DooD those are resolved by the NAS host daemon.
+      # /share/nanoclaw is a QTS share symlink to ZFS24_DATA/nanoclaw; the
+      # daemon resolves it host-side (verified in Output 0).
+      - /share/nanoclaw/groups:/share/nanoclaw/groups
+      - /share/nanoclaw/store:/share/nanoclaw/store
+      - /share/nanoclaw/data:/share/nanoclaw/data
+      # agent-runner source. container-runner.ts:880 bind-mounts
+      # <projectRoot>/container/agent-runner/src to /app/src in every agent
+      # container — the agent image deliberately bakes no source in. Under DooD
+      # the NAS daemon resolves that host path, so it must exist on the host AND
+      # be visible here at the same path. Without it: "Module not found
+      # /app/src/index.ts" and the agent exits 1 on every spawn.
+      - /share/nanoclaw/container:/share/nanoclaw/container:ro
+      # .env must be MOUNTED, not just passed via env_file. The Telegram adapter
+      # reads its token with readEnvFile(['TELEGRAM_BOT_TOKEN']) — it parses the
+      # file at projectRoot rather than reading process.env. env_file injects the
+      # variable but leaves no file, so the adapter logs "Channel credentials
+      # missing, skipping" while the variable is plainly set in the environment.
+      - /share/nanoclaw/.env:/share/nanoclaw/.env:ro
+      # Host /tmp, shared at the SAME path. The OneCLI SDK writes the gateway's
+      # MITM CA to /tmp inside THIS container, then tells the daemon to bind
+      # -v /tmp/onecli-proxy-ca.pem into each agent container. Under DooD the
+      # NAS daemon resolves that source on the HOST, where the file did not
+      # exist — Docker then silently created empty DIRECTORIES there and agents
+      # failed with "Self-signed certificate detected". Sharing /tmp makes the
+      # SDK's writes land at the path the daemon actually reads, and it
+      # self-heals after a reboot because the SDK rewrites the CA on startup.
+      # Must be /tmp:/tmp specifically — the SDK hardcodes /tmp on both sides.
+      - /tmp:/tmp
+      # DooD: the server shells out to the `docker` binary
+      # (src/container-runtime.ts, CONTAINER_RUNTIME_BIN = 'docker') to spawn
+      # agent containers as siblings on the NAS host daemon.
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - cortana-net
+      - cortana-kb-net
+      # OneCLI vault holds the Anthropic OAuth credential. Verified 2026-09-02:
+      # the gateway publishes on the host IP (192.168.86.40:10256), which a
+      # container on a user bridge cannot route back to — both that and
+      # host-gateway returned HTTP 000. Joining OneCLI's own network and using
+      # the container name works (HTTP 401 = reachable, wants auth).
+      - onecli_onecli
+
+  # OAuth refresher — keeps the vault's Anthropic credential alive.
+  #
+  # ⚠️ SHIPS DISABLED. Starts only with `--profile cutover`.
+  #
+  # Anthropic rotates the refresh token on every use, so exactly one refresher
+  # may run per account. BKK v1 owns that role today (src/credential-proxy.ts)
+  # and is doing it correctly. Running both would have each invalidate the
+  # other's refresh token, breaking Cortana AND Nano. Enable this only after
+  # BKK v1 is stopped, as part of cutover.
+  oauth-refresher:
+    profiles: ["cutover"]
+    build:
+      context: ../oauth-refresher
+    image: nanoclaw-oauth-refresher:latest
+    container_name: nanoclaw-oauth-refresher
+    restart: unless-stopped
+    environment:
+      - TZ=America/New_York
+      - ONECLI_URL=${ONECLI_URL}
+      - ONECLI_API_KEY=${ONECLI_API_KEY}
+      - ONECLI_SECRET_ID=${ONECLI_SECRET_ID}
+      - OAUTH_STATE_PATH=/state/oauth-state.json
+    volumes:
+      # Holds the refresh token, which ROTATES on every use — losing it means
+      # re-seeding by hand from BKK. The vault cannot hold it instead: OneCLI
+      # exposes no way to read a secret value back (no GET /v1/secrets/:id,
+      # and `secrets list` omits the value).
+      - /share/nanoclaw/data/oauth:/state
+    networks:
+      # Needs the vault (onecli-api) and the public internet for the token
+      # endpoint — so NOT the internal-only sandbox network.
+      - onecli_onecli
+
+networks:
+  cortana-net:
+    external: true
+  cortana-kb-net:
+    external: true
+  onecli_onecli:
+    external: true
