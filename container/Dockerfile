@@ -46,6 +46,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         libdrm2 \
         libxshmfence1 \
         ca-certificates \
+        tzdata \
         curl \
         git \
         tini \
@@ -130,6 +131,12 @@ RUN mkdir -p /workspace/group /workspace/extra && \
 # Drop setuid-root from the binaries Debian ships (mount, su, passwd, ...). The
 # agent runs unprivileged and needs none of them.
 RUN find / -xdev -perm -4000 -type f -exec chmod u-s {} + || true
+
+# WO-008 Output 1b: upstream v2.3.0 ships no tzdata, so agent containers run UTC
+# and scheduled tasks fire on the wrong hour. tzdata is installed in the apt
+# block above; this makes it effective. Applied to v2's own Dockerfile rather
+# than by overlaying the v1 file, which would replace this whole architecture.
+ENV TZ=America/New_York
 
 USER node
 WORKDIR /workspace/group
